@@ -5,3 +5,4 @@ src/*.o
 src/*.dll
 src-*
 inst/doc
+inst/web

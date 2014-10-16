@@ -1,3 +1,4 @@
+*.html
 *.md
 *.R
 *.build.timestamp
