@@ -1,0 +1,70 @@
+<!--
+%\VignetteEngine{knitr}
+%\VignetteIndexEntry{Getting started}
+-->
+
+
+# Getting started
+
+`rplexos` is an R package developed to read and analyze PLEXOS solutions. It currently supports the
+conversion of PLEXOS solution files into SQLite databases and functions to query those databases.
+
+The first step is to load the package into memory.
+
+```{r, message = FALSE}
+library(rplexos)
+```
+
+The rest of this file presents the preferred workflow to process PLEXOS solutions with this package.
+
+
+## Organize solutions
+
+It is recommended to create a folder for each of your scenarios. If a run is divided in different
+solution files, copy them together in the same folder.
+
+For each folder, run the following command, where `folder` is a string representing the folder name.
+We can also provide a vector of strings with the names of all the folders that need to be processed.
+
+```
+process_folder(folder)
+```
+
+For example, let us assume we have two scenarios loaded in two folders: `HiWind` and `HiSolar`. 
+
+```
+process_folder(c("HiWind", "HiSolar"))
+```
+
+
+## Open databases
+
+Once the databases have been processed, we can access them by first opening a connection with `plexos_open`.
+Scenarios names can be defined at this point (if not provided, they default to the folder names).
+
+```
+db <- plexos_open(c("HiWind", "HiSolar"), name = c("High Wind", "High Solar"))
+```
+
+
+## Query data
+
+We can now use the `db` object to query and aggregate data using thethe functions documented in `query_master`.
+
+```
+result1 <- query_interval(a, "Generators", "NetGeneration")
+result2 <- sum_interval(a, "Generators", "CapacityCurtailed", "zone", c("2020-07-01", "2020-07-08"))
+result3 <- query_month(a, "Generators", "Generation")
+result4 <- query_month(a, "Generators", "UnitsStarted", c("category", "region"))
+```
+
+The list of available properties can be seen with `?query_property`.
+
+
+## Close databases
+
+Optionally, you can break the connections with `plexos_close`. Closing R has the same effect.
+
+```
+plexos_close()
+```

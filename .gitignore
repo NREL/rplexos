@@ -1,0 +1,7 @@
+develop.r
+*.db
+*.zip
+src/*.o
+src/*.dll
+src-*
+inst/doc
