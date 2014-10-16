@@ -49,13 +49,13 @@ db <- plexos_open(c("HiWind", "HiSolar"), name = c("High Wind", "High Solar"))
 
 ## Query data
 
-We can now use the `db` object to query and aggregate data using thethe functions documented in `query_master`.
+We can now use the `db` object to query and aggregate data using the functions documented in `query_master`.
 
 ```
-result1 <- query_interval(a, "Generators", "NetGeneration")
-result2 <- sum_interval(a, "Generators", "CapacityCurtailed", "zone", c("2020-07-01", "2020-07-08"))
+result1 <- query_interval(a, "Generators", "Net Generation")
+result2 <- sum_interval(a, "Generators", "Capacity Curtailed", "zone", c("2020-07-01", "2020-07-08"))
 result3 <- query_month(a, "Generators", "Generation")
-result4 <- query_month(a, "Generators", "UnitsStarted", c("category", "region"))
+result4 <- query_month(a, "Generators", "Units Started", c("category", "region"))
 ```
 
 The list of available properties can be seen with `?query_property`.
