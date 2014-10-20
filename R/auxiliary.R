@@ -117,6 +117,8 @@ is_folder <- function(x) {
   if (length(x) == 1) {
     if(x == "*") {
       return(TRUE)
+    } else {
+      return(file.exists(x) && file.info(x)$isdir)
     }
   }
   all(file.exists(x)) & all(file.info(x)$isdir, na.rm = FALSE)
