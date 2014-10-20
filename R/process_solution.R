@@ -320,7 +320,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   log.content <- read_file_in_zip(file, log.pos)
   log.result <- plexos_log_parser(log.content)
   for(i in names(log.result)) {
-    dbWriteTable(dbf$con, i, log.result[[i]] %>% as.data.frame)
+    dbWriteTable(dbf$con, i, log.result[[i]] %>% as.data.frame, row.names = FALSE)
   }
   
   # Close database connections
@@ -519,7 +519,7 @@ add_extra_tables <- function(db) {
            parent = parent_name, category = child_category, region, zone,
            class = child_class, class_group = child_group, phase_id, period_type_id,
            timeslice, band, sample) %>%
-    dbWriteTable(db$con, "temp_key", .)
+    dbWriteTable(db$con, "temp_key", ., row.names = FALSE)
   
   # Create tables to hold interval, day, week, month, and yearly timestamps
   for (i in 0:4) {
