@@ -1,5 +1,9 @@
 # rplexos 0.10.1.99
 
+* Print PLEXOS and rplexos versions in `summary(db)`. (#5)
+* Parsing log file can fail for several reasons (file too big, old version of PLEXOS).
+  An error in parsing does not stop the process and only throws a warning. (#6)
+
 
 # rplexos 0.10
 
