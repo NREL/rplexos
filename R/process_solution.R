@@ -231,11 +231,7 @@ process_solution <- function(file, keep.temp = FALSE) {
       
       # Execute query in one big binding statement
       sql <- sprintf("INSERT INTO data_%s VALUES(?, ?, ?)", times[period])
-      if (packageVersion("RSQLite") >= 1) {
-        dbBegin(dbf$con)
-      } else {
-        dbBeginTransaction(dbf$con)
-      }
+      dbBegin(dbf$con)
       dbGetPreparedQuery(dbf$con, sql, bind.data = tdata2)
       dbCommit(dbf$con)
     } else {
@@ -254,11 +250,7 @@ process_solution <- function(file, keep.temp = FALSE) {
       tki <- dbSendQuery(dbt$con, sql)
       
       # Data insert in one transaction
-      if (packageVersion("RSQLite") >= 1) {
-        dbBegin(dbf$con)
-      } else {
-        dbBeginTransaction(dbf$con)
-      }
+      dbBegin(dbf$con)
       
       # Read one row from the query
       trow <- fetch(tki, 1)
