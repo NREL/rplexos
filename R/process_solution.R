@@ -252,11 +252,11 @@ process_solution <- function(file, keep.temp = FALSE) {
       # Data insert in one transaction
       dbBegin(dbf$con)
       
+      # Read one row from the query
+      trow <- dbFetch(tki, 1)
+      
       # Iterate through the query results
-      while (!dbHasCompleted(tki)) {
-        # Read one row from the query
-        trow <- dbFetch(tki, 1)
-        
+      while (nrow(trow) > 0) {
         # Fix length if necessary
         if (!correct.length)
           trow$length = trow$length - trow$period_offset
@@ -295,6 +295,9 @@ process_solution <- function(file, keep.temp = FALSE) {
                            sprintf("INSERT INTO %s (key, time_from, time_to, value)
                                     VALUES(?, ?, ?, ?)", trow$table_name),
                            bind.data = data.frame(tdata3))
+        
+        # Read one row from the query
+        trow <- dbFetch(tki, 1)
       }
 
       # Finish transaction
