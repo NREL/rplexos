@@ -309,6 +309,9 @@ process_solution <- function(file, keep.temp = FALSE) {
   # Read Log file into memory
   log.content <- read_file_in_zip(file, log.pos)
   log.result <- plexos_log_parser(log.content)
+  if (length(log.result) < 2) {
+    warning("Log in solution '", file, "' did not parse correctly.", call. = FALSE)
+  }
   for(i in names(log.result)) {
     dbWriteTable(dbf$con, i, log.result[[i]] %>% as.data.frame, row.names = FALSE)
   }
