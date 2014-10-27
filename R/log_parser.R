@@ -2,14 +2,15 @@
 
 # Take log and return processed results
 plexos_log_parser <- function(txt) {
-  list(log_info  = log_info(txt),
-       log_steps = log_steps(txt))
+  out <- list()
+  try(out$log_info  <- log_info(txt),  silent = TRUE)
+  try(out$log_steps <- log_steps(txt), silent = TRUE)
+  out
 }
 
 # Look for a phase in the log output and extract time (and infeasibilities)
-#' @importFrom stringi stri_extract_first_regex stri_opts_regex
 get_time <- function(pattern, txt, add.inf = FALSE) {
-  dotall <- stri_opts_regex(dotall = TRUE)
+  dotall <- stringi::stri_opts_regex(dotall = TRUE)
   
   if (add.inf) {
     pat <- paste0(pattern, ".*?(?:\n|\r\n)", ".*?",
@@ -18,7 +19,7 @@ get_time <- function(pattern, txt, add.inf = FALSE) {
     pat <- paste0(pattern, ".*?(?:\n|\\r\n)")
   }
   
-  chunk <- stri_extract_first_regex(txt, pat, dotall)
+  chunk <- stringi::stri_extract_first_regex(txt, pat, dotall)
   
   data.frame(phase        = gsub(" Completed", "", pattern),
              time         = extract_number(chunk, pattern),
@@ -28,12 +29,11 @@ get_time <- function(pattern, txt, add.inf = FALSE) {
 }
 
 # Find the line of text that includes 'pattern' and extract the number
-#' @importFrom stringi stri_extract_first_regex stri_detect stri_split_fixed
 extract_number <- function(txt, pattern) {
   pat <- paste0(pattern, ".*")
-  line <- stri_extract_first_regex(txt, pat)
-  line.sp <- stri_split_fixed(line, " ")[[1]]
-  line.sp[stri_detect(line.sp, regex = "[0-9]")]
+  line <- stringi::stri_extract_first_regex(txt, pat)
+  line.sp <- stringi::stri_split_fixed(line, " ")[[1]]
+  line.sp[stringi::stri_detect(line.sp, regex = "[0-9]")]
 }
 
 # Get summary for each step
@@ -47,16 +47,15 @@ log_info <- function(txt) {
 }
 
 # Get duration of steps
-#' @importFrom stringi stri_opts_regex stri_extract_all_regex stri_replace_all_regex stri_split_regex
 log_steps <- function(txt) {
-  dotall <- stri_opts_regex(dotall = TRUE)
-  caseins <- stri_opts_regex(case_insensitive = TRUE)
+  dotall <- stringi::stri_opts_regex(dotall = TRUE)
+  caseins <- stringi::stri_opts_regex(case_insensitive = TRUE)
   
-  steps <- stri_extract_all_regex(txt,
+  steps <- stringi::stri_extract_all_regex(txt,
                                   "Completed .*? Step +[0-9]+ of [0-9]+.*?(?:\n|\r\n)",
                                   dotall)
-  steps2 <- stri_replace_all_regex(steps[[1]], "Completed |\r\n|\n", "")
-  steps3 <- stri_split_regex(steps2, " step| of |time: |elapsed: ", n_max = 5, opts_regex = caseins)
+  steps2 <- stringi::stri_replace_all_regex(steps[[1]], "Completed |\r\n|\n", "")
+  steps3 <- stringi::stri_split_regex(steps2, " step| of |time: |elapsed: ", n_max = 5, opts_regex = caseins)
 
   steps4 <- do.call("rbind", steps3)
   steps4 <- data.frame(steps4, stringsAsFactors = FALSE)
