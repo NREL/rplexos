@@ -69,9 +69,8 @@ log_steps <- function(txt) {
 }
 
 # Convert an HH:MM:SS to seconds
-#' @importFrom stringi stri_split_fixed
 to_seconds <- function(x) {
-  x2 <- stri_split_fixed(x, ":", 3) %>%
+  x2 <- stringi::stri_split_fixed(x, ":", 3) %>%
     do.call("rbind", .) %>%
     data.frame(stringsAsFactors = FALSE) %>%
     sapply(as.numeric)
