@@ -144,7 +144,6 @@ summary.rplexos <- function(object, ...) {
 
 # Create custom visualization for rplexos objects
 #' @export
-#' @importFrom reshape2 dcast
 print.rplexos <- function(x, ...) {
   cat("Structure:\n")
   summary(x)
@@ -154,7 +153,7 @@ print.rplexos <- function(x, ...) {
     group_by(position) %>%
     do(data.frame(table = src_tbls(.$db[[1]])))
   
-  print(dcast(info, table ~ position, fun.aggregate = length, value.var = "table"),
+  print(reshape2::dcast(info, table ~ position, fun.aggregate = length, value.var = "table"),
         row.names = FALSE)
 }
 

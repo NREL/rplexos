@@ -54,15 +54,14 @@ get_table_one_scenario <- function(db, from, columns) {
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
 #'
 #' @export
-#' @importFrom reshape2 dcast
 query_property <- function(db) {
   out <- get_table_scenario(db, "property")
   phases <- c("LT", "PASA", "MT", "ST")
   phases.df <- data.frame(phase_id = 1:4, phase = factor(phases, levels = phases))
   out %>%
     inner_join(phases.df, by = "phase_id") %>%
-    dcast(phase_id + phase + is_summary + class_group + class + collection + property + unit ~ scenario,
-          length, value.var = "unit")
+    reshape2::dcast(phase_id + phase + is_summary + class_group + class + collection + property + unit ~ scenario,
+                    length, value.var = "unit")
 }
 
 
@@ -77,10 +76,9 @@ query_property <- function(db) {
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
 #'
 #' @export
-#' @importFrom reshape2 dcast
 query_config <- function(db) {
   data <- get_table_scenario(db, "config", columns = c("scenario", "position", "filename"))
-  dcast(data, position + scenario + filename ~ element, value.var = "value")
+  reshape2::dcast(data, position + scenario + filename ~ element, value.var = "value")
 }
 
 #' Query log file information
