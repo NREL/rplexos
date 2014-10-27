@@ -446,15 +446,22 @@ add_extra_tables <- function(db) {
             ON ch.object_id = m.child_object_id"
   dbGetQuery(db$con, sql)
   
-  # View to list zones
-  sql <- "CREATE VIEW temp_zones AS
+  # Views to list zones
+  sql <- "CREATE VIEW temp_zones_id AS
           SELECT child_object_id,
-                 parent_name region,
-                 parent_category zone
+                 min(parent_object_id) parent_object_id
           FROM temp_membership
           WHERE collection = 'Generators' 
-                AND
-                parent_class = 'Region'"
+                AND parent_class = 'Region'
+          GROUP BY child_object_id"
+  dbGetQuery(db$con, sql)
+  sql <- "CREATE VIEW temp_zones AS
+          SELECT a.child_object_id,
+                 b.name region,
+                 b.category zone
+          FROM temp_zones_id a
+          JOIN temp_object b
+          WHERE a.parent_object_id = b.object_id"
   dbGetQuery(db$con, sql)
   
   # Read key data and transform it

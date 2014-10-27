@@ -1,6 +1,11 @@
 # rplexos 0.10.1.99
 
 * Print PLEXOS and rplexos versions in `summary(db)`. (#5)
+
+## Bugs
+
+* Solution processing used to fail if a generator is assigned to more than one
+  region. (#8)
 * Parsing log file can fail for several reasons (file too big, old version of PLEXOS).
   An error in parsing does not stop the process and only throws a warning. (#6)
 
