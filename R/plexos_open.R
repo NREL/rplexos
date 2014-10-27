@@ -139,7 +139,15 @@ summary.rplexos <- function(object, ...) {
     summarise(tables = length(src_tbls(db[[1]]))) %>%
     as.data.frame
   
-  print(info, row.names = FALSE)
+  # Query config to get rplexos and PLEXOS version
+  conf <- query_config(object) %>%
+    select(position, PLEXOS = Version, rplexos)
+  
+  # Join the two tables
+  info2 <- info %>% inner_join(conf, by = "position")
+  
+  # Print table
+  print(info2, row.names = FALSE)
 }
 
 # Create custom visualization for rplexos objects
