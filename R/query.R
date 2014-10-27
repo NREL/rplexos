@@ -274,8 +274,6 @@ query_month    <- function(db, ...) query_master(db, "month", ...)
 query_year     <- function(db, ...) query_master(db, "year", ...)
 
 # Query interval for each database
-#' @importFrom lubridate ymd_hms
-#' @importFrom data.table data.table CJ
 query_master_each <- function(db, time, col, prop, columns, time.range, filter, phase, table.name) {
   # Divide time.range vector
   if (!is.null(time.range)) {
@@ -314,7 +312,7 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
     out <- out %>%
       select_(.dots = columns.dots) %>%
       collect %>%
-      mutate(time = ymd_hms(time, quiet = TRUE))
+      mutate(time = lubridate::ymd_hms(time, quiet = TRUE))
     
     return(out)
   }
@@ -353,7 +351,7 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
     return(data.frame())
   
   # Convert into R time-data format
-  time.data$time <- ymd_hms(time.data$time)
+  time.data$time <- lubridate::ymd_hms(time.data$time)
     
   # Add key, time and value columns
   columns.dots <- c("key", "unit", setdiff(columns, "time"), "time", "value") %>%
@@ -364,12 +362,12 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
   out <- out %>%
     select_(.dots = columns.dots) %>%
     collect %>%
-      mutate(time = ymd_hms(time, quiet = TRUE))
+      mutate(time = lubridate::ymd_hms(time, quiet = TRUE))
   
   # Expand data
   #   This will be easier when dplyr supports rolling joins
-  out2 <- data.table(out, key = "key,time")
-  cj2 <- CJ(key = unique(out$key), time = time.data$time)
+  out2 <- data.table::data.table(out, key = "key,time")
+  cj2 <- data.table::CJ(key = unique(out$key), time = time.data$time)
   
   out3 <- out2[cj2, roll = TRUE]
   out3 <- out3 %>%
@@ -426,7 +424,6 @@ sum_month    <- function(db, ...) sum_master(db, "month", ...)
 sum_year     <- function(db, ...) sum_master(db, "year", ...)
 
 # Checks and common data maniputation for query_master and sum_master
-#' @importFrom lubridate parse_date_time
 master_checks <- function(db, time, col, prop, columns, time.range, filter, phase) {
   # Get list of properties for the collection
   is.summ <- ifelse(time == "interval", 0, 1)
@@ -492,7 +489,7 @@ master_checks <- function(db, time, col, prop, columns, time.range, filter, phas
   # Time range checks and convert to POSIXct
   if (!is.null(time.range)) {
     assert_that(is.character(time.range), length(time.range) == 2)
-    time.range <- parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
+    time.range <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
     assert_that(correct_date(time.range))
   }
   
