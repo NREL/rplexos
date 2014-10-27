@@ -32,6 +32,10 @@ get_table_scenario <- function(db, from, columns = c("scenario", "position")) {
 
 # Correctly get query for a row (won't be necessary with future version of dplyr)
 get_table_one_scenario <- function(db, from, columns) {
+  # Check that table exists
+  if (!from %in% src_tbls(db$db)) {
+    return(data.frame())
+  }
   res <- tbl(db$db, from) %>% collect
   if (nrow(res) == 0)
     return(data.frame())
