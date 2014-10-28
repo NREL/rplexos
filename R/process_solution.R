@@ -30,7 +30,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   # Check that zip file has valid XML, Log and BIN files
   xml.pos <- grep("^Model.*xml$", zip.content$Name)
   bin.pos <- grep("^t_data_[0-4].BIN$", zip.content$Name)
-  log.pos <- grep("^Model.*Log.txt$", zip.content$Name)
+  log.pos <- grep("^Model.*Log.*.txt$", zip.content$Name)
   if ((length(xml.pos) == 0) | (length(bin.pos) == 0) | (length(log.pos) == 0)) {
     warning(file, " is not a PLEXOS solution file and was ignored.", call. = FALSE)
     return(invisible(""))
