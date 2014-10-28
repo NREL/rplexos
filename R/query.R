@@ -274,6 +274,7 @@ query_month    <- function(db, ...) query_master(db, "month", ...)
 query_year     <- function(db, ...) query_master(db, "year", ...)
 
 # Query interval for each database
+#' @importFrom data.table data.table CJ
 query_master_each <- function(db, time, col, prop, columns, time.range, filter, phase, table.name) {
   # Divide time.range vector
   if (!is.null(time.range)) {
@@ -323,6 +324,8 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
     collect
   the.table.name <- gsub("data_interval_", "", t.name$table_name)
   
+  # Get max/min time existing in the table to be queried
+  
   # Interval data, Get time data
   time.data <- tbl(db, "time")
   
@@ -366,8 +369,11 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
   
   # Expand data
   #   This will be easier when dplyr supports rolling joins
-  out2 <- data.table::data.table(out, key = "key,time")
-  cj2 <- data.table::CJ(key = unique(out$key), time = time.data$time)
+  out2 <- data.table(out, key = "key,time")
+  cj2 <- CJ(key = unique(out$key), time = time.data$time)
+  
+  print(class(out2))
+  print(class(cj2))
   
   out3 <- out2[cj2, roll = TRUE]
   out3 <- out3 %>%
