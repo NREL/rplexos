@@ -1,6 +1,6 @@
 <!--
 %\VignetteEngine{knitr}
-%\VignetteIndexEntry{Getting started}
+%\VignetteIndexEntry{rplexos: Getting started}
 -->
 
 
