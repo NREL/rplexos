@@ -1,6 +1,9 @@
 # rplexos 0.10.1.99
 
+## Enhancements
+
 * Print PLEXOS and rplexos versions in `summary(db)`. (#5)
+
 
 ## Bugs
 
@@ -8,6 +11,8 @@
   region. (#8)
 * Parsing log file can fail for several reasons (file too big, old version of PLEXOS).
   An error in parsing does not stop the process and only throws a warning. (#6)
+* Interval queries were not being expanded correctly if the simulation had less
+  entries than the `time` table.
 
 
 # rplexos 0.10

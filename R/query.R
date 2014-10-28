@@ -325,15 +325,23 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
   the.table.name <- gsub("data_interval_", "", t.name$table_name)
   
   # Get max/min time existing in the table to be queried
+  #   In case time table has more time stamps than those in the dataset
+  time.limit <- tbl(db, the.table.name) %>%
+      filter(phase_id == phase) %>%
+      summarize(time_from = min(time_from), time_to = max(time_to)) %>%
+      collect
+  min.time.data <- time.limit$time_from
+  max.time.data <- time.limit$time_to
   
   # Interval data, Get time data
-  time.data <- tbl(db, "time")
+  time.data <- tbl(db, "time") %>%
+    filter(between(time, min.time.data, max.time.data))
   
   # Get interval data
   out <- tbl(db, the.table.name) %>%
-      filter(phase_id == phase) %>%
-      select(-time_to) %>%
-      rename(time = time_from)
+    filter(phase_id == phase) %>%
+    select(-time_to) %>%
+    rename(time = time_from)
   
   # Add time filter conditions
   if (!is.null(time.range)) {
@@ -371,9 +379,6 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
   #   This will be easier when dplyr supports rolling joins
   out2 <- data.table(out, key = "key,time")
   cj2 <- CJ(key = unique(out$key), time = time.data$time)
-  
-  print(class(out2))
-  print(class(cj2))
   
   out3 <- out2[cj2, roll = TRUE]
   out3 <- out3 %>%
