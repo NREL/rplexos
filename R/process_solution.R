@@ -38,7 +38,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   
   # Read content from the XML file
   xml.content <- NULL
-  try(xml.content <- read_file_in_zip(file, xml.pos))
+  try(xml.content <- read_file_in_zip(file, xml.pos), silent = TRUE)
   if (is.null(xml.content)) {
     error("Error reading XML file into memory", call. = FALSE)
   }
@@ -314,13 +314,22 @@ process_solution <- function(file, keep.temp = FALSE) {
   }
   
   # Read Log file into memory
-  log.content <- read_file_in_zip(file, log.pos)
-  log.result <- plexos_log_parser(log.content)
-  if (length(log.result) < 2) {
-    warning("Log in solution '", file, "' did not parse correctly.", call. = FALSE)
-  }
-  for(i in names(log.result)) {
-    dbWriteTable(dbf$con, i, log.result[[i]] %>% as.data.frame, row.names = FALSE)
+  log.content <- NULL
+  try(log.content <- read_file_in_zip(file, log.pos), silent = TRUE)
+  if (is.null(log.content)) {
+    # Error reading log file, throw a warning
+    warning("Could not read Log in solution '", file, "'", call. = FALSE)
+  } else {
+    # Success reading file, try to parse it
+    log.result <- plexos_log_parser(log.content)
+    
+    if (length(log.result) < 2) {
+      warning("Log in solution '", file, "' did not parse correctly.", call. = FALSE)
+    }
+    
+    for(i in names(log.result)) {
+      dbWriteTable(dbf$con, i, log.result[[i]] %>% as.data.frame, row.names = FALSE)
+    }
   }
   
   # Close database connections
