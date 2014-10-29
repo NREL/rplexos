@@ -3,6 +3,7 @@
 ## Enhancements
 
 * Print PLEXOS and rplexos versions in `summary(db)`. (#5)
+* Catch common errors reading XML and log files.
 
 
 ## Bugs
