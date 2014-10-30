@@ -2,6 +2,8 @@
 
 ## Enhancements
 
+* Option to weight by time in `sum_interval` (e.g., to correctly when energy from
+  power time series). (#2)
 * Print PLEXOS and rplexos versions in `summary(db)`. (#5)
 * Catch common errors reading XML and log files.
 
