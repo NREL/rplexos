@@ -148,6 +148,10 @@ query_log_steps <- function(db) {
 #' Multiple properties can be queried within a collection. If \code{prop} equals the widcard
 #' \code{"*"}, all the properties within a collection are returned.
 #' 
+#' The parameter \code{multiply.time} allows to multiply values by interval duration (in hours) when
+#' doing the sum of interval data. This can be used, for example, to obtain total energy (in MWh)
+#' from power time series (in MW).
+#' 
 #' @param db PLEXOS database object
 #' @param time character. Table to query from (interval, day, week, month, year)
 #' @param col character. Collection to query
@@ -156,6 +160,7 @@ query_log_steps <- function(db) {
 #' @param time.range character. Range of dates (Give in 'ymdhms' or 'ymd' format)
 #' @param filter list. Used to filter by data columns (see details)
 #' @param phase integer. PLEXOS optimization phase (1-LT, 2-PASA, 3-MT, 4-ST)
+#' @param multiply.time boolean. When summing interval data, provide the value multiplied by interval duration (See details).
 #' @param ... parameters passed from shortcut functions to master (all except \code{time})
 #' 
 #' @return A data frame that contains data summarized/aggregated by scenario.
@@ -396,7 +401,10 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
 
 #' @rdname query_master
 #' @export
-sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL, filter = NULL, phase = 4) {
+sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL, filter = NULL, phase = 4, multiply.time = FALSE) {
+  # Check inputs to unique
+  assert_that(is.flag(multiply.time))
+
   # Make sure to include time
   columns2 <- c(setdiff(columns, "time"), "time")
   
@@ -410,6 +418,30 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
   # Aggregate the data
   out <- df %>% group_by_char(c("scenario", "collection", "property", columns2)) %>%
     summarise(value = sum(value))
+  
+  if ((time == "interval") & multiply.time) {
+    # Get length of intervals in hours
+    times <- get_table_scenario(d, "time", "scenario")
+    delta <- times %>%
+      group_by(scenario) %>%
+      mutate(time = lubridate::ymd_hms(time)) %>%
+      summarize(interval = min(lubridate::int_length(lubridate::int_diff(time))) / 3600)
+    
+    # Add interval duration to the sum
+    out <- out %>%
+      inner_join(delta, by = "scenario") %>%
+      summarise(value = sum(value * interval))  
+    
+    # If unit is a column, modify column
+    if ("unit" %in% names(out)) {
+      out <- out %>%
+        mutate(unit = paste(unit, "* h"))
+    }
+  } else {
+    # Sum values
+    out <- out %>%
+      summarise(value = sum(value))  
+  }
   
   # Convert columns to factors
   for (i in setdiff(columns2, "time"))

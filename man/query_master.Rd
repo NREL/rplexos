@@ -28,7 +28,7 @@ query_month(db, ...)
 query_year(db, ...)
 
 sum_master(db, time, col, prop, columns = "name", time.range = NULL,
-  filter = NULL, phase = 4)
+  filter = NULL, phase = 4, multiply.time = FALSE)
 
 sum_interval(db, ...)
 
@@ -58,6 +58,8 @@ sum_year(db, ...)
 \item{phase}{integer. PLEXOS optimization phase (1-LT, 2-PASA, 3-MT, 4-ST)}
 
 \item{...}{parameters passed from shortcut functions to master (all except \code{time})}
+
+\item{multiply.time}{boolean. When summing interval data, provide the value multiplied by interval duration (See details).}
 }
 \value{
 A data frame that contains data summarized/aggregated by scenario.
@@ -106,6 +108,10 @@ select data from the first database, the last one or keep all of them.
 
 Multiple properties can be queried within a collection. If \code{prop} equals the widcard
 \code{"*"}, all the properties within a collection are returned.
+
+The parameter \code{multiply.time} allows to multiply values by interval duration (in hours) when
+doing the sum of interval data. This can be used, for example, to obtain total energy (in MWh)
+from power time series (in MW).
 }
 \seealso{
 \code{\link{plexos_open}} to create the PLEXOS database object
