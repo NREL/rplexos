@@ -191,123 +191,97 @@ process_solution <- function(file, keep.temp = FALSE) {
     # Check if length in t_key_index is correct
     correct.length <- correct_length(dbt, period)
     
-    if (period > 0) {
-      # Read t_key_index entries for current period
-      sql <- sprintf("SELECT tki.key_id, nk.phase_id, tki.period_offset, tki.length
-                      FROM t_key_index tki
-                      JOIN temp_key nk
-                      ON tki.key_id = nk.[key]
-                      WHERE tki.period_type_id = %s
-                      ORDER BY tki.position", period)
-      t.key <- dbGetQuery(dbt$con, sql) %>%
-        mutate(phase_id = as.integer(phase_id))
+    # Read time data
+    t.time <- tbl(dbt, sprintf("temp_period_%s", period)) %>%
+      arrange(phase_id, period_id) %>%
+      select(phase_id, period_id, time, interval_id) %>%
+      collect()
+    
+    # Read t_key_index entries for period data
+    sql <- sprintf("SELECT nk.[key], nk.phase_id, nk.table_name, tki.period_offset, tki.length
+                    FROM t_key_index tki
+                    JOIN temp_key nk
+                    ON tki.key_id = nk.[key]
+                    WHERE tki.period_type_id = %s
+                    ORDER BY tki.position", period)
+    tki <- dbSendQuery(dbt$con, sql)
+    
+    # All the data is inserted in one transaction
+    dbBegin(dbf$con)
       
+    # Read one row from the query
+    num.rows <- ifelse(period == 0, 1, 1000)
+    trow <- dbFetch(tki, num.rows)
+    
+    # Iterate through the query results
+    while (nrow(trow) > 0) {
       # Fix length if necessary
-      if (!correct.length) {
-        t.key <- t.key %>% mutate(length = length - period_offset)
+      if (!correct.length)
+        trow <- trow %>% mutate(length = length - period_offset)
+      
+      # Expand data
+      if (period > 0) {
+        tdata <- trow %>%
+          mutate(key = as.numeric(key), phase_id = as.numeric(phase_id)) %>%
+          select(key_id = key, phase_id, period_offset, length) %>%
+          expand_tkey
+      } else {
+        tdata <- data_frame(period_id = 1:trow$length + trow$period_offset,
+                            key       = as.integer(trow$key),
+                            phase_id  = as.integer(trow$phase_id))
       }
       
-      # Query time
-      t.time <- tbl(dbt, sprintf("temp_period_%s", period)) %>%
-        arrange(phase_id, period_id) %>%
-        select(phase_id, period_id, time) %>%
-        collect()
-      
-      # Read all the binary data for summary periods
-      tdata <- expand_tkey(t.key)
-      value.data <- readBin(bin.con, double(),
+      # Query data
+      value.data <- readBin(bin.con,
+                            "double",
                             n = nrow(tdata),
-                            size = 8,
+                            size = 8L,
                             endian = "little")
       
-      # Check the size of data (this happens when there is a problem)
+      # Check the size of data (they won't match if there is a problem)
+      period.name <- ifelse(period == 0, "interval", times[period])
       if (length(value.data) < nrow(tdata)) {
-        stop("Problem reading binary data for ", times[period], " results (reached end of file).\n",
+        stop("Problem reading binary data for ", period.name, " results (reached end of file).\n",
              "  ", nrow(tdata), " values requested, ", length(value.data), " returned.\n",
              "  This is likely a bug in rplexos. Please report it.", call. = FALSE)
       }
-        
+      
       # Copy data
       tdata$value <- value.data
+      
+      # Join with time
       tdata2 <- tdata %>%
-                inner_join(t.time, by = c("phase_id", "period_id")) %>%
-                select(key, time, value)
+        inner_join(t.time, by = c("phase_id", "period_id"))
       
-      # Execute query in one big binding statement
-      sql <- sprintf("INSERT INTO data_%s VALUES(?, ?, ?)", times[period])
-      dbBegin(dbf$con)
-      dbGetPreparedQuery(dbf$con, sql, bind.data = tdata2)
-      dbCommit(dbf$con)
-    } else {
-      # Read time data
-      time0 <- tbl(dbt, "temp_period_0") %>%
-        select(phase_id, period_id, interval_id) %>%
-        collect
-      
-      # Read t_key_index entries for period data
-      sql <- "SELECT nk.key, nk.phase_id, nk.table_name, tki.period_offset, tki.length
-              FROM t_key_index tki
-              JOIN temp_key nk
-              ON tki.key_id = nk.[key]
-              WHERE tki.period_type_id = 0
-              ORDER BY tki.position"
-      tki <- dbSendQuery(dbt$con, sql)
-      
-      # Data insert in one transaction
-      dbBegin(dbf$con)
-      
-      # Read one row from the query
-      trow <- dbFetch(tki, 1)
-      
-      # Iterate through the query results
-      while (nrow(trow) > 0) {
-        # Fix length if necessary
-        if (!correct.length)
-          trow$length = trow$length - trow$period_offset
+      # Add data to SQLite
+      if (period > 0) {
+        tdata3 <- tdata2 %>% select(key, time, value)
         
-        # Query data
-        tdata <- data.frame(key = as.integer(trow$key),
-                            phase_id = as.integer(trow$phase_id),
-                            period_id    = 1:trow$length + trow$period_offset)
-        value.data <- readBin(bin.con, double(),
-                              n = nrow(tdata),
-                              size = 8,
-                              endian = "little")
-        
-        # Check the size of data (this happens when there is a problem)
-        if (length(value.data) < nrow(tdata)) {
-          stop("Problem reading binary data for interval results (reached end of file)\n",
-               "  ", nrow(tdata), " values requested, ", length(value.data), " returned.\n",
-               "  This is likely a bug in rplexos. Please report it.", call. = FALSE)
-        }
-        
-        # Copy data
-        tdata$value <- value.data
-        
-        # Eliminate repeats
-        tdata2 <- tdata %>%
-          inner_join(time0, by = c("phase_id", "period_id")) %>%
-          arrange(interval_id)
+        dbGetPreparedQuery(dbf$con,
+          sprintf("INSERT INTO data_%s VALUES(?, ?, ?)", times[period]),
+          bind.data = tdata3 %>% as.data.frame)
+      } else {
+        # Eliminate consecutive repeats
         default.interval.to.id <- max(tdata2$interval_id)
         tdata3 <- tdata2 %>%
+          arrange(interval_id) %>%
           filter(value != lag(value, default = Inf)) %>%
           mutate(interval_to_id = lead(interval_id - 1, default = default.interval.to.id)) %>%
           select(key, time_from = interval_id, time_to = interval_to_id, value)
         
-        # Add data to SQLite
         dbGetPreparedQuery(dbf$con,
-                           sprintf("INSERT INTO %s (key, time_from, time_to, value)
-                                    VALUES(?, ?, ?, ?)", trow$table_name),
-                           bind.data = data.frame(tdata3))
-        
-        # Read one row from the query
-        trow <- dbFetch(tki, 1)
+          sprintf("INSERT INTO %s (key, time_from, time_to, value)
+                  VALUES(?, ?, ?, ?)", trow$table_name),
+          bind.data = tdata3 %>% as.data.frame)
       }
-
-      # Finish transaction
-      dbClearResult(tki)
-      dbCommit(dbf$con)
+      
+      # Read next row from the query
+      trow <- dbFetch(tki, num.rows)
     }
+    
+    # Finish transaction
+    dbClearResult(tki)
+    dbCommit(dbf$con)
     
     # Close binary file connection
     close(bin.con)
