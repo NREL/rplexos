@@ -345,6 +345,8 @@ read_file_in_zip <- function(zip.file, position) {
 
 # Populate new database with XML contents
 new_database <- function(db, xml) {
+  rplexos_message("Reading XML file and saving content")
+  
   # Read XML and convert to a list
   xml.list <- process_xml(xml)
   
@@ -377,6 +379,8 @@ new_database <- function(db, xml) {
 
 # Add a few tables that will be useful later on
 add_extra_tables <- function(db) {
+  rplexos_message("Adding extra tables to the database")
+  
   # View with class and class_group
   sql <- "CREATE VIEW temp_class AS
           SELECT tc.class_id class_id,
