@@ -47,7 +47,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   
   # Read content from the XML file
   xml.content <- NULL
-  try(xml.content <- read_file_in_zip(file, xml.pos), silent = !options("rplexos.debug"))
+  try(xml.content <- read_file_in_zip(file, xml.pos), silent = !getOption("rplexos.debug"))
   if (is.null(xml.content)) {
     error("Error reading XML file into memory", call. = FALSE)
   }
@@ -200,6 +200,9 @@ process_solution <- function(file, keep.temp = FALSE) {
     if(!bin.name %in% zip.content$Name)
       next
     bin.con <- unz(file, bin.name, open = "rb")
+    
+    # Print debug message
+    rplexos_message("From t_data_", period, ".BIN")
     
     # Check if length in t_key_index is correct
     correct.length <- correct_length(dbt, period)
@@ -576,7 +579,7 @@ correct_length <- function(db, p) {
     collect
   
   # Print how many entries will be expected from the binary file
-  rplexos_message("Expecting ", res$JustLength, " entries in t_data_", p, ".bin")
+  rplexos_message("Expecting ", res$JustLength, " entries")
   
   if (res$JustLength == res$SumLength) {
     return(TRUE)
