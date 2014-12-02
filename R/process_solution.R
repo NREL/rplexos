@@ -47,7 +47,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   
   # Read content from the XML file
   xml.content <- NULL
-  try(xml.content <- read_file_in_zip(file, xml.pos), silent = TRUE)
+  try(xml.content <- read_file_in_zip(file, xml.pos), silent = !options("rplexos.debug"))
   if (is.null(xml.content)) {
     error("Error reading XML file into memory", call. = FALSE)
   }
@@ -55,6 +55,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   # Check that XML is a valid PLEXOS file
   plexos.check <- grep("SolutionDataset", xml.content)
   if (length(plexos.check) == 0) {
+    rplexos_message("Invalid XML file in ", file)
     warning(file, " is not a PLEXOS database and was ignored.", call. = FALSE)
     return(invisible(""))
   }
@@ -73,6 +74,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   add_extra_tables(dbt)
   
   # Create SQLite database to store final results
+  rplexos_message("Creating final database and adding basic data")
   dbf <- src_sqlite(db.name, create = TRUE)
   
   # Store time stamps
@@ -137,6 +139,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   view.k2 <- paste(view.k, collapse = ", ")
   
   # For each summary time, create a table and a view
+  rplexos_message("Creating data tables and views")
   times <- c("day", "week", "month", "year")
   for (i in times) {
     sql <- sprintf("CREATE TABLE data_%s (key integer, time real, value double)", i);
@@ -153,7 +156,7 @@ process_solution <- function(file, keep.temp = FALSE) {
           FROM key
           WHERE period_type_id = 0"
   props <- dbGetQuery(dbf$con, sql)
-
+  
   for (p in props$table_name) {
     sql <- sprintf("CREATE TABLE '%s' (key INT, time_from INT, time_to INT, value DOUBLE)", p)
     dbGetQuery(dbf$con, sql)
@@ -190,6 +193,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   dbGetQuery(dbf$con, sql)
   
   # Add binary data
+  rplexos_message("Adding binary data")
   for (period in 0:4) {
     # Check if binary file exists, otherwise, skip this period
     bin.name <- sprintf("t_data_%s.BIN", period)
@@ -297,6 +301,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   }
   
   # Read Log file into memory
+  rplexos_message("Reading and processing log file")
   log.content <- NULL
   try(log.content <- read_file_in_zip(file, log.pos), silent = TRUE)
   if (is.null(log.content)) {
@@ -310,7 +315,7 @@ process_solution <- function(file, keep.temp = FALSE) {
       warning("Log in solution '", file, "' did not parse correctly.", call. = FALSE)
     }
     
-    for(i in names(log.result)) {
+    for (i in names(log.result)) {
       dbWriteTable(dbf$con, i, log.result[[i]] %>% as.data.frame, row.names = FALSE)
     }
   }
