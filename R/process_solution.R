@@ -588,5 +588,8 @@ correct_length <- function(db, p) {
           "in file '", db$path, "'",
           call. = FALSE, immediate. = TRUE)
   
+  rplexos_message("(Possible problem) Sum of length is ", res$SumLength,
+                  ". Sum of length minus offset is ", res$SumLengthMinusOffset)
+  
   TRUE
 }
