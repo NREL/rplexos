@@ -3,8 +3,14 @@
 # Take log and return processed results
 plexos_log_parser <- function(txt) {
   out <- list()
-  try(out$log_info  <- log_info(txt),  silent = TRUE)
-  try(out$log_steps <- log_steps(txt), silent = TRUE)
+  try(out$log_info  <- log_info(txt),  silent = !options("rplexos.debug"))
+  try(out$log_steps <- log_steps(txt), silent = !options("rplexos.debug"))
+  
+  if (!log_info %in% names(out))
+    rplexos_message("Log parsing failed when creating summary for each step (log_info)")
+  if (!log_steps %in% names(out))
+    rplexos_message("Log parsing failed when reading the step solution times (log_steps)")
+  
   out
 }
 
