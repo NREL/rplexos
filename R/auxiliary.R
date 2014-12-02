@@ -68,8 +68,11 @@ escape.POSIXct <- function(x, parens = NA, collapse = ", ", con = NULL) {
 }
 
 # Custom function to print debug messages
-rplexos_message <- function(...)
-  message("*** rplexos debug: ", ...)
+rplexos_message <- function(...) {
+  if (options("rplexos.debug")) {
+    message("*** rplexos debug: ", ...)
+  }
+}
 
 
 # *** assert_that validation functions ***
