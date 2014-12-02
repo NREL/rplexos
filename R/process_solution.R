@@ -576,7 +576,7 @@ correct_length <- function(db, p) {
     collect
   
   # Print how many entries will be expected from the binary file
-  rplexos_message("Expecting ", res$JustLength, "entries in t_data_", p, ".bin")
+  rplexos_message("Expecting ", res$JustLength, " entries in t_data_", p, ".bin")
   
   if (res$JustLength == res$SumLength) {
     return(TRUE)
