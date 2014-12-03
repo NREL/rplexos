@@ -6,6 +6,8 @@
   power time series). (#2)
 * Print PLEXOS and rplexos versions in `summary(db)`. (#5)
 * Catch common errors reading XML and log files.
+* Add debug mode that prints more information on screen. It can be activated by running
+  `options(rplexos.debug = TRUE)` before executing.
 
 
 ## Bugs
