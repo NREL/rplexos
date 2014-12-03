@@ -592,11 +592,17 @@ correct_length <- function(db, p) {
               SumLengthMinusOffset  = sum(length - period_offset)) %>%
     collect
   
+  # Debug output
+  rplexos_message("   Max position:           ", res$JustLength)
+  rplexos_message("   Adjusted max position:  ", res$JustLengthMinusOffset)
+  rplexos_message("   Sum of length:          ", res$SumLength)
+  rplexos_message("   Sum of adjusted length: ", res$SumLengthMinusOffset)
+  
   if (res$JustLength == res$SumLength) {
     rplexos_message("   ", res$JustLength, " entries expected in t_data_", p, ".BIN")
     return(TRUE)
   } else if (res$JustLengthMinusOffset == res$SumLengthMinusOffset) {
-    rplexos_message("Length correction is needed")
+    rplexos_message("   Length correction is needed")
     rplexos_message("   ", res$JustLengthMinusOffset, " entries expected in t_data_", p, ".BIN")
     return(FALSE)
   }
@@ -605,12 +611,6 @@ correct_length <- function(db, p) {
   warning("Problem with length of 't_key_index' for period ", p, "\n",
           "in file '", db$path, "'",
           call. = FALSE, immediate. = TRUE)
-  
-  # Debug output
-  rplexos_message("   Max position:           ", res$JustLength)
-  rplexos_message("   Adjusted max position:  ", res$JustLengthMinusOffset)
-  rplexos_message("   Sum of length:          ", res$SumLength)
-  rplexos_message("   Sum of adjusted length: ", res$SumLengthMinusOffset)
   
   TRUE
 }
