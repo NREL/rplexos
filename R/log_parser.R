@@ -59,7 +59,7 @@ log_steps <- function(txt) {
   
   steps <- stringi::stri_extract_all_regex(txt,
                                   "Completed .*? Step +[0-9]+ of [0-9]+.*?(?:\n|\r\n)",
-                                  dotall)
+                                  opts_regex = dotall)
   steps2 <- stringi::stri_replace_all_regex(steps[[1]], "Completed |\r\n|\n", "")
   steps3 <- stringi::stri_split_regex(steps2, " step| of |time: |elapsed:? ", n_max = 5, opts_regex = caseins)
   
