@@ -55,7 +55,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   # Check that XML is a valid PLEXOS file
   plexos.check <- grep("SolutionDataset", xml.content)
   if (length(plexos.check) == 0) {
-    rplexos_message("Invalid XML file in ", file)
+    rplexos_message("Invalid XML content in ", file)
     warning(file, " is not a PLEXOS database and was ignored.", call. = FALSE)
     return(invisible(""))
   }
@@ -252,7 +252,7 @@ process_solution <- function(file, keep.temp = FALSE) {
       
       # Check the size of data (they won't match if there is a problem)
       if (length(value.data) < nrow(tdata)) {
-        plexos_message(num.read, " data points read")
+        rplexos_message("   ", num.read, " data points read")
         stop("Problem reading", period.name, " binary data (reached end of file).\n",
              "  ", nrow(tdata), " values requested, ", length(value.data), " returned.\n",
              "  This is likely a bug in rplexos. Please report it.", call. = FALSE)
@@ -292,7 +292,7 @@ process_solution <- function(file, keep.temp = FALSE) {
     }
     
     # Finish transaction
-    rplexos_message(num.read, " data points read")
+    rplexos_message("   ", num.read, " data points read")
     dbClearResult(tki)
     dbCommit(dbf$con)
     
@@ -532,8 +532,8 @@ add_extra_tables <- function(db) {
   # Check that t_key and temp_key have the same number of rows
   t.key.length <- tbl(db, "t_key") %>% summarize(n = n()) %>% collect
   temp.key.length <- tbl(db, "temp_key") %>% summarize(n = n()) %>% collect
-  rplexos_message(t.key.length$n,    " rows in t_key")
-  rplexos_message(temp.key.length$n, " rows in temp_key")
+  rplexos_message("   t_key has    ", t.key.length$n,    " rows")
+  rplexos_message("   temp_key has ", temp.key.length$n, " rows")
   
   # Create tables to hold interval, day, week, month, and yearly timestamps
   for (i in 0:4) {
@@ -576,27 +576,31 @@ add_extra_tables <- function(db) {
 correct_length <- function(db, p) {
   res <- tbl(db, "t_key_index") %>%
     filter(period_type_id == p) %>%
-    summarize(JustLength           = max(position / 8 + length),
-              SumLength            = sum(length),
-              SumLengthMinusOffset = sum(length - period_offset)) %>%
+    summarize(JustLength            = max(position / 8 + length),
+              JustLengthMinusOffset = max(position / 8 + length - period_offset),
+              SumLength             = sum(length),
+              SumLengthMinusOffset  = sum(length - period_offset)) %>%
     collect
   
-  # Print how many entries will be expected from the binary file
-  rplexos_message(res$JustLength, " entries expected in t_data_", p, ".BIN")
-  
   if (res$JustLength == res$SumLength) {
+    rplexos_message("   ", res$JustLength, " entries expected in t_data_", p, ".BIN")
     return(TRUE)
-  } else if (res$JustLength == res$SumLengthMinusOffset) {
+  } else if (res$JustLengthMinusOffset == res$SumLengthMinusOffset) {
     rplexos_message("Length correction is needed")
+    rplexos_message("   ", res$JustLengthMinusOffset, " entries expected in t_data_", p, ".BIN")
     return(FALSE)
   }
   
-  warning("Problem with lenght of 't_key_index' for period ", p, "\n",
+  # This case is 
+  warning("Problem with length of 't_key_index' for period ", p, "\n",
           "in file '", db$path, "'",
           call. = FALSE, immediate. = TRUE)
   
-  rplexos_message("(Possible problem) Sum of length is ", res$SumLength,
-                  ". Sum of length minus offset is ", res$SumLengthMinusOffset)
+  # Debug output
+  rplexos_message("Max position is           ", res$JustLength)
+  rplexos_message("Adjusted max position is  ", res$JustLengthMinusOffset)
+  rplexos_message("Sum of length is          ", res$SumLength)
+  rplexos_message("Sum of adjusted length is ", res$SumLengthMinusOffset)
   
   TRUE
 }
