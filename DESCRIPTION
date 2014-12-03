@@ -7,16 +7,15 @@ Authors@R: as.person(c(
     "Eduardo Ibanez <eduardo.ibanez@nrel.gov> [aut, cre]",
     "National Renewable Energy Laboratory [cph]"
     ))
-Description: This package contains functions to efficiently convert PLEXOS
-    solutions into SQLite databases and to extract information from those
-    databases to perform analysis. It supports collation of solutions that may
-    have divided into different time partitions, as well as the comparison
-    across different scenarios.
+Description: Efficiently read and analyze PLEXOS solutions by converting them
+    into SQLite databases that can be easily queried. It supports collation of
+    solutions that may have been divided into different time partitions,
+    as well as the comparison across different scenarios.
 License: MIT + file LICENSE
 URL: https://github.com/NREL/rplexos
 BugReports: https://github.com/NREL/rplexos/issues
 Depends:
-    R(>= 3.1.0),
+    R (>= 3.1.0),
     dplyr (>= 0.3),
     RSQLite (>= 1.0)
 Imports:
