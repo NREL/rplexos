@@ -529,6 +529,12 @@ add_extra_tables <- function(db) {
            timeslice, band, sample) %>%
     dbWriteTable(db$con, "temp_key", ., row.names = FALSE)
   
+  # Check that t_key and temp_key have the same number of rows
+  t.key.length <- tbl(db, "t_key") %>% summarize(n = n()) %>% collect
+  temp.key.length <- tbl(db, "temp_key") %>% summarize(n = n()) %>% collect
+  rplexos_message(t.key.length$n,    " rows in t_key")
+  rplexos_message(temp.key.length$n, " rows in temp_key")
+  
   # Create tables to hold interval, day, week, month, and yearly timestamps
   for (i in 0:4) {
     sql <- sprintf("CREATE TABLE temp_period_%s (phase_id INT, period_id INT, interval_id INT, time real)", i)
