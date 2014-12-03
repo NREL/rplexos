@@ -252,7 +252,7 @@ process_solution <- function(file, keep.temp = FALSE) {
       
       # Check the size of data (they won't match if there is a problem)
       if (length(value.data) < nrow(tdata)) {
-        rplexos_message("   ", num.read, " data points read")
+        rplexos_message("   ", num.read, " values read")
         stop("Problem reading", period.name, " binary data (reached end of file).\n",
              "  ", nrow(tdata), " values requested, ", length(value.data), " returned.\n",
              "  This is likely a bug in rplexos. Please report it.", call. = FALSE)
@@ -292,7 +292,7 @@ process_solution <- function(file, keep.temp = FALSE) {
     }
     
     # Finish transaction
-    rplexos_message("   ", num.read, " data points read")
+    rplexos_message("   ", num.read, " values read")
     dbClearResult(tki)
     dbCommit(dbf$con)
     
@@ -349,6 +349,16 @@ new_database <- function(db, xml) {
   
   # Read XML and convert to a list
   xml.list <- process_xml(xml)
+  
+  # Print PLEXOS version when debuging
+  ver.pos <- grep("Version|version", xml.list$t_config[, 1])
+  if (length(ver.pos) == 1) {
+    rplexos_message("   PLEXOS version:  '", xml.list$t_config[ver.pos, 2], "'")
+    rplexos_message("   rplexos version: '", packageVersion("rplexos"), "'")
+  } else {
+    rplexos_message("   PLEXOS version: N/A")
+    rplexos_message("   rplexos version: '", packageVersion("rplexos"), "'")
+  }
   
   # Turn PRAGMA OFF
   dbGetQuery(db$con, "PRAGMA synchronous = OFF");
@@ -597,10 +607,10 @@ correct_length <- function(db, p) {
           call. = FALSE, immediate. = TRUE)
   
   # Debug output
-  rplexos_message("Max position is           ", res$JustLength)
-  rplexos_message("Adjusted max position is  ", res$JustLengthMinusOffset)
-  rplexos_message("Sum of length is          ", res$SumLength)
-  rplexos_message("Sum of adjusted length is ", res$SumLengthMinusOffset)
+  rplexos_message("   Max position:           ", res$JustLength)
+  rplexos_message("   Adjusted max position:  ", res$JustLengthMinusOffset)
+  rplexos_message("   Sum of length:          ", res$SumLength)
+  rplexos_message("   Sum of adjusted length: ", res$SumLengthMinusOffset)
   
   TRUE
 }
