@@ -193,16 +193,16 @@ process_solution <- function(file, keep.temp = FALSE) {
   dbGetQuery(dbf$con, sql)
   
   # Add binary data
-  rplexos_message("Adding binary data")
   for (period in 0:4) {
     # Check if binary file exists, otherwise, skip this period
+    period.name <- ifelse(period == 0, "interval", times[period])
     bin.name <- sprintf("t_data_%s.BIN", period)
     if(!bin.name %in% zip.content$Name)
       next
     bin.con <- unz(file, bin.name, open = "rb")
     
     # Print debug message
-    rplexos_message("From t_data_", period, ".BIN")
+    rplexos_message("Reading ", period.name, " binary data")
     
     # Check if length in t_key_index is correct
     correct.length <- correct_length(dbt, period)
@@ -237,16 +237,10 @@ process_solution <- function(file, keep.temp = FALSE) {
         trow <- trow %>% mutate(length = length - period_offset)
       
       # Expand data
-      if (period > 0) {
-        tdata <- trow %>%
-          mutate(key = as.numeric(key), phase_id = as.numeric(phase_id)) %>%
-          select(key_id = key, phase_id, period_offset, length) %>%
-          expand_tkey
-      } else {
-        tdata <- data_frame(period_id = 1:trow$length + trow$period_offset,
-                            key       = as.integer(trow$key),
-                            phase_id  = as.integer(trow$phase_id))
-      }
+      tdata <- trow %>%
+        mutate(key = as.numeric(key), phase_id = as.numeric(phase_id)) %>%
+        select(key_id = key, phase_id, period_offset, length) %>%
+        expand_tkey
       
       # Query data
       value.data <- readBin(bin.con,
@@ -257,10 +251,9 @@ process_solution <- function(file, keep.temp = FALSE) {
       num.read <- num.read + length(value.data)
       
       # Check the size of data (they won't match if there is a problem)
-      period.name <- ifelse(period == 0, "interval", times[period])
-      if (length(value.data) != nrow(tdata)) {
+      if (length(value.data) < nrow(tdata)) {
         plexos_message(num.read, " data points read")
-        stop("Problem reading binary data for ", period.name, " results (reached end of file).\n",
+        stop("Problem reading", period.name, " binary data (reached end of file).\n",
              "  ", nrow(tdata), " values requested, ", length(value.data), " returned.\n",
              "  This is likely a bug in rplexos. Please report it.", call. = FALSE)
       }
@@ -583,7 +576,7 @@ correct_length <- function(db, p) {
     collect
   
   # Print how many entries will be expected from the binary file
-  rplexos_message(res$JustLength, " entries expected")
+  rplexos_message(res$JustLength, " entries expected in t_data_", p, ".BIN")
   
   if (res$JustLength == res$SumLength) {
     return(TRUE)
