@@ -228,6 +228,7 @@ process_solution <- function(file, keep.temp = FALSE) {
     # Read one row from the query
     num.rows <- ifelse(period == 0, 1, 1000)
     trow <- dbFetch(tki, num.rows)
+    num.read <- 0
     
     # Iterate through the query results
     while (nrow(trow) > 0) {
@@ -253,10 +254,12 @@ process_solution <- function(file, keep.temp = FALSE) {
                             n = nrow(tdata),
                             size = 8L,
                             endian = "little")
+      num.read <- num.read + length(value.data)
       
       # Check the size of data (they won't match if there is a problem)
       period.name <- ifelse(period == 0, "interval", times[period])
-      if (length(value.data) < nrow(tdata)) {
+      if (length(value.data) != nrow(tdata)) {
+        plexos_message(num.read, " data points read")
         stop("Problem reading binary data for ", period.name, " results (reached end of file).\n",
              "  ", nrow(tdata), " values requested, ", length(value.data), " returned.\n",
              "  This is likely a bug in rplexos. Please report it.", call. = FALSE)
@@ -296,6 +299,7 @@ process_solution <- function(file, keep.temp = FALSE) {
     }
     
     # Finish transaction
+    rplexos_message(num.read, " data points read")
     dbClearResult(tki)
     dbCommit(dbf$con)
     
@@ -579,11 +583,12 @@ correct_length <- function(db, p) {
     collect
   
   # Print how many entries will be expected from the binary file
-  rplexos_message("Expecting ", res$JustLength, " entries")
+  rplexos_message(res$JustLength, " entries expected")
   
   if (res$JustLength == res$SumLength) {
     return(TRUE)
   } else if (res$JustLength == res$SumLengthMinusOffset) {
+    rplexos_message("Length correction is needed")
     return(FALSE)
   }
   
