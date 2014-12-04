@@ -253,7 +253,7 @@ process_solution <- function(file, keep.temp = FALSE) {
       # Check the size of data (they won't match if there is a problem)
       if (length(value.data) < nrow(tdata)) {
         rplexos_message("   ", num.read, " values read")
-        stop("Problem reading", period.name, " binary data (reached end of file).\n",
+        stop("Problem reading ", period.name, " binary data (reached end of file).\n",
              "  ", nrow(tdata), " values requested, ", length(value.data), " returned.\n",
              "  This is likely a bug in rplexos. Please report it.", call. = FALSE)
       }
