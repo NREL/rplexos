@@ -324,6 +324,9 @@ process_solution <- function(file, keep.temp = FALSE) {
   dbDisconnect(dbt$con)
   dbDisconnect(dbf$con)
   
+  # Message that file processing is done
+  rplexos_message("Finished processing file ", file, "\n")
+  
   # Delete temporary database
   if (!keep.temp) {
     stop_ifnot_delete(db.temp)
