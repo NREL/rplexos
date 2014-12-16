@@ -8,7 +8,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   
   # Check that file exists
   if (!file.exists(file)) {
-    warning(file, " does not exist and was ignored.", call. = FALSE)
+    warning(file, " does not exist and was ignored.", call. = FALSE, immediate. = TRUE)
     return(invisible(""))
   }
 
@@ -40,7 +40,7 @@ process_solution <- function(file, keep.temp = FALSE) {
     if (length(log.pos) == 0)
       rplexos_message("No LOG file found in file ", file)
     
-    warning(file, " is not a PLEXOS solution file and was ignored.", call. = FALSE)
+    warning(file, " is not a PLEXOS solution file and was ignored.", call. = FALSE, immediate. = TRUE)
     return(invisible(""))
   }
   
@@ -71,7 +71,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   plexos.check <- grep("SolutionDataset", xml.content)
   if (length(plexos.check) == 0) {
     rplexos_message("Invalid XML content in ", file)
-    warning(file, " is not a PLEXOS database and was ignored.", call. = FALSE)
+    warning(file, " is not a PLEXOS database and was ignored.", call. = FALSE, immediate. = TRUE)
     return(invisible(""))
   }
   
