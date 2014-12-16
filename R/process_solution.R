@@ -32,7 +32,6 @@ process_solution <- function(file, keep.temp = FALSE) {
   bin.pos <- grep("^t_data_[0-4].BIN$", zip.content$Name)
   log.pos <- grep("^Model.*Log.*.txt$", zip.content$Name)
   if ((length(xml.pos) == 0) | (length(bin.pos) == 0) | (length(log.pos) == 0)) {
-
     # If in debug mode, give some more explanation
     if (length(xml.pos) == 0)
       rplexos_message("No XML file found in file ", file)
@@ -43,6 +42,22 @@ process_solution <- function(file, keep.temp = FALSE) {
     
     warning(file, " is not a PLEXOS solution file and was ignored.", call. = FALSE)
     return(invisible(""))
+  }
+  
+  # Check if the interval binary file is not being read correctly within the zip file
+  #   This seems to happen when R is using 32-bit versions of the zip libraries
+  #   No clear solution as to how to solve this yet
+  bin.int.pos <- grep("^t_data_0", zip.content$Name)
+  if (length(bin.int.pos) == 1) {
+    if (zip.content$Length[bin.int.pos] == (2^32 - 1)) {
+      warning("Skipped file ", file, "\n",
+              "  Interval data is too large and cannot be processed in Mac/Linux.\n",
+              "  Reduce number of outputs in PLEXOS or process with the 64-bit Windows version of R.\n",
+              "  No need to report this message; we are working on a solution.",
+              call. = FALSE, immediate. = TRUE)
+      
+      return(invisible(""))
+    }
   }
   
   # Read content from the XML file
