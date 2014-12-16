@@ -64,7 +64,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   xml.content <- NULL
   try(xml.content <- read_file_in_zip(file, xml.pos), silent = !getOption("rplexos.debug"))
   if (is.null(xml.content)) {
-    error("Error reading XML file into memory", call. = FALSE)
+    stop("Error reading XML file into memory", call. = FALSE)
   }
   
   # Check that XML is a valid PLEXOS file
