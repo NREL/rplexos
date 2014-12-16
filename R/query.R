@@ -210,7 +210,7 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   
   # Check if any scenario is missing from the results
   missing.scenario <- setdiff(unique(db$scenario), unique(out$scenario))
-  if (length(missing.scenario) > 0) {
+  if (length(missing.scenario) > 0L) {
     warning("Query returned no results for scenarios: ",
             paste(missing.scenario, collapse = ", "),
             call. = FALSE)
@@ -483,18 +483,18 @@ master_checks <- function(db, time, col, prop, columns, time.range, filter, phas
   }
   
   # Checks if property is the wildcard symbol
-  if (length(prop) == 1) {
+  if (length(prop) == 1L) {
     if (prop == "*")
       prop <- unique(res$property)
   }
   
   # Check that all properties are valid
   invalid.prop <- setdiff(prop, res$property)
-  if (length(invalid.prop) == 1) {
+  if (length(invalid.prop) == 1L) {
     stop("Property '", invalid.prop, "' in collection '", col, "' is not valid for ", is.summ.txt, " data and phase '", phase, "'.\n",
          "   Use query_property() for list of available collections and properties.",
          call. = FALSE)
-  } else if (length(invalid.prop) > 1) {
+  } else if (length(invalid.prop) > 1L) {
     stop("Properties ", paste0("'", invalid.prop, "'", collapse = ", "), " in collection '", col,
          "' are not valid for ", is.summ.txt, " data and phase '", phase, "'.\n",
          "   Use query_property() for list of available collections and properties.",
@@ -531,7 +531,7 @@ master_checks <- function(db, time, col, prop, columns, time.range, filter, phas
   
   # Time range checks and convert to POSIXct
   if (!is.null(time.range)) {
-    assert_that(is.character(time.range), length(time.range) == 2)
+    assert_that(is.character(time.range), length(time.range) == 2L)
     time.range <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
     assert_that(correct_date(time.range))
   }
@@ -547,7 +547,7 @@ filter_rplexos <- function(out, filt) {
   # Do nothing if filter is empty
   if (is.null(filt))
     return(out)
-  if (length(filt) == 0)
+  if (length(filt) == 0L)
     return(out)
   
   # Write the condition as text

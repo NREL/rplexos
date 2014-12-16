@@ -31,13 +31,13 @@ process_solution <- function(file, keep.temp = FALSE) {
   xml.pos <- grep("^Model.*xml$", zip.content$Name)
   bin.pos <- grep("^t_data_[0-4].BIN$", zip.content$Name)
   log.pos <- grep("^Model.*Log.*.txt$", zip.content$Name)
-  if ((length(xml.pos) == 0) | (length(bin.pos) == 0) | (length(log.pos) == 0)) {
+  if ((length(xml.pos) == 0L) | (length(bin.pos) == 0L) | (length(log.pos) == 0L)) {
     # If in debug mode, give some more explanation
-    if (length(xml.pos) == 0)
+    if (length(xml.pos) == 0L)
       rplexos_message("No XML file found in file ", file)
-    if (length(bin.pos) == 0)
+    if (length(bin.pos) == 0L)
       rplexos_message("No BIN file found in file ", file)
-    if (length(log.pos) == 0)
+    if (length(log.pos) == 0L)
       rplexos_message("No LOG file found in file ", file)
     
     warning(file, " is not a PLEXOS solution file and was ignored.", call. = FALSE, immediate. = TRUE)
@@ -48,7 +48,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   #   This seems to happen when R is using 32-bit versions of the zip libraries
   #   No clear solution as to how to solve this yet
   bin.int.pos <- grep("^t_data_0", zip.content$Name)
-  if (length(bin.int.pos) == 1) {
+  if (length(bin.int.pos) == 1L) {
     if (zip.content$Length[bin.int.pos] == (2^32 - 1)) {
       warning("Skipped file ", file, "\n",
               "  Interval data is too large and cannot be processed in Mac/Linux.\n",

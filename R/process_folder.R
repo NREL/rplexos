@@ -29,7 +29,7 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
   assert_that(is.character(folders), is.flag(keep.temp), is_folder(folders))
   
   # Check for wildcard
-  if (length(folders) == 1) {
+  if (length(folders) == 1L) {
     if (folders == "*") {
       folders <- list_folders()
     }
@@ -51,7 +51,7 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
     zip.files <- list.files(folder, ".zip$", full.names = TRUE)
     
     # If no ZIP files found, skip to the next folder
-    if (length(zip.files) == 0) {
+    if (length(zip.files) == 0L) {
       message("  - No solutions found, skipping folder")
       next
     }
