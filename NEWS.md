@@ -8,6 +8,9 @@
 * Catch common errors reading XML and log files.
 * Add debug mode that prints more information on screen. It can be activated by running
   `options(rplexos.debug = TRUE)` before executing.
+* Avoid crash when processing a really big file in Mac or Linux. For now it only returns
+  a warning with information. A future update will fix this error, rather than skipping
+  the file.
 
 
 ## Bugs
