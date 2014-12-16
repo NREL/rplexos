@@ -121,7 +121,7 @@ on_failure(correct_phase) <- function(call, env) {
 
 # Check that a vector of characters are folder names
 is_folder <- function(x) {
-  if (length(x) == 1) {
+  if (length(x) == 1L) {
     if(x == "*") {
       return(TRUE)
     }

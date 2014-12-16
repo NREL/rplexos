@@ -16,7 +16,7 @@ plexos_open <- function(folders = ".", names = folders) {
   assert_that(is.character(folders), is.character(names), is_folder(folders))
   
   # Check for wildcard
-  if (length(folders) == 1) {
+  if (length(folders) == 1L) {
     if (folders == "*") {
       folders <- list_folders()
       names <- folders
@@ -27,7 +27,7 @@ plexos_open <- function(folders = ".", names = folders) {
   assert_that(length(folders) == length(names))
   
   # Change default scenario name to something better than '.'
-  if (length(folders) == 1) {
+  if (length(folders) == 1L) {
     if ((folders == ".") & (names == ".")) {
       names <- "default"
     }

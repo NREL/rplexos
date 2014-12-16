@@ -69,7 +69,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   
   # Check that XML is a valid PLEXOS file
   plexos.check <- grep("SolutionDataset", xml.content)
-  if (length(plexos.check) == 0) {
+  if (length(plexos.check) == 0L) {
     rplexos_message("Invalid XML content in ", file)
     warning(file, " is not a PLEXOS database and was ignored.", call. = FALSE, immediate. = TRUE)
     return(invisible(""))
@@ -326,7 +326,7 @@ process_solution <- function(file, keep.temp = FALSE) {
     # Success reading file, try to parse it
     log.result <- plexos_log_parser(log.content)
     
-    if (length(log.result) < 2) {
+    if (length(log.result) < 2L) {
       warning("Log in solution '", file, "' did not parse correctly.", call. = FALSE)
     }
     
@@ -370,7 +370,7 @@ new_database <- function(db, xml) {
   
   # Print PLEXOS version when debuging
   ver.pos <- grep("Version|version", xml.list$t_config[, 1])
-  if (length(ver.pos) == 1) {
+  if (length(ver.pos) == 1L) {
     rplexos_message("   PLEXOS version:  '", xml.list$t_config[ver.pos, 2], "'")
     rplexos_message("   rplexos version: '", packageVersion("rplexos"), "'")
   } else {
