@@ -1,4 +1,4 @@
-# `rplexos`
+# rplexos
 
 `rplexos` is an R package developed to read and analyze PLEXOS solutions. It currently supports the
 conversion of PLEXOS solution files into SQLite databases and functions to query those databases.
