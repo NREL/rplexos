@@ -16,7 +16,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   db.temp <- gsub(".zip", "-temp.db", file)
   db.name <- gsub(".zip", ".db", file)
   
-  # Does the file need to be reprocessed? Does it already exist?
+  # Delete old files, if possible
   if (file.exists(db.temp)) {
     stop_ifnot_delete(db.temp)
   }
