@@ -1,15 +1,6 @@
-#' Convert PLEXOS input databases to SQLite format
-#'
-#' Functions to process PLEXOS input databases and dump them into a SQLite file that are easy
-#' to read.
-#'
-#' @param file Single PLEXOS input file to process
-#'
-# @examples
-# \dontrun{process_folder()}
-# \dontrun{process_folder("HiWind")}
-# \dontrun{process_solution("HiWind/Model WWSIS_c_RT_CoreB_M01_SC3 Solution.zip")}
-#'
+#' @rdname process_folder
+#' 
+#' @useDynLib rplexos
 #' @export
 process_input <- function(file) {
   # Check that inputs are valid
@@ -54,13 +45,8 @@ process_input <- function(file) {
   dbf <- src_sqlite(db.name, create = TRUE)
   
   # Add basic XML structure and delete cached XML file
-  rplexos_message("Reading XML file and saving content")
-  xml.list <- process_xml(xml.content)
+  new_database(dbf, xml.content, is.solution = FALSE)
   rm(xml.content)
-  
-  # Write tables from XML file
-  for (t in names(xml.list))
-    dbWriteTable(dbf$con, t, xml.list[[t]], append = TRUE, row.names = FALSE)
   
   # Close database connections
   dbDisconnect(dbf$con)
