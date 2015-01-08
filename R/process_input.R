@@ -117,7 +117,7 @@ add_extra_tables_input <- function(db) {
   dbGetQuery(db$con, sql)
   
   # View with memberships, collection, parent and child objects
-  sql <- "CREATE VIEW temp_membership AS
+  sql <- "CREATE VIEW [membership] AS
           SELECT m.membership_id,
                  m.parent_object_id parent_object_id,
                  m.child_object_id child_object_id,
