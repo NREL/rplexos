@@ -84,7 +84,8 @@ add_extra_tables_input <- function(db) {
                  o.description,
                  cat.name category,
                  c.class_group,
-                 c.name class
+                 c.name class,
+                 c.class_id
           FROM t_object o
           JOIN [class] c
             ON o.class_id = c.class_id
@@ -113,6 +114,61 @@ add_extra_tables_input <- function(db) {
             ON c.collection_id = p.collection_id
          JOIN t_unit u
            ON u.unit_id = p.unit_id"
+  dbGetQuery(db$con, sql)
+  
+  # View with memberships, collection, parent and child objects
+  sql <- "CREATE VIEW temp_membership AS
+          SELECT m.membership_id,
+                 m.parent_object_id parent_object_id,
+                 m.child_object_id child_object_id,
+                 c.name collection,
+                 p.name parent_name,
+                 p.class parent_class,
+                 p.class_group parent_group,
+                 p.category parent_category,
+                 ch.name child_name,
+                 ch.class child_class,
+                 ch.class_group child_group,
+                 ch.category child_category
+          FROM t_membership m
+          JOIN t_collection c
+            ON c.collection_id = m.collection_id
+          JOIN [object] p
+            ON p.object_id = m.parent_object_id
+          JOIN [object] ch
+            ON ch.object_id = m.child_object_id"
+  dbGetQuery(db$con, sql)
+  
+  # View for attribute
+  sql <- "CREATE VIEW [attribute] AS
+          SELECT a.attribute_id,
+                 a.class_id,
+                 a.name,
+                 u.value unit,
+                 a.default_value,
+                 a.is_enabled,
+                 a.description
+          FROM t_attribute a
+          JOIN t_unit u
+            ON a.unit_id = u.unit_id"
+  dbGetQuery(db$con, sql)
+
+  # View for attribute data
+  sql <- "CREATE VIEW [attribute_data] AS
+          SELECT o.class_group,
+                 o.class,
+                 o.name,
+                 a.name attribute,
+                 a.unit,
+                 a.default_value,
+                 d.value given_value,
+                 ifnull(d.value, a.default_value) value
+          FROM object o
+          INNER JOIN attribute a
+            ON a.class_id = o.class_id
+          LEFT JOIN t_attribute_data d
+            ON d.object_id = o.object_id 
+            AND d.attribute_id = a.attribute_id"
   dbGetQuery(db$con, sql)
   
   0
