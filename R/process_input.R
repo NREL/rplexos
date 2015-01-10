@@ -116,29 +116,6 @@ add_extra_tables_input <- function(db) {
            ON u.unit_id = p.unit_id"
   dbGetQuery(db$con, sql)
   
-  # View with memberships, collection, parent and child objects
-  sql <- "CREATE VIEW [membership] AS
-          SELECT m.membership_id,
-                 m.parent_object_id parent_object_id,
-                 m.child_object_id child_object_id,
-                 c.name collection,
-                 p.name parent_name,
-                 p.class parent_class,
-                 p.class_group parent_group,
-                 p.category parent_category,
-                 ch.name child_name,
-                 ch.class child_class,
-                 ch.class_group child_group,
-                 ch.category child_category
-          FROM t_membership m
-          JOIN t_collection c
-            ON c.collection_id = m.collection_id
-          JOIN [object] p
-            ON p.object_id = m.parent_object_id
-          JOIN [object] ch
-            ON ch.object_id = m.child_object_id"
-  dbGetQuery(db$con, sql)
-  
   # View for attribute
   sql <- "CREATE VIEW [attribute] AS
           SELECT a.attribute_id,
@@ -170,6 +147,53 @@ add_extra_tables_input <- function(db) {
             ON d.object_id = o.object_id 
             AND d.attribute_id = a.attribute_id"
   dbGetQuery(db$con, sql)
+  
+  # View with memberships, collection, parent and child objects
+  col.table <- tbl(db, "t_collection")
+  if ("complement_name" %in% col.table$select) {
+    txt.comp <- "c.complement_name"
+  } else {
+    txt.comp <- ""
+  }
+  
+  sql <- sprintf("CREATE VIEW [membership] AS
+          SELECT m.membership_id,
+                 m.parent_object_id parent_object_id,
+                 m.child_object_id child_object_id,
+                 c.name collection,
+                 %s comp_collection,
+                 p.name parent_name,
+                 p.class parent_class,
+                 p.class_group parent_group,
+                 p.category parent_category,
+                 ch.name child_name,
+                 ch.class child_class,
+                 ch.class_group child_group,
+                 ch.category child_category
+          FROM t_membership m
+          JOIN t_collection c
+            ON c.collection_id = m.collection_id
+          JOIN [object] p
+            ON p.object_id = m.parent_object_id
+          JOIN [object] ch
+            ON ch.object_id = m.child_object_id", txt.comp)
+  dbGetQuery(db$con, sql)
+  
+  # Create table with all the tags
+  sql <- "CREATE VIEW [temp_tag] AS
+          SELECT t.data_id, o.category, o.class, o.name
+          FROM t_tag t
+          JOIN object o
+          ON t.object_id = o.object_id"
+  dbGetQuery(db$con, sql)
+  
+  db <- src_sqlite('../test_input/WWSIS-input.db')
+  tag.table <- tbl(db, "temp_tag") %>%
+    collect %>%
+    reshape2::dcast(data_id ~ class, value.var = "name") %>%
+    dbWriteTable(db$con, "tag", ., row.names = FALSE)
+  
+  dbGetQuery(db$con, "DROP VIEW [temp_tag]")
   
   0
 }
