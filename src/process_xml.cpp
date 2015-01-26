@@ -29,6 +29,13 @@ int find_position(vector<string> x, string y, int guess = 0) {
     return(-1);
 }
 
+// Is column name an id?
+bool column_is_id(std::string col_name) {
+    int size = col_name.length();
+    bool out = (col_name.substr(size - 3, size - 1) == "_id");
+    return(out);
+}
+
 // [[Rcpp::export]]
 Rcpp::List process_xml(std::string xml) {
     // Start XML variables
@@ -106,7 +113,11 @@ Rcpp::List process_xml(std::string xml) {
         
         // Add columns
         for (unsigned int j = 0; j < table_heads.at(i).size(); ++j) {
-            new_table[j] = Rcpp::CharacterVector(table_size[i]);;
+            if (column_is_id(table_heads.at(i).at(j))) {
+                new_table[j] = Rcpp::IntegerVector(table_size[i]);;
+            } else {
+                new_table[j] = Rcpp::CharacterVector(table_size[i]);;
+            }
         }
         
         // Convert new table to data.frame
@@ -139,8 +150,13 @@ Rcpp::List process_xml(std::string xml) {
         
         // Loop through the attributes
         for (xml_node<> *attr_node = param_node->first_node(); attr_node; attr_node = attr_node->next_sibling()) {
-            Rcpp::CharacterVector this_column = this_table[attr_node->name()];
-            this_column[this_pos] = attr_node->value();
+            if (column_is_id(attr_node->name())) {
+                Rcpp::IntegerVector this_column = this_table[attr_node->name()];
+                this_column[this_pos] = atoi(attr_node->value());
+            } else {
+                Rcpp::CharacterVector this_column = this_table[attr_node->name()];
+                this_column[this_pos] = attr_node->value();
+            }
         }
         
         // Prepare for next iteration
