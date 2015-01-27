@@ -1,5 +1,9 @@
 # rplexos 0.11.99
 
+## Enhancements
+
+* Input databases can now be converted to SQLite with `process_input`.
+
 
 # rplexos 0.11
 
