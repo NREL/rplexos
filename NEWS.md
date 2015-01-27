@@ -2,7 +2,8 @@
 
 ## Enhancements
 
-* Input databases can now be converted to SQLite with `process_input`.
+* Input databases can now be converted to SQLite with `process_input`. (#5)
+* SQLite `id` fields are stored as integers.
 
 
 # rplexos 0.11
