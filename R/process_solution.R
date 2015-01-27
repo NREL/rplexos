@@ -253,7 +253,6 @@ process_solution <- function(file, keep.temp = FALSE) {
       
       # Expand data
       tdata <- trow %>%
-        mutate(key = as.numeric(key), phase_id = as.numeric(phase_id)) %>%
         select(key_id = key, phase_id, period_offset, length) %>%
         expand_tkey
       
