@@ -179,9 +179,6 @@ add_extra_tables_input <- function(db) {
             ON ch.object_id = m.child_object_id", txt.comp)
   dbGetQuery(db$con, sql)
   
-  # Connect to database
-  db <- src_sqlite('../test_input/WWSIS-input.db')
-  
   # Create table with all the tags
   rplexos_message("Creating tag table")
   if (db_has_table(db$con, "t_tag")) {
@@ -257,9 +254,6 @@ add_extra_tables_input <- function(db) {
                              value = character(0))
     dbWriteTable(db$con, "t_memo_data", memo.table, row.names = FALSE)
   }
-  
-  # Disconnect from database
-  dbDisconnect(db$con)
   
   0
 }
