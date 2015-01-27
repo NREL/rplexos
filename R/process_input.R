@@ -255,5 +255,40 @@ add_extra_tables_input <- function(db) {
     dbWriteTable(db$con, "t_memo_data", memo.table, row.names = FALSE)
   }
   
+  # Add data view
+  sql <- "CREATE VIEW data AS
+          SELECT m.collection, m.parent_class, m.parent_group, m.parent_category, m.parent_name,
+                 m.child_class, m.child_group, m.child_category, m.child_name,
+                 p.name property,
+                 d.value,
+                 p.default_value,
+                 p.period_type_id,
+                 p.unit,
+                 df.date date_from, dt.date date_to,
+                 table_text.Timeslice Timeslice,
+                 table_tag.Escalator Escalator,
+                 ifnull( table_tag.DataFile, table_text.DataFile )  DataFile,
+                 ifnull( table_tag.Scenario, table_text.Scenario )  Scenario,
+                 ifnull( b.band_id, 1 )  band,
+                 memo.value memo
+          FROM t_data d
+          INNER JOIN membership m
+               ON m.membership_id = d.membership_id
+          INNER JOIN property p
+               ON p.property_id = d.property_id
+          LEFT JOIN t_date_from df
+               ON d.data_id = df.data_id
+          LEFT JOIN t_date_to dt
+               ON d.data_id = dt.data_id
+          LEFT JOIN table_tag
+               ON d.data_id = table_tag.data_id
+          LEFT JOIN table_text
+               ON d.data_id = table_text.data_id
+          LEFT JOIN t_band b
+               ON d.data_id = b.data_id
+          LEFT JOIN t_memo_data memo
+               ON d.data_id = memo.data_id"
+  dbGetQuery(db$con, sql)
+  
   0
 }
