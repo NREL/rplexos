@@ -60,10 +60,6 @@ Rcpp::List process_xml(std::string xml) {
         vector<string> names(0);
         curr_table = string(param_node->name());
         
-        // Skip entries to the 'settings' table
-        if (curr_table == "settings")
-            continue;
-        
         // Check if this is a new or existing table
         if (curr_table == prev_table) {
             pos = prev_pos;
@@ -139,10 +135,6 @@ Rcpp::List process_xml(std::string xml) {
     // Read data from XML and copy it to the output object
     for (xml_node<> *param_node = root_node->first_node(); param_node; param_node = param_node->next_sibling()) {
         curr_table = string(param_node->name());
-        
-        // Skip entries to the 'settings' table
-        if (curr_table == "settings")
-            continue;
         
         // Find position for this table
         Rcpp::List this_table = out[curr_table];
