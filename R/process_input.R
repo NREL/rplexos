@@ -179,21 +179,87 @@ add_extra_tables_input <- function(db) {
             ON ch.object_id = m.child_object_id", txt.comp)
   dbGetQuery(db$con, sql)
   
-  # Create table with all the tags
-  sql <- "CREATE VIEW [temp_tag] AS
-          SELECT t.data_id, o.category, o.class, o.name
-          FROM t_tag t
-          JOIN object o
-          ON t.object_id = o.object_id"
-  dbGetQuery(db$con, sql)
-  
+  # Connect to database
   db <- src_sqlite('../test_input/WWSIS-input.db')
-  tag.table <- tbl(db, "temp_tag") %>%
-    collect %>%
-    reshape2::dcast(data_id ~ class, value.var = "name") %>%
-    dbWriteTable(db$con, "tag", ., row.names = FALSE)
   
-  dbGetQuery(db$con, "DROP VIEW [temp_tag]")
+  # Create table with all the tags
+  rplexos_message("Creating tag table")
+  if (db_has_table(db$con, "t_tag")) {
+    # Query and reformat the data
+    sql <- "CREATE VIEW [temp_tag] AS
+            SELECT t.data_id, o.category, o.class, o.name
+            FROM t_tag t
+            JOIN object o
+            ON t.object_id = o.object_id"
+    dbGetQuery(db$con, sql)
+    
+    tag.table <- tbl(db, "temp_tag") %>%
+      collect %>%
+      reshape2::dcast(data_id ~ class, value.var = "name")
+    
+    dbGetQuery(db$con, "DROP VIEW [temp_tag]")
+    
+    # Avoid space in the table name
+    names(tag.table) <- gsub("Data File", "DataFile", names(tag.table))
+    
+    # Add missing names
+    for (col in c("DataFile", "Escalator", "Scenario")) {
+      if (!col %in% names(tag.table))
+        tag.table[[col]] <- rep(NA, nrow(tag.table))
+    }
+  } else {
+    tag.table <- data.frame(data_id = integer(0),
+                            DataFile = character(0),
+                            Escalator = character(0),
+                            Scenario = character(0))
+  }
+  
+  dbWriteTable(db$con, "table_tag", tag.table, row.names = FALSE)
+  
+  # Create table with data text entries
+  rplexos_message("Creating text table")
+  if (db_has_table(db$con, "t_text")) {
+    # Query and reformat the data
+    sql <- "CREATE VIEW [temp_text] AS
+            SELECT t.data_id, c.name class, t.value
+            FROM t_text t
+            JOIN t_class c
+            ON t.class_id = c.class_id"
+    dbGetQuery(db$con, sql)
+      
+    text.table <- tbl(db, "temp_text") %>%
+      collect %>%
+      reshape2::dcast(data_id ~ class, value.var = "value")
+    
+    dbGetQuery(db$con, "DROP VIEW [temp_text]")
+    
+    # Avoid space in the table name
+    names(text.table) <- gsub("Data File", "DataFile", names(text.table))
+    
+    # Add missing names
+    for (col in c("DataFile", "Scenario", "Timeslice")) {
+      if (!col %in% names(text.table))
+        text.table[[col]] <- rep(NA, nrow(text.table))
+    }
+  } else {
+    text.table <- data.frame(data_id = integer(0),
+                             DataFile = character(0),
+                             Scenario = character(0),
+                             Timeslice = character(0))
+  }
+  
+  dbWriteTable(db$con, "table_text", text.table, row.names = FALSE)
+  
+  # Add t_memo_data if it doesn't exist
+  rplexos_message("Adding t_memo_data")
+  if (!db_has_table(db$con, "t_memo_data")) {
+    memo.table <- data.frame(data_id = integer(0),
+                             value = character(0))
+    dbWriteTable(db$con, "t_memo_data", memo.table, row.names = FALSE)
+  }
+  
+  # Disconnect from database
+  dbDisconnect(db$con)
   
   0
 }
