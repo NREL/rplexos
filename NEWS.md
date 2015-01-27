@@ -1,8 +1,10 @@
-# rplexos 0.11.99
+# rplexos 0.12
 
 ## Enhancements
 
 * Input databases can now be converted to SQLite with `process_input`. (#5)
+* Added error detection for very large files in Mac/Linux (files that need
+  64-bit ZIP compresion to be read). (#)
 * SQLite `id` fields are stored as integers.
 
 
