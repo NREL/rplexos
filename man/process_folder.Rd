@@ -39,6 +39,9 @@ PLEXOS solution or input files and applies \code{process_solution} or
 The default folder is the working directory. If the wildcard \code{"*"} is provided, all
 the folders in the working directory will be processed (the list of folders if provided by
 the \code{\link{list_folders}} function).
+
+Do not rename the SQLite databases created with these functions. Other code expects
+those filenames to remain unchanged.
 }
 \examples{
 \dontrun{process_folder()}

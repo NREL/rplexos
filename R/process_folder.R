@@ -19,6 +19,9 @@
 #' the folders in the working directory will be processed (the list of folders if provided by
 #' the \code{\link{list_folders}} function).
 #'
+#' Do not rename the SQLite databases created with these functions. Other code expects
+#' those filenames to remain unchanged.
+#' 
 #' @param folders Folder(s) to process (See details)
 #' @param file Single PLEXOS solution or input file to process
 #' @param keep.temp Should temporary databases be preserved?

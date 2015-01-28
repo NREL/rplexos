@@ -4,6 +4,9 @@
 #' the folders in the working directory will be processed (the list of folders if provided by
 #' the \code{\link{list_folders}} function).
 #' 
+#' Do not rename the SQLite databases created with the \code{\link{process_folder}} family of functions.
+#' The code expects those filenames to remain unchanged.
+#' 
 #' @param folders character. Folder(s) where the data is located (each folder represents a scenario)
 #' @param names character. Scenario names
 #'

@@ -16,6 +16,10 @@ The default for \code{folders} is the working directory. If the wildcard \code{"
 the folders in the working directory will be processed (the list of folders if provided by
 the \code{\link{list_folders}} function).
 }
+\details{
+Do not rename the SQLite databases created with the \code{\link{process_folder}} family of functions.
+The code expects those filenames to remain unchanged.
+}
 \seealso{
 \code{\link{plexos_close}}
 
