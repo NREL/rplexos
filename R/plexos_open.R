@@ -36,8 +36,7 @@ plexos_open <- function(folders = ".", names = folders) {
   # Function to list PLEXOS files in each folder
   plexos_list_files <- function(df) {
     filename <- list.files(df$folder %>% as.character,
-                           pattern = ".db$", full.names = TRUE)
-    filename <- filename[!grepl("temp.db$", filename)]
+                           pattern = "rplexos.db$", full.names = TRUE)
     
     if (length(filename) == 0L)
       return(data.frame())

@@ -14,7 +14,7 @@ process_solution <- function(file, keep.temp = FALSE) {
 
   # Database name will match that of the zip file
   db.temp <- gsub(".zip", "-temp.db", file)
-  db.name <- gsub(".zip", ".db", file)
+  db.name <- gsub(".zip", "-rplexos.db", file)
   
   # Delete old files, if possible
   if (file.exists(db.temp)) {
