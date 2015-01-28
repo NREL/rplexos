@@ -248,11 +248,35 @@ add_extra_tables_input <- function(db) {
   dbWriteTable(db$con, "table_text", text.table, row.names = FALSE)
   
   # Add t_memo_data if it doesn't exist
-  rplexos_message("Adding t_memo_data")
   if (!db_has_table(db$con, "t_memo_data")) {
+    rplexos_message("Adding t_memo_data")
     memo.table <- data.frame(data_id = integer(0),
                              value = character(0))
     dbWriteTable(db$con, "t_memo_data", memo.table, row.names = FALSE)
+  }
+  
+  # Add t_band if it doesn't exist
+  if (!db_has_table(db$con, "t_band")) {
+    rplexos_message("Adding t_band")
+    band.table <- data.frame(data_id = integer(0),
+                             band_id = integer(0))
+    dbWriteTable(db$con, "t_band", band.table, row.names = FALSE)
+  }
+  
+  # Add t_date_from if it doesn't exist
+  if (!db_has_table(db$con, "t_date_from")) {
+    rplexos_message("Adding t_date_from")
+    datefrom.table <- data.frame(data_id = integer(0),
+                                 date = character(0))
+    dbWriteTable(db$con, "t_date_from", datefrom.table, row.names = FALSE)
+  }
+  
+  # Add t_date_to if it doesn't exist
+  if (!db_has_table(db$con, "t_date_to")) {
+    rplexos_message("Adding t_date_to")
+    dateto.table <- data.frame(data_id = integer(0),
+                               date = character(0))
+    dbWriteTable(db$con, "t_date_to", dateto.table, row.names = FALSE)
   }
   
   # Add data view
