@@ -90,17 +90,15 @@ plexos_open <- function(folders = ".", names = folders) {
             "Rerun process_folder() to avoid problems.",
             call. = FALSE)
   } else {
-    # Compare
-    comp <- integer(length(conf$rplexos))
-    for (i in 1:length(conf$rplexos))
-      comp[i] <- compareVersion(this.vers, conf$rplexos[i])
+    # Compare to installed version
+    comp <- sapply(conf$rplexos, compareVersion, this.vers)
     
-    if (any(comp == -1)) {
+    if (any(comp > 0)) {
       warning("File(s) processed with a newer version of rplexos. ",
               "Update rplexos or rerun process_folder() to avoid problems.",
               call. = FALSE)
-    } else if (any(comp == 1)) {
-      warning("File(s) processed with an old version of rplexos. ",
+    } else if (any(comp < 0)) {
+      warning("File(s) processed with an older version of rplexos. ",
               "Rerun process_folder() to avoid problems.",
               call. = FALSE)
     }

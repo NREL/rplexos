@@ -590,7 +590,7 @@ add_extra_tables <- function(db) {
     dbGetQuery(db$con, sql)
     
     # Fix time stamps in t_period_X (summary data)
-    for (i in 1:length(column.times)) {
+    for (i in seq_along(column.times)) {
       sql <- sprintf("INSERT INTO temp_period_%s
                       SELECT %s, %s, min(interval_id), min(correct_time) time
                       FROM temp_phase_%s
