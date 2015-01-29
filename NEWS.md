@@ -3,9 +3,10 @@
 ## Bug fixes
 
 * `plexos_open` tried to open any SQLite database in the folder. The default name has
-  been changed and only databases ending in "-rplexos.db" are opened.
+  been changed and only databases ending in "-rplexos.db" are opened. (#13)
 * Create several tables that might not always exist in input databases, which caused
-  `process_input` to fail (#14).
+  `process_input` to fail. (#14)
+* Fixed problem using time query filters. (#12)
 
 
 # rplexos 0.12
