@@ -1,4 +1,4 @@
-# rplexos 0.12.0.99
+# rplexos 0.12.1
 
 ## Bug fixes
 
