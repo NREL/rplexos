@@ -1,6 +1,6 @@
 Package: rplexos
 Type: Package
-Title: Read and Analyze PLEXOS Solutions from R
+Title: Read and Analyze PLEXOS Solutions
 Version: 0.12.1
 Date: 2015-01-29
 Authors@R: as.person(c(
