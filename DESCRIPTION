@@ -3,10 +3,10 @@ Type: Package
 Title: Read and Analyze PLEXOS Solutions
 Version: 0.12.1
 Date: 2015-01-29
-Authors@R: as.person(c(
-    "Eduardo Ibanez <eduardo.ibanez@nrel.gov> [aut, cre]",
-    "National Renewable Energy Laboratory [cph]"
-    ))
+Authors@R: c(
+    person("Eduardo", "Ibanez", , "eduardo.ibanez@nrel.gov", c("aut", "cre")),
+    person("National Renewable Energy Laboratory", role = "cph")
+    )
 Description: Efficiently read and analyze PLEXOS solutions by converting them
     into SQLite databases that can be easily queried. It supports collation of
     solutions that may have been divided into different time partitions,
