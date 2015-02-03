@@ -17,7 +17,8 @@ query_one_row <- function(db, query) {
   
   data.frame(scenario = db$scenario[1],
              position = db$position[1],
-             res)
+             res,
+             stringsAsFactors = FALSE)
 }
 
 # Get a table for all scenarios
@@ -387,7 +388,7 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
   
   out3 <- out2[cj2, roll = TRUE]
   out3 <- out3 %>%
-    as.data.frame %>%
+    as.data.frame(stringsAsFactors = FALSE) %>%
     select(-key)
   
   # Restore time zone

@@ -52,7 +52,8 @@ plexos_open <- function(folders = ".", names = folders) {
   
   # Get database file names
   df <- data.frame(folder = folders,
-                   scenario = factor(names, levels = names)) %>%
+                   scenario = factor(names, levels = names),
+                   stringsAsFactors = FALSE) %>%
         rowwise() %>%
         do(plexos_list_files(.))
   
@@ -137,7 +138,7 @@ summary.rplexos <- function(object, ...) {
   info <- object %>%
     group_by(position, scenario, filename) %>%
     summarise(tables = length(src_tbls(db[[1]]))) %>%
-    as.data.frame
+    data.frame(stringsAsFactors = FALSE)
   
   # Query config to get rplexos and PLEXOS version
   conf <- query_config(object) %>%
@@ -159,7 +160,7 @@ print.rplexos <- function(x, ...) {
   cat("\nTables:\n")
   info <- x %>%
     group_by(position) %>%
-    do(data.frame(table = src_tbls(.$db[[1]])))
+    do(data_frame(table = src_tbls(.$db[[1]])))
   
   print(reshape2::dcast(info, table ~ position, fun.aggregate = length, value.var = "table"),
         row.names = FALSE)
