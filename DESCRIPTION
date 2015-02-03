@@ -1,10 +1,11 @@
 Package: rplexos
 Type: Package
 Title: Read and Analyze PLEXOS Solutions
-Version: 0.12.1
+Version: 0.12.1.99
 Date: 2015-01-29
 Authors@R: c(
     person("Eduardo", "Ibanez", , "eduardo.ibanez@nrel.gov", c("aut", "cre")),
+    person("Marcin", "Kalicinski", , "kalita@poczta.onet.pl", "ctb", "for the included RapidXml source"),
     person("National Renewable Energy Laboratory", role = "cph")
     )
 Description: Efficiently read and analyze PLEXOS solutions by converting them
