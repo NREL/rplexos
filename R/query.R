@@ -40,7 +40,7 @@ get_table_one_scenario <- function(db, from, columns) {
   if (nrow(res) == 0)
     return(data.frame())
   
-  cbind(db[columns] %>% as.data.frame, res)
+  cbind(db[columns] %>% as.data.frame(stringsAsFactors = FALSE), res)
 }
 
 #' Get list of available properties
