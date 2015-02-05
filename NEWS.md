@@ -1,3 +1,10 @@
+# rplexos 0.12.1.99
+
+## Bug fixes
+
+* Non-time filters are now correclty applied if `time.range` is not defined. (#15)
+
+
 # rplexos 0.12.1
 
 ## Bug fixes

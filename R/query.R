@@ -347,15 +347,15 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
   out <- tbl(db, the.table.name) %>%
     filter(phase_id == phase) %>%
     select(-time_to) %>%
-    rename(time = time_from)
+    rename(time = time_from) %>%
+    filter_rplexos(filter)
   
   # Add time filter conditions
   if (!is.null(time.range)) {
     time.data <- time.data %>%
       filter(between(time, time.r.min, time.r.max))
     out <- out %>%
-      filter(time_from <= time.r.max, time_to >= time.r.min) %>%
-      filter_rplexos(filter)
+      filter(time_from <= time.r.max, time_to >= time.r.min)
   }
   
   # Collect time data
