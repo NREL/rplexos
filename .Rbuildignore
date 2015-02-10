@@ -2,3 +2,4 @@
 .zip
 develop.r
 NEWS\.md
+^appveyor\.yml$
