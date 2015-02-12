@@ -2,8 +2,10 @@ develop.r
 *.db
 *.zip
 src/*.o
+src/*.so
 src/*.dll
 src-*
 inst/doc
 inst/web
 .Rproj.user
+*.Rproj
