@@ -3,3 +3,5 @@
 develop.r
 NEWS\.md
 ^appveyor\.yml$
+^.*\.Rproj$
+^\.Rproj\.user$

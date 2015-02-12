@@ -6,3 +6,4 @@ src/*.dll
 src-*
 inst/doc
 inst/web
+.Rproj.user
