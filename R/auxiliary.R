@@ -119,6 +119,13 @@ on_failure(correct_phase) <- function(call, env) {
   paste0("'phase' must be one of: 1 (LT), 2 (PASA), 3 (MT) or 4 (ST)")
 }
 
+# Check time
+correct_time <- function(x) x %in% c("interval", "day", "week", "month", "year")
+
+on_failure(correct_time) <- function(call, env) {
+    paste0("'time' must be one of: interval, day, week, month or year")
+}
+
 # Check that a vector of characters are folder names
 is_folder <- function(x) {
   if (length(x) == 1L) {

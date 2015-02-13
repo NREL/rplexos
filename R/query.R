@@ -173,7 +173,7 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   # Check inputs
   assert_that(is.rplexos(db))
   assert_that(is.string(time), is.string(col), is.character(prop), is.character(columns), is.scalar(phase))
-  assert_that(correct_phase(phase))
+  assert_that(correct_time(time), correct_phase(phase))
   assert_that(are_columns(columns))
   new <- master_checks(db, time, col, prop, columns, time.range, filter, phase)
   
