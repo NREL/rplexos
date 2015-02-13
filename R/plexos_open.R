@@ -20,7 +20,7 @@ plexos_open <- function(folders = ".", names = folders) {
   
   # Check for wildcard
   if (length(folders) == 1L) {
-    if (folders == "*") {
+    if (identical(folders, "*")) {
       folders <- list_folders()
       names <- folders
     }
@@ -31,7 +31,7 @@ plexos_open <- function(folders = ".", names = folders) {
   
   # Change default scenario name to something better than '.'
   if (length(folders) == 1L) {
-    if ((folders == ".") & (names == ".")) {
+    if (identical(folders, ".") & identical(names, ".")) {
       names <- "default"
     }
   }

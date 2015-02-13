@@ -39,7 +39,7 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
   
   # Check for wildcard
   if (length(folders) == 1L) {
-    if (folders == "*") {
+    if (identical(folders, "*")) {
       folders <- list_folders()
     }
   }
