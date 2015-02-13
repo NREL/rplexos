@@ -3,9 +3,12 @@
 \name{start_parallel_rplexos}
 \alias{check_parallel_rplexos}
 \alias{start_parallel_rplexos}
+\alias{stop_parallel_rplexos}
 \title{Enable or disable parallel queries}
 \usage{
 start_parallel_rplexos(ncores = 1)
+
+stop_parallel_rplexos()
 
 check_parallel_rplexos()
 }
