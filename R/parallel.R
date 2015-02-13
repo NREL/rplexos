@@ -28,7 +28,7 @@ start_parallel_rplexos <- function(ncores = 1) {
             .rplexos.cluster <<- NULL
         }
         
-        return(invisible(check_parallel_rplexos()))
+        return(invisible(1))
     }
     
     # Make sure you don't start more cores that available
@@ -42,7 +42,7 @@ start_parallel_rplexos <- function(ncores = 1) {
     # Register cluster
     doParallel::registerDoParallel(.rplexos.cluster)
     
-    invisible(check_parallel_rplexos())
+    invisible(ncores)
 }
 
 #' @rdname start_parallel_rplexos
