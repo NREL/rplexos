@@ -1,4 +1,5 @@
 .onLoad <- function(libname, pkgname) {
+  # Add a couple of default options to determine tiebreaks and debug mode
   op <- options()
   op.rplexos <- list(
     rplexos.tiebreak = "last",
