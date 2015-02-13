@@ -1,4 +1,5 @@
 .rplexos.cluster <- NULL
+`%dp%` <- foreach::`%do%`
 
 #' Enable or disable parallel queries
 #'
@@ -26,6 +27,7 @@ start_parallel_rplexos <- function(ncores = 1) {
         if (!is.null(.rplexos.cluster)) {
             parallel::stopCluster(.rplexos.cluster)
             .rplexos.cluster <<- NULL
+            `%dp%` <- foreach::`%do%`
         }
         
         return(invisible(1))
@@ -41,7 +43,8 @@ start_parallel_rplexos <- function(ncores = 1) {
     
     # Register cluster
     doParallel::registerDoParallel(.rplexos.cluster)
-    
+    `%dp%` <- foreach::`%dopar%`
+
     invisible(ncores)
 }
 
