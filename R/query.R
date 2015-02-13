@@ -11,7 +11,7 @@ query_scenario <- function(db, query) {
 
 # Correctly get query for a row (won't be necessary with future version of dplyr)
 query_one_row <- function(db, query) {
-  res <- dbGetQuery(db$db$con, query)
+  res <- DBI::dbGetQuery(db$db$con, query)
   if (nrow(res) == 0)
     return(data.frame())
   

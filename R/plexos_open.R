@@ -123,7 +123,7 @@ plexos_close <- function(db) {
 
   # For each database, close the connection
   db %>%
-    do(result = dbDisconnect(.$db$con))
+    do(result = DBI::dbDisconnect(.$db$con))
   
   # Remove object from memory
   rm(list = deparse(substitute(db)), envir = sys.frame(-1))
