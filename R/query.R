@@ -4,13 +4,16 @@ query_scenario <- function(db, query) {
   # Check inputs
   assert_that(is.rplexos(db), is.string(query))
   
-  db %>%
-    do(query_one_row(., query)) %>%
-    ungroup
+  foreach::foreach(i = db$position, .combine = rbind) %dp%
+    query_one_row(db, i, query)
 }
 
 # Correctly get query for a row (won't be necessary with future version of dplyr)
-query_one_row <- function(db, query) {
+query_one_row <- function(db, i, query) {
+  cl <- class(db)
+  db <- subset(db, position == i)
+  class(db) <- cl
+  
   res <- dbGetQuery(db$db$con, query)
   if (nrow(res) == 0)
     return(data.frame())
@@ -26,18 +29,23 @@ get_table_scenario <- function(db, from, columns = c("scenario", "position")) {
   # Check inputs
   assert_that(is.rplexos(db), is.string(from))
   
-  db %>%
-    do(get_table_one_scenario(., from, columns)) %>%
-    ungroup
+  foreach::foreach(i = db$position, .combine = rbind) %dp% {
+    get_table_one_scenario(db, i, from, columns)
+  }
 }
 
 # Correctly get query for a row (won't be necessary with future version of dplyr)
-get_table_one_scenario <- function(db, from, columns) {
+get_table_one_scenario <- function(db, i, from, columns) {
+  cl <- class(db)
+  db <- subset(db, position == i)
+  class(db) <- cl
+  
   # Check that table exists
-  if (!from %in% src_tbls(db$db)) {
+  if (!from %in% src_tbls(db$db[[1]])) {
     return(data.frame())
   }
-  res <- tbl(db$db, from) %>% collect
+  
+  res <- tbl(db$db[[1]], from) %>% collect
   if (nrow(res) == 0)
     return(data.frame())
   
