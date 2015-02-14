@@ -20,7 +20,7 @@ plexos_open <- function(folders = ".", names = folders) {
   
   # Check for wildcard
   if (length(folders) == 1L) {
-    if (folders == "*") {
+    if (identical(folders, "*")) {
       folders <- list_folders()
       names <- folders
     }
@@ -31,7 +31,7 @@ plexos_open <- function(folders = ".", names = folders) {
   
   # Change default scenario name to something better than '.'
   if (length(folders) == 1L) {
-    if ((folders == ".") & (names == ".")) {
+    if (identical(folders, ".") & identical(names, ".")) {
       names <- "default"
     }
   }
@@ -123,7 +123,7 @@ plexos_close <- function(db) {
 
   # For each database, close the connection
   db %>%
-    do(result = dbDisconnect(.$db$con))
+    do(result = DBI::dbDisconnect(.$db$con))
   
   # Remove object from memory
   rm(list = deparse(substitute(db)), envir = sys.frame(-1))

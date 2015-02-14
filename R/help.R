@@ -18,6 +18,6 @@
 #' 
 #' @docType package
 #' @name rplexos
-#' @import dplyr DBI assertthat RSQLite
+#' @import dplyr assertthat
 #' @importFrom Rcpp evalCpp
 NULL
