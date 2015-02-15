@@ -26,7 +26,10 @@ Imports:
     lubridate,
     reshape2,
     stringi,
-    assertthat
+    assertthat,
+    parallel,
+    doParallel,
+    foreach
 Suggests:
     knitr
 LinkingTo: Rcpp (>= 0.11.3)
