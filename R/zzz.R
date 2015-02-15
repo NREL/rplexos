@@ -9,7 +9,7 @@
   if(any(toset)) options(op.rplexos[toset])
   
   # By default, turn off parallel queries
-  start_parallel_rplexos(1)
+  stop_parallel_rplexos()
 
   invisible()
 }
