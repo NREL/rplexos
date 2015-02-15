@@ -21,8 +21,6 @@ Do not rename the SQLite databases created with the \code{\link{process_folder}}
 The code expects those filenames to remain unchanged.
 }
 \seealso{
-\code{\link{plexos_close}}
-
 \code{\link{query_master}}
 }
 

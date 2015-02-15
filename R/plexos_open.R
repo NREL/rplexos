@@ -10,7 +10,6 @@
 #' @param folders character. Folder(s) where the data is located (each folder represents a scenario)
 #' @param names character. Scenario names
 #'
-#' @seealso \code{\link{plexos_close}}
 #' @seealso \code{\link{query_master}}
 #' 
 #' @export
@@ -115,14 +114,8 @@ plexos_open <- function(folders = ".", names = folders) {
 print.rplexos <- function(x, ...) {
   out <- x %>%
     group_by(scenario, position, filename) %>%
-    summarize(tables = length(tables[[1]]),
+    summarize(tables = nrow(tables[[1]]),
               properties = nrow(properties[[1]])) %>%
     ungroup() %>%
     print()
-}
-
-# Avoid group_by_.rowwise_df warning
-group_by_.rplexos <- function(.data, ...) {
-  class(.data) <- setdiff(class(.data), c("rplexos", "rowwise_df"))
-  group_by_(.data, ...)
 }
