@@ -129,7 +129,7 @@ on_failure(correct_time) <- function(call, env) {
 # Check that a vector of characters are folder names
 is_folder <- function(x) {
   if (length(x) == 1L) {
-    if(x == "*") {
+    if(identical(x, "*")) {
       return(TRUE)
     }
   }

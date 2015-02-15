@@ -267,7 +267,7 @@ solve_ties <- function(x, opt = getOption("rplexos.tiebreak")) {
       ungroup() %>%
       group_by(scenario, time)
     
-    if (opt == "last") {
+    if (identical(opt, "last")) {
       # If there are repeats, use the latter entry
       x2 <- x2 %>%
         filter(position == max(position))
@@ -318,12 +318,12 @@ query_master_each <- function(db, time, columns, time.range, filter, phase, tabl
   thesql <- src_sqlite(db$filename)
   
   # Summary data
-  if (time != "interval") {
+  if (!identical(time, "interval")) {
     # Check that time table has any data
     count <- tbl(thesql, time) %>%
       summarize(rows = n()) %>%
       collect
-    if (count$rows == 0) {
+    if (count$rows == 0L) {
         warning("Summary table '", time, "' is empty for database '", db$info$dbname, "'.\n",
                 "    Returning an empty result.", call. = FALSE)
         DBI::dbDisconnect(thesql$con)
@@ -456,7 +456,7 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
   out <- df %>% group_by_char(c("scenario", "collection", "property", columns2)) %>%
     summarise(value = sum(value))
   
-  if ((time == "interval") & multiply.time) {
+  if (identical(time, "interval") & multiply.time) {
     # Get length of intervals in hours
     times <- get_table_scenario(d, "time", "scenario")
     delta <- times %>%
@@ -506,14 +506,14 @@ sum_year     <- function(db, ...) sum_master(db, "year", ...)
 # Checks and common data maniputation for query_master and sum_master
 master_checks <- function(db, time, col, prop, columns, time.range, filter, phase) {
   # Get list of properties for the collection
-  is.summ <- ifelse(time == "interval", 0, 1)
-  is.summ.txt <- ifelse(time == "interval", "interval", "summary")
+  is.summ <- ifelse(identical(time, "interval"), 0, 1)
+  is.summ.txt <- ifelse(identical(time, "interval"), "interval", "summary")
   
   res <- rbind_all(db$properties) %>%
     filter(collection == col, is_summary == is.summ, phase_id == phase)
   
   # Check that collection is valid
-  if (nrow(res) == 0) {
+  if (nrow(res) == 0L) {
     stop("Collection '", col, "' is not valid for ",
          is.summ.txt, " data and phase '", phase, "'.\n",
          "   Use query_property() for list of collections and properties.",
@@ -597,7 +597,7 @@ filter_rplexos <- function(out, filt) {
   vals <- lapply(filt, function(x)
     paste0("\"", x, "\"", collapse = ", ")) %>%
     paste0("c(", ., ")")
-  cons <- ifelse(lapply(filt, length) == 1, "==", "%in%")
+  cons <- ifelse(lapply(filt, length) == 1L, "==", "%in%")
   cond <- paste(names(filt), cons, vals)
   
   # Apply condition
