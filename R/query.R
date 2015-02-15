@@ -1,3 +1,46 @@
+# Get one table from a SQLite database
+get_table <- function(filename, table) {
+  # Opern connection
+  thesql <- src_sqlite(filename)
+  
+  if (table %in% src_tbls(thesql)) {
+    out <- tbl(thesql, table) %>% collect
+  } else {
+    out <- data.frame()
+  }
+  
+  # Close connection
+  DBI::dbDisconnect(thesql$con)
+  
+  # Return result
+  out
+}
+
+# Get one table from a SQLite database
+get_tables <- function(filename) {
+  # Open connection
+  thesql <- src_sqlite(filename)
+  
+  # Read names
+  out <- data.table(tables = src_tbls(thesql))
+  
+  # Close connection
+  DBI::dbDisconnect(thesql$con)
+  
+  # Return result
+  out
+}
+
+# Get a table for all scenarios
+get_table_scenario <- function(db, from) {
+  # Check inputs
+  assert_that(is.rplexos(db), is.string(from))
+  
+  db %>%
+    group_by(scenario, position, filename) %>%
+    do(get_table(.$filename, from)) %>%
+    ungroup()
+}
 
 # Get query for all scenarios
 query_scenario <- function(db, query) {
@@ -9,42 +52,27 @@ query_scenario <- function(db, query) {
   
   foreach::foreach(i = db$position, .combine = rbind) %dp% {
     j <- which(db$position == i)
+    out <- data.frame()
     
-    res <- dbGetQuery(db$db[[j]]$con, query)
-    if (nrow(res) == 0)
-      return(data.frame())
+    # Open SQLite connection
+    sql.con <- src_sqlite(db$filename[j])
     
-    data.frame(scenario = db$scenario[j],
-               position = db$position[j],
-               res,
-               stringsAsFactors = FALSE)
+    res <- dbGetQuery(sql.con$con, query)
+    if (nrow(res) >= 0L) {
+      data.frame(scenario = db$scenario[j],
+                 position = db$position[j],
+                 res,
+                 stringsAsFactors = FALSE)
+    }
+    
+    # Disconnect database
+    DBI::dbDisconnect(sql.con$con)
+    
+    # Return result
+    out
   }
 }
 
-# Get a table for all scenarios
-get_table_scenario <- function(db, from, columns = c("scenario", "position")) {
-  # Check inputs
-  assert_that(is.rplexos(db), is.string(from))
-  
-  # Select parallel operator, if necessary
-  `%dp%` <- select_do()
-  
-  foreach::foreach(i = db$position, .combine = rbind) %dp% {
-    j <- which(db$position == i)
-    
-    # Check that table exists
-    if (!from %in% dplyr::src_tbls(db$db[[j]]))
-      return(data.frame())
-    
-    # Get table contents and check if it is empty
-    res <- dplyr::tbl(db$db[[j]], from) %>% collect
-    if (nrow(res) == 0)
-      return(data.frame())
-    
-    # Return results
-    cbind(db[j, columns] %>% as.data.frame(stringsAsFactors = FALSE), res)
-  }
-}
 
 #' Get list of available properties
 #'
@@ -67,7 +95,6 @@ query_property <- function(db) {
                     length, value.var = "unit")
 }
 
-
 #' Query configuration tables
 #'
 #' Get information from the \code{config} table, which includes: PLEXOS version, solution
@@ -80,7 +107,7 @@ query_property <- function(db) {
 #'
 #' @export
 query_config <- function(db) {
-  data <- get_table_scenario(db, "config", columns = c("scenario", "position", "filename"))
+  data <- get_table_scenario(db, "config")
   reshape2::dcast(data, position + scenario + filename ~ element, value.var = "value")
 }
 
@@ -95,13 +122,15 @@ query_config <- function(db) {
 #'
 #' @export
 query_log <- function(db) {
-  get_table_scenario(db, "log_info", c("scenario", "filename"))
+  get_table_scenario(db, "log_info") %>%
+    select(-position)
 }
 
 #' @rdname query_log
 #' @export
 query_log_steps <- function(db) {
-  get_table_scenario(db, "log_steps", c("scenario", "filename"))
+  get_table_scenario(db, "log_steps") %>%
+    select(-position)
 }
 
 # Query databases ***********************************************************************
