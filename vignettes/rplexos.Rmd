@@ -59,12 +59,3 @@ result4 <- query_month(a, "Generators", "Units Started", c("category", "region")
 ```
 
 The list of available properties can be seen with `?query_property`.
-
-
-## Close databases
-
-Optionally, you can break the connections with `plexos_close`. Closing R has the same effect.
-
-```
-plexos_close()
-```
