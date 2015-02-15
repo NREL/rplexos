@@ -214,11 +214,18 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   db.prop <- db.temp %>%
     left_join(db, by = "position")
   
+  # Select parallel operator, if necessary
+  `%dp%` <- select_do()
+  
   # Query data for each property
-  out <- db.prop %>%
-    group_by(scenario, position, filename, collection, property) %>%
-    do(query_master_each(., time, new$columns, new$time.range, filter, phase)) %>%
-    ungroup
+  out <- foreach::foreach(i = db$position, .combine = rbind) %dp% {
+    db.prop %>%
+      filter(position == i) %>%
+      group_by(scenario, position, filename, collection, property) %>%
+      do(query_master_each(., time, new$columns, new$time.range, filter, phase)) %>%
+      ungroup %>%
+      select(-filename)
+  }
   
   # Return empty dataframe if no results were returned
   if (nrow(out) == 0) {
