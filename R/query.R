@@ -214,25 +214,11 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   db.prop <- db.temp %>%
     left_join(db, by = "position")
   
-  # This function does the queries and attaches columns to the result
-  # until https://github.com/hadley/dplyr/issues/448 is solved
-  # TODO: remove after dplyr 0.3.1 (here and possibly other places)
-  safe_query <- function(x, ...) {
-    out <- query_master_each(x$db, ...)
-    if (nrow(out) == 0)
-      return(data.frame())
-    
-    data.frame(scenario   = x$scenario,
-               position   = x$position,
-               collection = x$collection,
-               property   = x$property,
-               out)
-  }
-  
   # Query data for each property
   out <- db.prop %>%
-    rowwise() %>%
-    do(safe_query(., time, .$collection, .$property, new$columns, new$time.range, filter, phase))
+    group_by(scenario, position, filename, collection, property) %>%
+    do(query_master_each(., time, new$columns, new$time.range, filter, phase)) %>%
+    ungroup
   
   # Return empty dataframe if no results were returned
   if (nrow(out) == 0) {
@@ -242,7 +228,10 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   
   # Check if any scenario is missing from the results
   missing.scenario <- setdiff(unique(db$scenario), unique(out$scenario))
-  if (length(missing.scenario) > 0L) {
+  if (length(missing.scenario) == 1L) {
+    warning("Query returned no results for scenario: ", missing.scenario,,
+            call. = FALSE)
+  } else if (length(missing.scenario) > 1L) {
     warning("Query returned no results for scenarios: ",
             paste(missing.scenario, collapse = ", "),
             call. = FALSE)
@@ -251,10 +240,6 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   # Solve ties if they exist
   out <- out %>%
     solve_ties()
-  
-  # Convert columns to factors
-  for (i in setdiff(columns, "time"))
-    out[[i]] <- factor(out[[i]])
   
   out
 }
@@ -312,28 +297,35 @@ query_year     <- function(db, ...) query_master(db, "year", ...)
 
 # Query interval for each database
 #' @importFrom data.table data.table CJ
-query_master_each <- function(db, time, col, prop, columns, time.range, filter, phase, table.name) {
+query_master_each <- function(db, time, columns, time.range, filter, phase, table.name) {
+  # `db` cannot have more than one row
+  assert_that(nrow(db) == 1L)
+  
   # Divide time.range vector
   if (!is.null(time.range)) {
     time.r.min <- time.range[1]
     time.r.max <- time.range[2]
   }
   
+  # Opern connection
+  thesql <- src_sqlite(db$filename)
+  
   # Summary data
   if (time != "interval") {
     # Check that time table has any data
-    count <- tbl(db, time) %>%
+    count <- tbl(thesql, time) %>%
       summarize(rows = n()) %>%
       collect
     if (count$rows == 0) {
         warning("Summary table '", time, "' is empty for database '", db$info$dbname, "'.\n",
                 "    Returning an empty result.", call. = FALSE)
+        DBI::dbDisconnect(thesql$con)
         return(data.frame())
     }
     
     # Get data
-    out <- tbl(db, time) %>%
-      filter(collection == col, property == prop, phase_id == phase) %>%
+    out <- tbl(thesql, time) %>%
+      filter(collection == db$collection, property == db$property, phase_id == phase) %>%
       filter_rplexos(filter)
     
     # Add time filter condition
@@ -352,18 +344,22 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
       collect %>%
       mutate(time = lubridate::ymd_hms(time, quiet = TRUE))
     
+    # Disconnect database
+    DBI::dbDisconnect(thesql$con)
+    
+    # Return value
     return(out)
   }
   
   # Get the table name that stores the data
-  t.name <- tbl(db, "property") %>%
-    filter(collection == col, property == prop, phase_id == phase, is_summary == 0) %>%
+  t.name <- tbl(thesql, "property") %>%
+    filter(collection == db$collection, property == db$property, phase_id == phase, is_summary == 0) %>%
     collect
   the.table.name <- gsub("data_interval_", "", t.name$table_name)
   
   # Get max/min time existing in the table to be queried
   #   In case time table has more time stamps than those in the dataset
-  time.limit <- tbl(db, the.table.name) %>%
+  time.limit <- tbl(thesql, the.table.name) %>%
       filter(phase_id == phase) %>%
       summarize(time_from = min(time_from), time_to = max(time_to)) %>%
       collect
@@ -371,11 +367,11 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
   max.time.data <- time.limit$time_to
   
   # Interval data, Get time data
-  time.data <- tbl(db, "time") %>%
+  time.data <- tbl(thesql, "time") %>%
     filter(between(time, min.time.data, max.time.data))
   
   # Get interval data
-  out <- tbl(db, the.table.name) %>%
+  out <- tbl(thesql, the.table.name) %>%
     filter(phase_id == phase) %>%
     select(-time_to) %>%
     rename(time = time_from) %>%
@@ -395,8 +391,10 @@ query_master_each <- function(db, time, col, prop, columns, time.range, filter, 
     collect
   
   # If time data is empty, return an empty data frame
-  if (nrow(time.data) == 0)
+  if (nrow(time.data) == 0L) {
+    DBI::dbDisconnect(thesql$con)
     return(data.frame())
+  }
   
   # Convert into R time-data format
   time.data$time <- lubridate::ymd_hms(time.data$time)
@@ -444,7 +442,7 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
   df <- query_master(db, time, col, prop, columns2, time.range, filter, phase)
   
   # If empty query is returned, return empty data.frame
-  if(nrow(df) == 0)
+  if(nrow(df) == 0L)
     return(data.frame())
   
   # Aggregate the data
@@ -503,20 +501,21 @@ master_checks <- function(db, time, col, prop, columns, time.range, filter, phas
   # Get list of properties for the collection
   is.summ <- ifelse(time == "interval", 0, 1)
   is.summ.txt <- ifelse(time == "interval", "interval", "summary")
-  res <- get_table_scenario(db, "property") %>%
-    filter(collection == col, is_summary == is.summ, phase_id == phase) %>%
-    collect
+  
+  res <- rbind_all(db$properties) %>%
+    filter(collection == col, is_summary == is.summ, phase_id == phase)
   
   # Check that collection is valid
   if (nrow(res) == 0) {
-    stop("Collection '", col, "' is not valid for ", is.summ.txt, " data and phase '", phase, "'.\n",
+    stop("Collection '", col, "' is not valid for ",
+         is.summ.txt, " data and phase '", phase, "'.\n",
          "   Use query_property() for list of collections and properties.",
          call. = FALSE)
   }
   
   # Checks if property is the wildcard symbol
   if (length(prop) == 1L) {
-    if (prop == "*")
+    if (identical(prop, "*"))
       prop <- unique(res$property)
   }
   
