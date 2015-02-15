@@ -320,13 +320,17 @@ process_solution <- function(file, keep.temp = FALSE) {
   try(log.content <- read_file_in_zip(file, log.pos), silent = TRUE)
   if (is.null(log.content)) {
     # Error reading log file, throw a warning
-    warning("Could not read Log in solution '", file, "'", call. = FALSE)
+    warning("Could not read Log in solution '", file, "'\n",
+            "    Data parsed correctly if no other errors were found.",
+            call. = FALSE)
   } else {
     # Success reading file, try to parse it
     log.result <- plexos_log_parser(log.content)
     
     if (length(log.result) < 2L) {
-      warning("Log in solution '", file, "' did not parse correctly.", call. = FALSE)
+      warning("Log in solution '", file, "' did not parse correctly.\n",
+              "    Data parsed correctly if no other errors were found.",
+              call. = FALSE)
     }
     
     for (i in names(log.result)) {
