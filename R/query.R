@@ -31,6 +31,21 @@ get_tables <- function(filename) {
   out
 }
 
+# Get query for one SQLite database
+get_query <- function(filename, query) {
+  # Open connection
+  thesql <- src_sqlite(filename)
+  
+  # Read names
+  out <- RSQLite::dbGetQuery(thesql$con, query)
+  
+  # Close connection
+  DBI::dbDisconnect(thesql$con)
+  
+  # Return result
+  out
+}
+
 # Get a table for all scenarios
 get_table_scenario <- function(db, from) {
   # Check inputs
@@ -51,28 +66,13 @@ query_scenario <- function(db, query) {
   `%dp%` <- select_do()
   
   foreach::foreach(i = db$position, .combine = rbind) %dp% {
-    j <- which(db$position == i)
-    out <- data.frame()
-    
-    # Open SQLite connection
-    sql.con <- src_sqlite(db$filename[j])
-    
-    res <- dbGetQuery(sql.con$con, query)
-    if (nrow(res) >= 0L) {
-      data.frame(scenario = db$scenario[j],
-                 position = db$position[j],
-                 res,
-                 stringsAsFactors = FALSE)
-    }
-    
-    # Disconnect database
-    DBI::dbDisconnect(sql.con$con)
-    
-    # Return result
-    out
+    db %>%
+      filter(position == i) %>%
+      group_by(scenario, position, filename) %>%
+      do(get_query(.$filename, query)) %>%
+      ungroup()
   }
 }
-
 
 #' Get list of available properties
 #'
