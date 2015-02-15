@@ -10,7 +10,6 @@
 #' @param folders character. Folder(s) where the data is located (each folder represents a scenario)
 #' @param names character. Scenario names
 #'
-#' @seealso \code{\link{plexos_close}}
 #' @seealso \code{\link{query_master}}
 #' 
 #' @export
@@ -77,7 +76,9 @@ plexos_open <- function(folders = ".", names = folders) {
     ungroup() %>%
     mutate(position = 1:n()) %>%
     group_by(scenario, position, filename) %>%
-    do(db = src_sqlite(as.character(.$filename)))
+    do(tables = get_tables(.$filename),
+       properties = get_table(.$filename, "property")) %>%
+    ungroup()
   
   # Add rplexos class to object
   class(out) <- c("rplexos", class(out))
@@ -108,72 +109,13 @@ plexos_open <- function(folders = ".", names = folders) {
   out
 }
 
-#' Close all PLEXOS databases
-#'
-#' Close all the open connections to PLEXOS SQLite databases. This function
-#' completely erases the provided object.
-#'
-#' @param db PLEXOS database object
-#'
-#' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
-#'
-#' @export
-plexos_close <- function(db) {
-  assert_that(is.rplexos(db))
-
-  # For each database, close the connection
-  db %>%
-    do(result = DBI::dbDisconnect(.$db$con))
-  
-  # Remove object from memory
-  rm(list = deparse(substitute(db)), envir = sys.frame(-1))
-  
-  TRUE
-}
-
-# Create custom summary for rplexos objects
-#' @export
-#' @method summary rplexos
-summary.rplexos <- function(object, ...) {
-  info <- object %>%
-    group_by(position, scenario, filename) %>%
-    summarise(tables = length(src_tbls(db[[1]]))) %>%
-    data.frame(stringsAsFactors = FALSE)
-  
-  # Query config to get rplexos and PLEXOS version
-  conf <- query_config(object) %>%
-    select(position, PLEXOS = Version, rplexos)
-  
-  # Join the two tables
-  info2 <- info %>% inner_join(conf, by = "position")
-  
-  # Print table
-  print(info2, row.names = FALSE)
-}
-
 # Create custom visualization for rplexos objects
 #' @export
 print.rplexos <- function(x, ...) {
-  cat("Structure:\n")
-  summary(x)
-  
-  cat("\nTables:\n")
-  info <- x %>%
-    group_by(position) %>%
-    do(data_frame(table = src_tbls(.$db[[1]])))
-  
-  print(reshape2::dcast(info, table ~ position, fun.aggregate = length, value.var = "table"),
-        row.names = FALSE)
-}
-
-# Custom ungroup method, to preserve 'rplexos' class
-ungroup.rplexos <- function(x) {
-  class(x) <- setdiff(class(x), c("grouped_df", "rowwise_df"))
-  x
-}
-
-# Avoid group_by_.rowwise_df warning
-group_by_.rplexos <- function(.data, ...) {
-  class(.data) <- setdiff(class(.data), c("rplexos", "rowwise_df"))
-  group_by_(.data, ...)
+  out <- x %>%
+    group_by(scenario, position, filename) %>%
+    summarize(tables = nrow(tables[[1]]),
+              properties = nrow(properties[[1]])) %>%
+    ungroup() %>%
+    print()
 }

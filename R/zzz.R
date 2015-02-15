@@ -1,5 +1,5 @@
 .onLoad <- function(libname, pkgname) {
-  # Add a couple of default options to determine tiebreaks and debug mode
+  # Set options
   op <- options()
   op.rplexos <- list(
     rplexos.tiebreak = "last",
@@ -7,6 +7,9 @@
   )
   toset <- !(names(op.rplexos) %in% names(op))
   if(any(toset)) options(op.rplexos[toset])
+  
+  # By default, turn off parallel queries
+  stop_parallel_rplexos()
 
   invisible()
 }
