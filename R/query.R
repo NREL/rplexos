@@ -570,8 +570,8 @@ master_checks <- function(db, time, col, prop, columns, time.range, filter, phas
   # Time range checks and convert to POSIXct
   if (!is.null(time.range)) {
     assert_that(is.character(time.range), length(time.range) == 2L)
-    time.range <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
-    assert_that(correct_date(time.range))
+    time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
+    assert_that(correct_date(time.range2))
   }
   
   list(prop = prop, columns = columns, time.range = time.range) 
