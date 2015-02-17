@@ -201,10 +201,83 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   assert_that(is.string(time), is.string(col), is.character(prop), is.character(columns), is.scalar(phase))
   assert_that(correct_time(time), correct_phase(phase))
   assert_that(are_columns(columns))
-  new <- master_checks(db, time, col, prop, columns, time.range, filter, phase)
+  
+  ### BEGIN: Master query checks
+  
+  # Get list of properties for the collection
+  is.summ <- ifelse(identical(time, "interval"), 0, 1)
+  is.summ.txt <- ifelse(identical(time, "interval"), "interval", "summary")
+  res <- rbind_all(db$properties) %>%
+    filter(collection == col, is_summary == is.summ, phase_id == phase)
+  
+  # Check that collection is valid
+  if (nrow(res) == 0L) {
+    stop("Collection '", col, "' is not valid for ",
+         is.summ.txt, " data and phase '", phase, "'.\n",
+         "   Use query_property() for list of collections and properties.",
+         call. = FALSE)
+  }
+  
+  # Checks if property is the wildcard symbol
+  if (length(prop) == 1L) {
+    if (identical(prop, "*"))
+      prop <- unique(res$property)
+  }
+  
+  # Check that all properties are valid
+  invalid.prop <- setdiff(prop, res$property)
+  if (length(invalid.prop) == 1L) {
+    stop("Property '", invalid.prop, "' in collection '", col, "' is not valid for ", is.summ.txt, " data and phase '", phase, "'.\n",
+         "   Use query_property() for list of available collections and properties.",
+         call. = FALSE)
+  } else if (length(invalid.prop) > 1L) {
+    stop("Properties ", paste0("'", invalid.prop, "'", collapse = ", "), " in collection '", col,
+         "' are not valid for ", is.summ.txt, " data and phase '", phase, "'.\n",
+         "   Use query_property() for list of available collections and properties.",
+         call. = FALSE)
+  }
+  
+  # Find if the data is going to have multiple sample, timeslices or bands
+  res2 <- res %>%
+    ungroup() %>%
+    filter(property %in% prop) %>%
+    summarize(is_multi_band      = max(count_band) > 1,
+              is_multi_sample    = max(count_sample) > 1,
+              is_multi_timeslice = max(count_timeslice) > 1)
+  if (res2$is_multi_timeslice)
+    columns <- c(setdiff(columns, "timeslice"), "timeslice")
+  if (res2$is_multi_band)
+    columns <- c(setdiff(columns, "band"), "band")
+  if (res2$is_multi_sample)
+    columns <- c(setdiff(columns, "sample"), "sample")
+  
+  # Key filter checks
+  if (!is.null(filter)) {
+    assert_that(is.list(filter))
+    assert_that(names_are_columns(filter))
+    assert_that(time_not_a_name(filter))
+  }
+  
+  # Columns should not include collection and property; they are always reported
+  columns <- setdiff(columns, c("collection", "property"))
+  
+  # If columns include name, add parent automatically
+  if ("name" %in% columns)
+    columns <- c("name", "parent", setdiff(columns, c("name", "parent")))
+  
+  # Time range checks and convert to POSIXct
+  #    time.range2 could be renamed to time.range in the future
+  #    https://github.com/hadley/dplyr/issues/857
+  if (!is.null(time.range)) {
+    assert_that(is.character(time.range), length(time.range) == 2L)
+    time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
+    assert_that(correct_date(time.range2))
+  }
+  
+  ### END: Master query checks
   
   # Expand db to include multiple properties (if necessary)
-  db.temp <- expand.grid(position = db$position, property = new$prop) %>%
+  db.temp <- expand.grid(position = db$position, property = prop) %>%
     mutate(collection = col)
   db.prop <- db.temp %>%
     left_join(db, by = "position") %>%
@@ -217,7 +290,7 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   out <- foreach::foreach(i = db$position, .combine = rbind_list) %dp% {
     db.prop %>%
       filter(position == i) %>%
-      do(query_master_each(., time, new$columns, new$time.range, filter, phase))
+      do(query_master_each(., time, columns, time.range, filter, phase))
   } %>% ungroup()
   
   # Return empty dataframe if no results were returned
@@ -495,82 +568,6 @@ sum_month    <- function(db, ...) sum_master(db, "month", ...)
 #' @rdname query_master
 #' @export
 sum_year     <- function(db, ...) sum_master(db, "year", ...)
-
-# Checks and common data maniputation for query_master and sum_master
-master_checks <- function(db, time, col, prop, columns, time.range, filter, phase) {
-  # Get list of properties for the collection
-  is.summ <- ifelse(identical(time, "interval"), 0, 1)
-  is.summ.txt <- ifelse(identical(time, "interval"), "interval", "summary")
-  
-  res <- rbind_all(db$properties) %>%
-    filter(collection == col, is_summary == is.summ, phase_id == phase)
-  
-  # Check that collection is valid
-  if (nrow(res) == 0L) {
-    stop("Collection '", col, "' is not valid for ",
-         is.summ.txt, " data and phase '", phase, "'.\n",
-         "   Use query_property() for list of collections and properties.",
-         call. = FALSE)
-  }
-  
-  # Checks if property is the wildcard symbol
-  if (length(prop) == 1L) {
-    if (identical(prop, "*"))
-      prop <- unique(res$property)
-  }
-  
-  # Check that all properties are valid
-  invalid.prop <- setdiff(prop, res$property)
-  if (length(invalid.prop) == 1L) {
-    stop("Property '", invalid.prop, "' in collection '", col, "' is not valid for ", is.summ.txt, " data and phase '", phase, "'.\n",
-         "   Use query_property() for list of available collections and properties.",
-         call. = FALSE)
-  } else if (length(invalid.prop) > 1L) {
-    stop("Properties ", paste0("'", invalid.prop, "'", collapse = ", "), " in collection '", col,
-         "' are not valid for ", is.summ.txt, " data and phase '", phase, "'.\n",
-         "   Use query_property() for list of available collections and properties.",
-         call. = FALSE)
-  }
-  
-  # Find if the data is going to have multiple sample, timeslices or bands
-  res2 <- res %>%
-    ungroup() %>%
-    filter(property %in% prop) %>%
-    summarize(is_multi_band      = max(count_band) > 1,
-              is_multi_sample    = max(count_sample) > 1,
-              is_multi_timeslice = max(count_timeslice) > 1)
-  if (res2$is_multi_timeslice)
-    columns <- c(setdiff(columns, "timeslice"), "timeslice")
-  if (res2$is_multi_band)
-    columns <- c(setdiff(columns, "band"), "band")
-  if (res2$is_multi_sample)
-    columns <- c(setdiff(columns, "sample"), "sample")
-  
-  # Key filter checks
-  if (!is.null(filter)) {
-    assert_that(is.list(filter))
-    assert_that(names_are_columns(filter))
-    assert_that(time_not_a_name(filter))
-  }
-  
-  # Columns should not include collection and property; they are always reported
-  columns <- setdiff(columns, c("collection", "property"))
-  
-  # If columns include name, add parent automatically
-  if ("name" %in% columns)
-    columns <- c("name", "parent", setdiff(columns, c("name", "parent")))
-  
-  # Time range checks and convert to POSIXct
-  #    time.range2 could be renamed to time.range in the future
-  #    https://github.com/hadley/dplyr/issues/857
-  if (!is.null(time.range)) {
-    assert_that(is.character(time.range), length(time.range) == 2L)
-    time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
-    assert_that(correct_date(time.range2))
-  }
-  
-  list(prop = prop, columns = columns, time.range = time.range) 
-}
 
 
 # Filtering *****************************************************************************
