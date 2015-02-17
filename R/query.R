@@ -31,21 +31,6 @@ get_tables <- function(filename) {
   out
 }
 
-# Get query for one SQLite database
-get_query <- function(filename, query) {
-  # Open connection
-  thesql <- src_sqlite(filename)
-  
-  # Read names
-  out <- RSQLite::dbGetQuery(thesql$con, query)
-  
-  # Close connection
-  DBI::dbDisconnect(thesql$con)
-  
-  # Return result
-  out
-}
-
 # Get a table for all scenarios
 get_table_scenario <- function(db, from) {
   # Check inputs
@@ -69,7 +54,14 @@ query_scenario <- function(db, query) {
     db %>%
       filter(position == i) %>%
       group_by(scenario, position, filename) %>%
-      do(get_query(.$filename, query)) %>%
+      do({
+        # Get query by opeing file, reading and closing
+        # TODO: Make query safe
+        thesql <- src_sqlite(.$filename)
+        out <- RSQLite::dbGetQuery(thesql$con, query)
+        DBI::dbDisconnect(thesql$con)
+        out
+      }) %>%
       ungroup()
   }
 }
