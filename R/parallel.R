@@ -58,12 +58,12 @@ stop_parallel_rplexos <- function() {
 #' @export
 check_parallel_rplexos <- function() {
   if(is.null(.rplexos.cluster)) {
-    cat("Parallel queries are disabled")
+    cat("Parallel queries are disabled\n")
     return(invisible(1))
   }
   
   n.cluster <- foreach::getDoParWorkers()
-  cat("Parallel queries enabled with", n.cluster, "threads")
+  cat("Parallel queries enabled with", n.cluster, "threads\n")
     
   return(invisible(n.cluster))
 }
