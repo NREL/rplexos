@@ -458,7 +458,7 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
   
   if (identical(time, "interval") & multiply.time) {
     # Get length of intervals in hours
-    times <- get_table_scenario(d, "time", "scenario")
+    times <- get_table_scenario(d, "time")
     delta <- times %>%
       group_by(scenario) %>%
       mutate(time = lubridate::ymd_hms(time)) %>%
@@ -570,7 +570,6 @@ master_checks <- function(db, time, col, prop, columns, time.range, filter, phas
   # Time range checks and convert to POSIXct
   #    time.range2 could be renamed to time.range in the future
   #    https://github.com/hadley/dplyr/issues/857
-  escape.POSIXt <- dplyr:::escape.Date
   if (!is.null(time.range)) {
     assert_that(is.character(time.range), length(time.range) == 2L)
     time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
