@@ -207,20 +207,18 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   db.temp <- expand.grid(position = db$position, property = new$prop) %>%
     mutate(collection = col)
   db.prop <- db.temp %>%
-    left_join(db, by = "position")
+    left_join(db, by = "position") %>%
+    group_by(scenario, position, collection, property)
   
   # Select parallel operator, if necessary
   `%dp%` <- select_do()
   
   # Query data for each property
-  out <- foreach::foreach(i = db$position, .combine = rbind) %dp% {
+  out <- foreach::foreach(i = db$position, .combine = rbind_list) %dp% {
     db.prop %>%
       filter(position == i) %>%
-      group_by(scenario, position, filename, collection, property) %>%
-      do(query_master_each(., time, new$columns, new$time.range, filter, phase)) %>%
-      ungroup %>%
-      select(-filename)
-  }
+      do(query_master_each(., time, new$columns, new$time.range, filter, phase))
+  } %>% ungroup()
   
   # Return empty dataframe if no results were returned
   if (nrow(out) == 0) {
