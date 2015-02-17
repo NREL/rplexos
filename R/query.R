@@ -50,20 +50,23 @@ query_scenario <- function(db, query) {
   # Select parallel operator, if necessary
   `%dp%` <- select_do()
   
-  foreach::foreach(i = db$position, .combine = rbind) %dp% {
+  # Make sure that columns are reported
+  db <- db %>%
+    group_by(scenario, position, filename)
+  
+  foreach::foreach(i = db$position, .combine = rbind_list) %dp% {
     db %>%
       filter(position == i) %>%
-      group_by(scenario, position, filename) %>%
       do({
         # Get query by opeing file, reading and closing
-        # TODO: Make query safe
+        # TODO: Close connection if query fails
         thesql <- src_sqlite(.$filename)
         out <- RSQLite::dbGetQuery(thesql$con, query)
         DBI::dbDisconnect(thesql$con)
         out
-      }) %>%
-      ungroup()
-  }
+      })
+  } %>%
+    ungroup()
 }
 
 #' Get list of available properties
