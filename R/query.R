@@ -568,19 +568,17 @@ master_checks <- function(db, time, col, prop, columns, time.range, filter, phas
     columns <- c("name", "parent", setdiff(columns, c("name", "parent")))
   
   # Time range checks and convert to POSIXct
+  #    time.range2 could be renamed to time.range in the future
+  #    https://github.com/hadley/dplyr/issues/857
+  escape.POSIXt <- dplyr:::escape.Date
   if (!is.null(time.range)) {
     assert_that(is.character(time.range), length(time.range) == 2L)
-    time.range <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
-    assert_that(correct_date(time.range))
+    time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
+    assert_that(correct_date(time.range2))
   }
   
   list(prop = prop, columns = columns, time.range = time.range) 
 }
-
-# Fix problem with filtering times in dplyr
-#    May be addressed in dplyr in the future
-#    https://github.com/hadley/dplyr/issues/857
-escape.POSIXt <- dplyr:::escape.Date
 
 
 # Filtering *****************************************************************************
