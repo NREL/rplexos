@@ -19,7 +19,6 @@ group_by_char <- function(x, vars) {
   group_by_(x, .dots = dots)
 }
 
-
 #' Get list of valid columns
 #'
 #' List of valid columns accepted in \code{\link{query_master}}, \code{\link{sum_master}} and related functions.
@@ -59,12 +58,6 @@ is_sample_stats <- function(x)
 list_folders <- function() {
   f <- dir()
   f[file.info(f)$isdir]
-}
-
-# dplyr escape function for time-data objects
-escape.POSIXct <- function(x, parens = NA, collapse = ", ", con = NULL) {
-  x <- as.character(x)
-  escape(x, parens = parens, collapse = collapse, con = con)
 }
 
 # Custom function to print debug messages

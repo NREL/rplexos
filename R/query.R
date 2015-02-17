@@ -577,11 +577,6 @@ master_checks <- function(db, time, col, prop, columns, time.range, filter, phas
   list(prop = prop, columns = columns, time.range = time.range) 
 }
 
-# Fix problem with filtering times in dplyr
-#    May be addressed in dplyr in the future
-#    https://github.com/hadley/dplyr/issues/857
-escape.POSIXt <- dplyr:::escape.Date
-
 
 # Filtering *****************************************************************************
 
