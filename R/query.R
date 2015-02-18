@@ -17,12 +17,12 @@ get_table <- function(filename, table) {
 }
 
 # Get one table from a SQLite database
-get_tables <- function(filename) {
+get_list_tables <- function(filename) {
   # Open connection
   thesql <- src_sqlite(filename)
   
   # Read names
-  out <- data.table(tables = src_tbls(thesql))
+  out <- data.frame(tables = src_tbls(thesql))
   
   # Close connection
   DBI::dbDisconnect(thesql$con)
