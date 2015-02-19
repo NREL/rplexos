@@ -31,6 +31,16 @@ get_list_tables <- function(filename) {
   out
 }
 
+# Get a query for a SQLite file
+# TODO: Close connection if query fails
+#' @export
+get_query <- function(filename, query) {
+  thesql <- src_sqlite(filename)
+  out <- RSQLite::dbGetQuery(thesql$con, query)
+  DBI::dbDisconnect(thesql$con)
+  out
+}
+
 # Get a table for all scenarios
 get_table_scenario <- function(db, from) {
   # Check inputs
@@ -47,26 +57,23 @@ query_scenario <- function(db, query) {
   # Check inputs
   assert_that(is.rplexos(db), is.string(query))
   
-  # Select parallel operator, if necessary
-  `%dp%` <- select_do()
-  
   # Make sure that columns are reported
   db <- db %>%
     group_by(scenario, position, filename)
   
-  foreach::foreach(i = db$position, .combine = rbind_list) %dp% {
-    db %>%
-      filter(position == i) %>%
-      do({
-        # Get query by opeing file, reading and closing
-        # TODO: Close connection if query fails
-        thesql <- src_sqlite(.$filename)
-        out <- RSQLite::dbGetQuery(thesql$con, query)
-        DBI::dbDisconnect(thesql$con)
-        out
-      })
-  } %>%
-    ungroup()
+  # Get query data
+  if (!is_parallel_rplexos()) {
+    out <- db %>%
+      do(get_query(.$filename, query))
+  } else {
+    out <- foreach(i = db$position, .combine = rbind_list) %dopar% {
+      db %>%
+        filter(position == i) %>%
+        do(get_query(.$filename, query))
+    }
+  }
+  
+  out %>% ungroup
 }
 
 #' Get list of available properties
@@ -196,6 +203,7 @@ query_log_steps <- function(db) {
 #' 
 #' @export
 #' @importFrom data.table data.table CJ
+#' @importFrom foreach foreach %dopar%
 query_master <- function(db, time, col, prop, columns = "name", time.range = NULL, filter = NULL, phase = 4) {
   
   ### BEGIN: Execute query (when the funciton is called by rplexos internally
@@ -378,18 +386,24 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   
   ### END: Master query checks
   
-  # Select parallel operator, if necessary
-  `%dp%` <- select_do()
-  
   # Query data for each property
-  out <- foreach::foreach(i = db$position, .combine = rbind_list) %dp% {
-    db %>%
-      filter(position == i) %>%
-      group_by(scenario, position) %>%
-      mutate(internal = TRUE) %>%
-      do(query_master(., time, col, prop, columns, time.range, filter, phase)) %>%
-      ungroup
+  db2 <- db %>%
+    group_by(scenario, position) %>%
+    mutate(internal = TRUE)
+  
+  if (!is_parallel_rplexos()) {
+    out <- db2 %>%
+      do(query_master(., time, col, prop, columns, time.range, filter, phase))
+  } else {
+    out <- foreach(i = db2$position, .combine = rbind_list) %dopar% {
+      db2 %>%
+        filter(position == i) %>%
+        do(query_master(., time, col, prop, columns, time.range, filter, phase))
+    }
   }
+  
+  # Ungroup results
+  out <- out %>% ungroup
   
   # Return empty dataframe if no results were returned
   if (nrow(out) == 0) {
