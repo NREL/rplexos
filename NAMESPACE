@@ -2,6 +2,7 @@
 
 S3method(print,rplexos)
 export(check_parallel_rplexos)
+export(is_parallel_rplexos)
 export(is_sample_stats)
 export(list_folders)
 export(plexos_open)

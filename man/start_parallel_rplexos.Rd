@@ -2,6 +2,7 @@
 % Please edit documentation in R/parallel.R
 \name{start_parallel_rplexos}
 \alias{check_parallel_rplexos}
+\alias{is_parallel_rplexos}
 \alias{start_parallel_rplexos}
 \alias{stop_parallel_rplexos}
 \title{Enable or disable parallel queries}
@@ -11,6 +12,8 @@ start_parallel_rplexos(ncores = 1, silent = FALSE)
 stop_parallel_rplexos()
 
 check_parallel_rplexos()
+
+is_parallel_rplexos()
 }
 \arguments{
 \item{ncores}{Number of cores to use (defaults to 1)}
@@ -26,8 +29,8 @@ to use when querying in parallel.
 
 If the number of cores is set to 1 (the default), parallel queries are disables.
 
-\code{check_parallel_plexos} shows whether parallel queries are currently enabled
-and the number of cores being used.
+\code{is_parallel_plexos} and \code{check_parallel_plexos} show whether parallel
+ queries are currently enabled and the number of cores being used, respectively.
 }
 \examples{
 \dontrun{start_parallel_rplexos(3)}

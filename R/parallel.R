@@ -7,8 +7,8 @@
 #'
 #' If the number of cores is set to 1 (the default), parallel queries are disables.
 #'
-#' \code{check_parallel_plexos} shows whether parallel queries are currently enabled
-#' and the number of cores being used.
+#'  \code{is_parallel_plexos} and \code{check_parallel_plexos} show whether parallel
+#'  queries are currently enabled and the number of cores being used, respectively.
 #'
 #' @param ncores Number of cores to use (defaults to 1)
 #' @param silent Print status of parallel queries at the end
@@ -57,9 +57,7 @@ stop_parallel_rplexos <- function() {
 #' @rdname start_parallel_rplexos
 #' @export
 check_parallel_rplexos <- function() {
-  cluster <- get("cluster", rplexos_globals)
-  
-  if(is.null(cluster)) {
+  if(!is_parallel_rplexos()) {
     n.cluster <- 1
     cat("Parallel queries are disabled\n")
   } else {
@@ -67,18 +65,12 @@ check_parallel_rplexos <- function() {
     cat("Parallel queries enabled with", n.cluster, "threads\n")
   }
   
-  return(invisible(n.cluster))
+  invisible(n.cluster)
 }
 
-# Function to do parallel calculations, if needed
-select_do <- function() {
+#' @rdname start_parallel_rplexos
+#' @export
+is_parallel_rplexos <- function() {
   cluster <- get("cluster", rplexos_globals)
-  
-  if (is.null(cluster)) {
-    out <- foreach::`%do%`
-  } else {
-    out <- foreach::`%dopar%`
-  }
-  
-  out
+  !is.null(cluster)
 }
