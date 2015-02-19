@@ -93,46 +93,38 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
     arrange(filename) %>%
     mutate(id = paste0(type, 1:n()))
   
-  print(nrow(df2))
-  print(seq_along(nrow(df2)))
   cat("Found files:\n")
   for (i in 1:nrow(df2))
     cat("\t", df2$id[i], ":\t", df2$filename[i], "\n", sep = "")
   cat("\n")
   
-  # Process input databases
-  if ("I" %in% df2$type) {
-    cat("Processing input files:\n")
-    df3 <- df2 %>% filter(type == "I")
-    
-    if (!is_parallel_rplexos()) {
-      df3 %>%
-        group_by(id) %>%
-        do(res = process_input(.$filename))
-    } else {
-      foreach(i = df3$filename) %dopar% 
-        process_input(.$filename)
-    }
-    
-    cat("\n")
-  }
+  # Process files
+  cat("Processing files:\n")
   
-  # Process solution files
-  if ("S" %in% df2$type) {
-    cat("Processing solution files:\n")
-    df3 <- df2 %>% filter(type == "S")
-    
-    if (!is_parallel_rplexos()) {
-      df3 %>%
-        group_by(id) %>%
-        do(res = process_solution(.$filename, keep.temp))
-    } else {
-      foreach(i = df3$filename) %dopar% 
-        process_solution(.$filename, keep.temp)
+  if (!is_parallel_rplexos()) {
+    df2 %>%
+      group_by(id) %>%
+      do(process_file(.$filename, .$type, keep.temp))
+  } else {
+    foreach(i = df2$id) %dopar% {
+      df3 <- df2 %>% filter(id == i)
+      process_file(df3$filename, df3$type, keep.temp)
     }
-    
-    cat("\n")
   }
   
   invisible(TRUE)
+}
+
+# Genertic function to launch the actual function
+#' @export
+process_file <- function(filename, type, keep.temp) {
+  # Choose whether is
+  if(type == "I") {
+    process_input(filename)
+  } else {
+    process_solution(filename, keep.temp)
+  }
+  
+  # Return a data.frame, to be compatible with do()
+  data.frame()
 }
