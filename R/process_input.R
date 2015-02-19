@@ -39,7 +39,7 @@ process_input <- function(file) {
   }
   
   # Create an empty database and add the XML information
-  cat("  - Input: '", file, "'", sep = "")
+  cat("  - Input: '", file, "'\n", sep = "")
   
   # Open connection to SQLite for R
   dbf <- src_sqlite(db.name, create = TRUE)
