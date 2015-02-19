@@ -32,11 +32,11 @@ get_list_tables <- function(filename) {
 }
 
 # Get a query for a SQLite file
-# TODO: Close connection if query fails
 #' @export
 get_query <- function(filename, query) {
+  out <- data.frame()
   thesql <- src_sqlite(filename)
-  out <- RSQLite::dbGetQuery(thesql$con, query)
+  try(out <- RSQLite::dbGetQuery(thesql$con, query))
   DBI::dbDisconnect(thesql$con)
   out
 }
