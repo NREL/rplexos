@@ -6,7 +6,7 @@
 \alias{stop_parallel_rplexos}
 \title{Enable or disable parallel queries}
 \usage{
-start_parallel_rplexos(ncores = 1)
+start_parallel_rplexos(ncores = 1, silent = FALSE)
 
 stop_parallel_rplexos()
 
@@ -14,6 +14,8 @@ check_parallel_rplexos()
 }
 \arguments{
 \item{ncores}{Number of cores to use (defaults to 1)}
+
+\item{silent}{Print status of parallel queries at the end}
 }
 \description{
 Multiple solutions can be queried in parallel to improve performace.

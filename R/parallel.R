@@ -1,7 +1,3 @@
-# Variable to hold cluster info and function to do parallelization
-#' @export
-.rplexos.cluster <- NULL
-
 #' Enable or disable parallel queries
 #'
 #' Multiple solutions can be queried in parallel to improve performace.
@@ -15,34 +11,38 @@
 #' and the number of cores being used.
 #'
 #' @param ncores Number of cores to use (defaults to 1)
+#' @param silent Print status of parallel queries at the end
 #'
 #' @examples
 #' \dontrun{start_parallel_rplexos(3)}
 #' @export
-start_parallel_rplexos <- function(ncores = 1) {
+start_parallel_rplexos <- function(ncores = 1, silent = FALSE) {
   # Check inputs
   assert_that(is.count(ncores), ncores >= 1)
+  cluster <- get("cluster", rplexos_globals)
   
   # If one cluster is selected, turn of parallel capabilities
   if (ncores == 1) {
-    if (!is.null(.rplexos.cluster)) {
-      parallel::stopCluster(.rplexos.cluster)
-      .rplexos.cluster <<- NULL
+    if (!is.null(cluster)) {
+      parallel::stopCluster(cluster)
+      assign("cluster", NULL, rplexos_globals)
     }
+  } else {
+    # Make sure you don't start more cores that available
+    max.cores <- parallel::detectCores()
+    if(ncores > (max.cores - 1))
+      ncores <- max.cores - 1
     
-    return(invisible(1))
+    # Create cluster with desired number of cores
+    cluster <- parallel::makeCluster(ncores)
+    assign("cluster", cluster, rplexos_globals)
+    
+    # Register cluster
+    doParallel::registerDoParallel(cluster)
   }
   
-  # Make sure you don't start more cores that available
-  max.cores <- parallel::detectCores()
-  if(ncores > max.cores)
-    ncores <- max.cores
-  
-  # Create cluster with desired number of cores
-  .rplexos.cluster <<- parallel::makeCluster(ncores)
-  
-  # Register cluster
-  doParallel::registerDoParallel(.rplexos.cluster)
+  if (!silent)
+    check_parallel_rplexos()
   
   invisible(ncores)
 }
@@ -57,20 +57,24 @@ stop_parallel_rplexos <- function() {
 #' @rdname start_parallel_rplexos
 #' @export
 check_parallel_rplexos <- function() {
-  if(is.null(.rplexos.cluster)) {
+  cluster <- get("cluster", rplexos_globals)
+  
+  if(is.null(cluster)) {
+    n.cluster <- 1
     cat("Parallel queries are disabled\n")
-    return(invisible(1))
+  } else {
+    n.cluster <- foreach::getDoParWorkers()
+    cat("Parallel queries enabled with", n.cluster, "threads\n")
   }
   
-  n.cluster <- foreach::getDoParWorkers()
-  cat("Parallel queries enabled with", n.cluster, "threads\n")
-    
   return(invisible(n.cluster))
 }
 
 # Function to do parallel calculations, if needed
 select_do <- function() {
-  if (is.null(.rplexos.cluster)) {
+  cluster <- get("cluster", rplexos_globals)
+  
+  if (is.null(cluster)) {
     out <- foreach::`%do%`
   } else {
     out <- foreach::`%dopar%`
