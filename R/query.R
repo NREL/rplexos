@@ -33,10 +33,10 @@ get_list_tables <- function(filename) {
 
 # Get a query for a SQLite file
 #' @export
-get_query <- function(filename, query) {
+get_query <- function(filename, sql) {
   out <- data.frame()
   thesql <- src_sqlite(filename)
-  try(out <- RSQLite::dbGetQuery(thesql$con, query))
+  try(out <- RSQLite::dbGetQuery(thesql$con, sql))
   DBI::dbDisconnect(thesql$con)
   out
 }
@@ -52,10 +52,20 @@ get_table_scenario <- function(db, from) {
     ungroup()
 }
 
-# Get query for all scenarios
-query_scenario <- function(db, query) {
+#' Get query for all scenarios
+#'
+#' Send a SQL query to all the files in a PLEXOS database object.
+#'
+#' @param db PLEXOS database object
+#' @param sql String containing the SQL query to be performed
+#'
+#' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
+#' @seealso \code{\link{query_master}} to perform standard queries of data
+#'
+#' @export
+query_sql <- function(db, sql) {
   # Check inputs
-  assert_that(is.rplexos(db), is.string(query))
+  assert_that(is.rplexos(db), is.string(sql))
   
   # Make sure that columns are reported
   db <- db %>%
@@ -64,12 +74,12 @@ query_scenario <- function(db, query) {
   # Get query data
   if (!is_parallel_rplexos()) {
     out <- db %>%
-      do(get_query(.$filename, query))
+      do(get_query(.$filename, sql))
   } else {
     out <- foreach(i = db$position, .combine = rbind_list) %dopar% {
       db %>%
         filter(position == i) %>%
-        do(get_query(.$filename, query))
+        do(get_query(.$filename, sql))
     }
   }
   
@@ -200,6 +210,7 @@ query_log_steps <- function(db) {
 #' @return A data frame that contains data summarized/aggregated by scenario.
 #' 
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
+#' @seealso \code{\link{query_sql}} to perform custom queries
 #' 
 #' @export
 #' @importFrom data.table data.table CJ

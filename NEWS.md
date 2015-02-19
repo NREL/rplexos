@@ -1,5 +1,12 @@
 # rplexos 0.12.1.99
 
+## Enhancements
+* `plexos_open` no longer opens the SQLite connections, so `plexos_close` is not needed
+  anymore.
+* Expose function `query_sql`, which can be used to execute a SQL query on each PLEXOS
+  database. (#20)
+
+
 ## Bug fixes
 
 * Non-time filters are now correclty applied if `time.range` is not defined. (#15)

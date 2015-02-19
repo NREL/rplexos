@@ -10,7 +10,8 @@
 #' @param folders character. Folder(s) where the data is located (each folder represents a scenario)
 #' @param names character. Scenario names
 #'
-#' @seealso \code{\link{query_master}}
+#' @seealso \code{\link{query_master}} to perform standard queries of data
+#' @seealso \code{\link{query_sql}} to perform custom queries
 #' 
 #' @export
 plexos_open <- function(folders = ".", names = folders) {
