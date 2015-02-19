@@ -550,16 +550,15 @@ sum_year     <- function(db, ...) sum_master(db, "year", ...)
 # Time filter
 filter_rplexos_time <- function(out, time.range, modified = FALSE) {
   # Do nothing if time.range is empty
-  if (is.null(time.range)) {
-    return(out)
-  } else if (modified) {
-    out %>%
-      filter(time_from <= time.range[2], time_to >= time.range[1]) %>%
-      return
+  if (!is.null(time.range)) {
+    if (modified) {
+      out <- filter(out, time_from <= time.range[2], time_to >= time.range[1])
+    } else {
+      out <- filter(out, between(time, time.range[1], time.range[2]))
+    }
   }
   
-  out %>%
-    filter(between(time, time.range[1], time.range[2]))
+  out
 }
 
 # Other filters
