@@ -304,13 +304,27 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   ### END: Execute query (when the funciton is called by rplexos internally
   
   
-  
-  
   # Check inputs
   assert_that(is.rplexos(db))
   assert_that(is.string(time), is.string(col), is.character(prop), is.character(columns), is.scalar(phase))
   assert_that(correct_time(time), correct_phase(phase))
   assert_that(are_columns(columns))
+  
+  # Key filter checks
+  if (!is.null(filter)) {
+    assert_that(is.list(filter))
+    assert_that(names_are_columns(filter))
+    assert_that(time_not_a_name(filter))
+  }
+  
+  # Time range checks and convert to POSIXct
+  #    time.range2 could be renamed to time.range in the future
+  #    https://github.com/hadley/dplyr/issues/857
+  if (!is.null(time.range)) {
+    assert_that(is.character(time.range), length(time.range) == 2L)
+    time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
+    assert_that(correct_date(time.range2))
+  }
   
   ### BEGIN: Master query checks
   
@@ -328,23 +342,17 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
          call. = FALSE)
   }
   
-  # Checks if property is the wildcard symbol
-  if (length(prop) == 1L) {
-    if (identical(prop, "*"))
+  # Checks if property is the wildcard symbol and if properties are valid
+  if (identical(prop, "*")) {
       prop <- unique(res$property)
-  }
-  
-  # Check that all properties are valid
-  invalid.prop <- setdiff(prop, res$property)
-  if (length(invalid.prop) == 1L) {
-    stop("Property '", invalid.prop, "' in collection '", col, "' is not valid for ", is.summ.txt, " data and phase '", phase, "'.\n",
-         "   Use query_property() for list of available collections and properties.",
-         call. = FALSE)
-  } else if (length(invalid.prop) > 1L) {
-    stop("Properties ", paste0("'", invalid.prop, "'", collapse = ", "), " in collection '", col,
-         "' are not valid for ", is.summ.txt, " data and phase '", phase, "'.\n",
-         "   Use query_property() for list of available collections and properties.",
-         call. = FALSE)
+  } else {
+    invalid.prop <- setdiff(prop, res$property)
+     if (length(invalid.prop) > 1L) {
+      stop("Properties ", paste0("'", invalid.prop, "'", collapse = ", "), " in collection '", col,
+           "' are not valid for ", is.summ.txt, " data and phase '", phase, "'.\n",
+           "   Use query_property() for list of available collections and properties.",
+           call. = FALSE)
+     }
   }
   
   # Find if the data is going to have multiple sample, timeslices or bands
@@ -361,28 +369,12 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   if (res2$is_multi_sample)
     columns <- c(setdiff(columns, "sample"), "sample")
   
-  # Key filter checks
-  if (!is.null(filter)) {
-    assert_that(is.list(filter))
-    assert_that(names_are_columns(filter))
-    assert_that(time_not_a_name(filter))
-  }
-  
   # Columns should not include collection and property; they are always reported
   columns <- setdiff(columns, c("collection", "property"))
   
   # If columns include name, add parent automatically
   if ("name" %in% columns)
     columns <- c("name", "parent", setdiff(columns, c("name", "parent")))
-  
-  # Time range checks and convert to POSIXct
-  #    time.range2 could be renamed to time.range in the future
-  #    https://github.com/hadley/dplyr/issues/857
-  if (!is.null(time.range)) {
-    assert_that(is.character(time.range), length(time.range) == 2L)
-    time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
-    assert_that(correct_date(time.range2))
-  }
   
   ### END: Master query checks
   
