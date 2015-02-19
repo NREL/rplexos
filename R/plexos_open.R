@@ -76,7 +76,7 @@ plexos_open <- function(folders = ".", names = folders) {
     ungroup() %>%
     mutate(position = 1:n()) %>%
     group_by(scenario, position, filename) %>%
-    do(tables = get_list_tabless(.$filename),
+    do(tables = get_list_tables(.$filename),
        properties = get_table(.$filename, "property")) %>%
     ungroup()
   
