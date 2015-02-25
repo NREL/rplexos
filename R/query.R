@@ -216,113 +216,6 @@ query_log_steps <- function(db) {
 #' @importFrom data.table data.table CJ
 #' @importFrom foreach foreach %dopar%
 query_master <- function(db, time, col, prop, columns = "name", time.range = NULL, filter = NULL, phase = 4) {
-  
-  ### BEGIN: Execute query (when the funciton is called by rplexos internally
-  
-  if ("internal" %in% names(db)) {
-    # Open connection
-    thesql <- src_sqlite(db$filename)
-    
-    if (!identical(time, "interval")) {
-      # Get summary data
-      
-      # Workaround for a problem with dplyr
-      if (length(prop) == 1L) {
-        out <- tbl(thesql, time) %>% filter(property == prop)
-      } else {
-        out <- tbl(thesql, time) %>% filter(property %in% prop)
-      }
-      
-      out <- out %>%
-        filter(collection == col, phase_id == phase) %>%
-        filter_rplexos(filter) %>%
-        filter_rplexos_time(time.range) %>%
-        select_rplexos(columns, add.key = FALSE) %>%
-        collect %>%
-        mutate(time = lubridate::ymd_hms(time, quiet = TRUE))
-    } else {
-      # Interval data
-      
-      # Get the table names that store the data
-      if (length(prop) == 1L) {
-        t.name <- db$properties[[1]] %>% filter(property == prop)
-      } else {
-        t.name <- db$properties[[1]] %>% filter(property %in% prop)
-      }
-      t.name <- t.name %>%
-        filter(collection == col, phase_id == phase, is_summary == 0) %>%
-        select(collection, property, table_name) %>%
-        mutate(table_name = gsub("data_interval_", "", table_name))
-      
-      # Get max/min time existing in the table to be queried
-      #   In case time table has more time stamps than those in the dataset
-      time.limit <- t.name %>%
-        group_by(collection, property) %>%
-        do(
-          tbl(thesql, .$table_name) %>%
-            filter(phase_id == phase) %>%
-            summarize(time_from = min(time_from), time_to = max(time_to)) %>%
-            collect
-          )
-      min.time.data <- min(time.limit$time_from)
-      max.time.data <- max(time.limit$time_to)
-      
-      # Collect time data
-      time.data <- tbl(thesql, "time") %>%
-        filter(between(time, min.time.data, max.time.data)) %>%
-        filter_rplexos_time(time.range) %>%
-        select(time) %>%
-        collect
-      
-      # If time data is empty, return an empty data frame
-      if (nrow(time.data) == 0L) {
-        DBI::dbDisconnect(thesql$con)
-        return(data.frame())
-      }
-      
-      # Convert into R time-data format
-      time.data$time <- lubridate::ymd_hms(time.data$time)
-      
-      # Get interval data
-      out <- t.name %>%
-        group_by(collection, property) %>%
-        do(tbl(thesql, .$table_name) %>%
-          filter(phase_id == phase) %>%
-          filter_rplexos(filter) %>%
-          filter_rplexos_time(time.range, modified = TRUE) %>%
-          select(-time_to) %>%
-          rename(time = time_from) %>%
-          select_rplexos(columns, add.key = TRUE) %>%
-          collect
-        ) %>%
-        ungroup %>%
-        mutate(time = lubridate::ymd_hms(time))
-      
-      # Expand data
-      #   This will be easier when dplyr supports rolling joins
-      out2 <- data.table(out, key = "key,time")
-      cj2 <- CJ(key = unique(out$key), time = time.data$time)
-      
-      out3 <- out2[cj2, roll = TRUE]
-      out <- out3 %>%
-        as.data.frame(stringsAsFactors = FALSE) %>%
-        select(-key)
-      
-      # Restore time zone
-      attributes(out$time) <- attributes(time.data$time)
-    }
-    
-    # Disconnect database
-    DBI::dbDisconnect(thesql$con)
-    
-    # Return value
-    return(out)
-  }
-  
-  
-  ### END: Execute query (when the funciton is called by rplexos internally
-  
-  
   # Check inputs
   assert_that(is.rplexos(db))
   assert_that(is.string(time), is.string(col), is.character(prop), is.character(columns), is.scalar(phase))
@@ -361,10 +254,8 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
          call. = FALSE)
   }
   
-  # Checks if property is the wildcard symbol and if properties are valid
-  if (identical(prop, "*")) {
-      prop <- unique(res$property)
-  } else {
+  # Checks if properties are valid
+  if (!identical(prop, "*")) {
     invalid.prop <- setdiff(prop, res$property)
      if (length(invalid.prop) > 1L) {
       stop("Properties ", paste0("'", invalid.prop, "'", collapse = ", "), " in collection '", col,
@@ -399,17 +290,16 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   
   # Query data for each property
   db2 <- db %>%
-    group_by(scenario, position) %>%
-    mutate(internal = TRUE)
+    group_by(scenario, position)
   
   if (!is_parallel_rplexos()) {
     out <- db2 %>%
-      do(query_master(., time, col, prop, columns, time.range, filter, phase))
+      do(query_master_each(., time, col, prop, columns, time.range, filter, phase))
   } else {
     out <- foreach(i = db2$position, .combine = rbind_list) %dopar% {
       db2 %>%
         filter(position == i) %>%
-        do(query_master(., time, col, prop, columns, time.range, filter, phase))
+        do(query_master_each(., time, col, prop, columns, time.range, filter, phase))
     }
   }
   
@@ -439,6 +329,111 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   
   out
 }
+
+# Open one database and query data (called by query_master)
+#' @export
+query_master_each <- function(db, time, col, prop, columns = "name", time.range = NULL, filter = NULL, phase = 4) {
+  # Open connection
+  thesql <- src_sqlite(db$filename)
+  
+  if (!identical(time, "interval")) {
+    # Query interval data
+    if (identical(prop, "*")) {
+      out <- tbl(thesql, time)
+    } else if (length(prop) == 1L) {
+      # Workaround for a problem with dplyr
+      out <- tbl(thesql, time) %>% filter(property == prop)
+    } else {
+      out <- tbl(thesql, time) %>% filter(property %in% prop)
+    }
+    
+    out <- out %>%
+      filter(collection == col, phase_id == phase) %>%
+      filter_rplexos(filter) %>%
+      filter_rplexos_time(time.range) %>%
+      select_rplexos(columns, add.key = FALSE) %>%
+      collect %>%
+      mutate(time = lubridate::ymd_hms(time, quiet = TRUE))
+  } else {
+    # Query interval data
+    # Get the table names that store the data
+    if (identical(prop, "*")) {
+      t.name <- db$properties[[1]]
+    } else if(length(prop) == 1L) {
+      t.name <- db$properties[[1]] %>% filter(property == prop)
+    } else {
+      t.name <- db$properties[[1]] %>% filter(property %in% prop)
+    }
+    t.name <- t.name %>%
+      filter(collection == col, phase_id == phase, is_summary == 0) %>%
+      select(collection, property, table_name) %>%
+      mutate(table_name = gsub("data_interval_", "", table_name))
+    
+    # Get max/min time existing in the table to be queried
+    #   In case time table has more time stamps than those in the dataset
+    time.limit <- t.name %>%
+      group_by(collection, property) %>%
+      do(
+        tbl(thesql, .$table_name) %>%
+          filter(phase_id == phase) %>%
+          summarize(time_from = min(time_from), time_to = max(time_to)) %>%
+          collect
+      )
+    min.time.data <- min(time.limit$time_from)
+    max.time.data <- max(time.limit$time_to)
+    
+    # Collect time data
+    time.data <- tbl(thesql, "time") %>%
+      filter(between(time, min.time.data, max.time.data)) %>%
+      filter_rplexos_time(time.range) %>%
+      select(time) %>%
+      collect
+    
+    # If time data is empty, return an empty data frame
+    if (nrow(time.data) == 0L) {
+      DBI::dbDisconnect(thesql$con)
+      return(data.frame())
+    }
+    
+    # Convert into R time-data format
+    time.data$time <- lubridate::ymd_hms(time.data$time)
+    
+    # Get interval data
+    out <- t.name %>%
+      group_by(collection, property) %>%
+      do(tbl(thesql, .$table_name) %>%
+           filter(phase_id == phase) %>%
+           filter_rplexos(filter) %>%
+           filter_rplexos_time(time.range, modified = TRUE) %>%
+           select(-time_to) %>%
+           rename(time = time_from) %>%
+           select_rplexos(columns, add.key = TRUE) %>%
+           collect
+      ) %>%
+      ungroup %>%
+      mutate(time = lubridate::ymd_hms(time))
+  
+    # Expand data
+    #   This will be easier when dplyr supports rolling joins
+    out2 <- data.table(out, key = "key,time")
+    cj2 <- CJ(key = unique(out$key), time = time.data$time)
+    
+    out3 <- out2[cj2, roll = TRUE]
+    out <- out3 %>%
+      as.data.frame(stringsAsFactors = FALSE) %>%
+      select(-key)
+    
+    # Restore time zone
+    attributes(out$time) <- attributes(time.data$time)
+  }
+  
+  # Disconnect database
+  DBI::dbDisconnect(thesql$con)
+  
+  # Return value
+  return(out)
+}
+
 
 # Deal with repeats
 solve_ties <- function(x, opt = getOption("rplexos.tiebreak")) {
