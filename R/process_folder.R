@@ -115,7 +115,7 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
   invisible(TRUE)
 }
 
-# Genertic function to launch the actual function
+# Generic function to launch the actual function
 #' @export
 process_file <- function(filename, type, keep.temp) {
   # Choose whether is
