@@ -52,26 +52,79 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
     stop(paste(not.dirs, collapse = ", "), " are not valid folders", call. = FALSE)
   }
   
-  # Iterate through list of folders
-  for (folder in folders) {
-    message("Folder: '", folder, "'")
+  # Function to list PLEXOS files in each folder
+  plexos_list_files <- function(df, is.xml = TRUE) {
+    filt.str <- ifelse(is.xml, ".xml$|.XML$", ".zip$|.ZIP$")
     
-    # Read list of potential PLEXOS solution and input files
-    zip.files <- list.files(folder, ".zip$|.ZIP$", full.names = TRUE)
-    xml.files <- list.files(folder, ".xml$|.XML$", full.names = TRUE)
+    filename <- list.files(df$folder, filt.str, full.names = TRUE)
     
-    # If no ZIP or XML files found, skip to the next folder
-    if (length(zip.files) + length(xml.files) == 0L) {
-      message("  - No solutions found, skipping folder")
-      next
+    if (length(filename) == 0L) {
+      return(data.frame())
     }
     
-    # Process each file
-    vapply(zip.files, process_solution, "", keep.temp)
-    vapply(xml.files, process_input, "")
-    
-    message("  - Finished folder!")
+    data.frame(type = ifelse(is.xml, "I", "S"),
+               filename,
+               stringsAsFactors = FALSE)
+  }
+  
+  # Get database file names
+  df <- data.frame(folder = folders,
+                   stringsAsFactors = FALSE) %>%
+    group_by(folder) %>%
+    do(rbind(plexos_list_files(., TRUE),
+             plexos_list_files(., FALSE)))
+  
+  # Error if all folders were empty
+  if (nrow(df) == 0L)
+    stop("No input/solution files were found", call. = FALSE)
+  
+  # Check for folders without databases
+  folder.missing <- setdiff(folders, df$folder)
+  if (length(folder.missing) > 0L) {
+    warning("No databases found in folder",
+            ifelse(length(folder.missing) == 1L, ": ", "s: "),
+            paste(folder.missing, collapse = ", "),
+            call. = FALSE)
+  }
+  
+  # Create new id for identification on screen
+  df2 <- df %>%
+    group_by(type) %>%
+    arrange(filename) %>%
+    mutate(id = paste0(type, 1:n()))
+  
+  cat("Found files:\n")
+  for (i in 1:nrow(df2))
+    cat("\t", df2$id[i], ":\t", df2$filename[i], "\n", sep = "")
+  cat("\n")
+  
+  # Process files
+  cat("Processing files:\n")
+  
+  if (!is_parallel_rplexos()) {
+    df2 %>%
+      group_by(id) %>%
+      do(process_file(.$filename, .$type, keep.temp))
+  } else {
+    foreach(i = df2$id) %dopar% {
+      df3 <- df2 %>% filter(id == i)
+      process_file(df3$filename, df3$type, keep.temp)
+    }
   }
   
   invisible(TRUE)
+}
+
+# Genertic function to launch the actual function
+#' @export
+process_file <- function(filename, type, keep.temp) {
+  # Choose whether is
+  if(type == "I") {
+    process_input(filename)
+  } else {
+    process_solution(filename, keep.temp)
+  }
+  
+  # Return a data.frame, to be compatible with do()
+  data.frame()
 }
