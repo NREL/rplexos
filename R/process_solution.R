@@ -543,7 +543,7 @@ add_extra_tables <- function(db) {
   
   # Add collection (to match PLEXOS GUI) and table name
   key2 <- key %>%
-    mutate(collection = ifelse(identical(parent_class, "System"),
+    mutate(collection = ifelse(parent_class == "System",
                                child_class,
                                paste0(parent_class, ".", child_collection)),
            table_name = paste0("data_interval_", clean_string(collection), "_", clean_string(property)))
