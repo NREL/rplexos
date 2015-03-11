@@ -104,27 +104,21 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
   if (!is_parallel_rplexos()) {
     df2 %>%
       group_by(id) %>%
-      do(process_file(.$filename, .$type, keep.temp))
+      do(if(.$type == "I") {
+        process_input(.$filename)
+      } else {
+        process_solution(.$filename, keep.temp)
+      })
   } else {
-    foreach(i = df2$id) %dopar% {
+    foreach(i = df2$id, .packages = c("dplyr", "rplexos")) %dopar% {
       df3 <- df2 %>% filter(id == i)
-      process_file(df3$filename, df3$type, keep.temp)
+      if (df3$type == "I") {
+        process_input(df3$filename)
+      } else {
+        process_solution(df3$filename, keep.temp)
+      }
     }
   }
   
   invisible(TRUE)
-}
-
-# Generic function to launch the actual function
-#' @export
-process_file <- function(filename, type, keep.temp) {
-  # Choose whether is
-  if(type == "I") {
-    process_input(filename)
-  } else {
-    process_solution(filename, keep.temp)
-  }
-  
-  # Return a data.frame, to be compatible with do()
-  data.frame()
 }
