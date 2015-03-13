@@ -60,13 +60,6 @@ list_folders <- function() {
   f[file.info(f)$isdir]
 }
 
-# Custom function to print debug messages
-rplexos_message <- function(...) {
-  if (getOption("rplexos.debug")) {
-    message("*** rplexos debug: ", ...)
-  }
-}
-
 
 # *** assert_that validation functions ***
 

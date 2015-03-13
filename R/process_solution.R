@@ -61,7 +61,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   }
   
   # Read content from the XML file
-  xml.content <- try(read_file_in_zip(file, xml.pos), silent = !getOption("rplexos.debug"))
+  xml.content <- try(read_file_in_zip(file, xml.pos), silent = !is_debug_rplexos())
   if (inherits(xml.content, "try-error")) {
     stop("Error reading XML file into memory", call. = FALSE)
   }
@@ -315,7 +315,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   
   # Read Log file into memory
   rplexos_message("Reading and processing log file")
-  log.content <- try(read_file_in_zip(file, log.pos), silent = !getOption("rplexos.debug"))
+  log.content <- try(read_file_in_zip(file, log.pos), silent = !is_debug_rplexos())
   if (inherits(log.content, "try-error")) {
     # Error reading log file, throw a warning
     warning("Could not read Log in solution '", file, "'\n",
