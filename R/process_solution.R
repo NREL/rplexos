@@ -315,9 +315,8 @@ process_solution <- function(file, keep.temp = FALSE) {
   
   # Read Log file into memory
   rplexos_message("Reading and processing log file")
-  log.content <- NULL
-  try(log.content <- read_file_in_zip(file, log.pos), silent = !getOption("rplexos.debug"))
-  if (is.null(log.content)) {
+  log.content <- try(read_file_in_zip(file, log.pos), silent = !getOption("rplexos.debug"))
+  if (inherits(log.content, "try-error")) {
     # Error reading log file, throw a warning
     warning("Could not read Log in solution '", file, "'\n",
             "    Data parsed correctly if no other errors were found.",
