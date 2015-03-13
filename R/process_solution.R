@@ -67,7 +67,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   }
   
   # Check that XML is a valid PLEXOS file
-  plexos.check <- grep("SolutionDataset", xml.content)
+  plexos.check <- grep("SolutionDataset", xml.content[1])
   if (length(plexos.check) == 0L) {
     rplexos_message("Invalid XML content in ", file)
     warning(file, " is not a PLEXOS database and was ignored.", call. = FALSE, immediate. = TRUE)
@@ -356,8 +356,17 @@ process_solution <- function(file, keep.temp = FALSE) {
 read_file_in_zip <- function(zip.file, position) {
   zip.content <- unzip(zip.file, list = TRUE)
   read.file <- zip.content[position, ]
-  read.con <- unz(zip.file, read.file$Name, open = "r")
-  read.content <- readChar(read.con, read.file$Length)
+  read.con <- unz(zip.file, read.file$Name)
+  
+  # readChar cannot read files that are very large
+  if (read.file$Length < 2^31) {
+    read.content <- readChar(read.con, read.file$Length)
+  } else {
+    rplexos_message("XML file is large (", read.file$Length, " bytes)")
+    read.content <- readLines(read.con)
+    
+  }
+  
   close(read.con)
   read.content
 }
