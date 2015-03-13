@@ -1,5 +1,11 @@
 # rplexos 0.12.1.99
 
+## Enhancements
+
+* Added shortcut functions to enable/disable debug mode: `start_debug_rplexos()` and
+  `stop_debug_rplexos()`.
+
+
 ## Bug fixes
 
 * Non-time filters are now correclty applied if `time.range` is not defined. (#15)
