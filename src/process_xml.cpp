@@ -40,13 +40,13 @@ bool column_is_id(std::string col_name) {
 Rcpp::List process_xml(std::string xml) {
     // Start XML variables
     xml_document<> doc;
-	xml_node<> *root_node;
+    xml_node<> *root_node;
     
     // Parse XML file and find root node
     vector<char> contents(xml.size() + 1);
     copy(xml.begin(), xml.end(), contents.begin());
-	doc.parse<0> (&contents[0]);
-	root_node = doc.first_node();
+    doc.parse<0> (&contents[0]);
+    root_node = doc.first_node();
     
     // Variables for the loop
     vector<string> table_names;
@@ -56,7 +56,7 @@ Rcpp::List process_xml(std::string xml) {
     int prev_pos = -1, pos = -1;
     
     // Get list of tables and headers
-	for (xml_node<> *param_node = root_node->first_node(); param_node; param_node = param_node->next_sibling()) {
+    for (xml_node<> *param_node = root_node->first_node(); param_node; param_node = param_node->next_sibling()) {
         vector<string> names(0);
         curr_table = string(param_node->name());
         
