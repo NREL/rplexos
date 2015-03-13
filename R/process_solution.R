@@ -61,9 +61,8 @@ process_solution <- function(file, keep.temp = FALSE) {
   }
   
   # Read content from the XML file
-  xml.content <- NULL
-  try(xml.content <- read_file_in_zip(file, xml.pos), silent = !getOption("rplexos.debug"))
-  if (is.null(xml.content)) {
+  xml.content <- try(read_file_in_zip(file, xml.pos), silent = !getOption("rplexos.debug"))
+  if (inherits(xml.content, "try-error")) {
     stop("Error reading XML file into memory", call. = FALSE)
   }
   
