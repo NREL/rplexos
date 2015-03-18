@@ -1,6 +1,8 @@
 # rplexos 0.12.1.99
 
 ## Enhancements
+* Added shortcut functions to enable/disable debug mode: `start_debug_rplexos()` and
+  `stop_debug_rplexos()`.
 * `plexos_open` no longer opens the SQLite connections, so `plexos_close` is not needed
   anymore.
 * Expose function `query_sql`, which can be used to execute a SQL query on each PLEXOS
@@ -12,6 +14,7 @@
 ## Bug fixes
 
 * Non-time filters are now correclty applied if `time.range` is not defined. (#15)
+* Ability to read large (>3 GB) input files.
 * Fix detection of invalid properties in queries.
 
 

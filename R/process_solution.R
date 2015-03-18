@@ -61,14 +61,13 @@ process_solution <- function(file, keep.temp = FALSE) {
   }
   
   # Read content from the XML file
-  xml.content <- NULL
-  try(xml.content <- read_file_in_zip(file, xml.pos), silent = !getOption("rplexos.debug"))
-  if (is.null(xml.content)) {
+  xml.content <- try(read_file_in_zip(file, xml.pos), silent = !is_debug_rplexos())
+  if (inherits(xml.content, "try-error")) {
     stop("Error reading XML file into memory", call. = FALSE)
   }
   
   # Check that XML is a valid PLEXOS file
-  plexos.check <- grep("SolutionDataset", xml.content)
+  plexos.check <- grep("SolutionDataset", xml.content[1])
   if (length(plexos.check) == 0L) {
     rplexos_message("Invalid XML content in ", file)
     warning(file, " is not a PLEXOS database and was ignored.", call. = FALSE, immediate. = TRUE)
@@ -316,9 +315,8 @@ process_solution <- function(file, keep.temp = FALSE) {
   
   # Read Log file into memory
   rplexos_message("Reading and processing log file")
-  log.content <- NULL
-  try(log.content <- read_file_in_zip(file, log.pos), silent = TRUE)
-  if (is.null(log.content)) {
+  log.content <- try(read_file_in_zip(file, log.pos), silent = !is_debug_rplexos())
+  if (inherits(log.content, "try-error")) {
     # Error reading log file, throw a warning
     warning("Could not read Log in solution '", file, "'\n",
             "    Data parsed correctly if no other errors were found.",
@@ -358,8 +356,22 @@ process_solution <- function(file, keep.temp = FALSE) {
 read_file_in_zip <- function(zip.file, position) {
   zip.content <- unzip(zip.file, list = TRUE)
   read.file <- zip.content[position, ]
-  read.con <- unz(zip.file, read.file$Name, open = "r")
-  read.content <- readChar(read.con, read.file$Length)
+  read.con <- unz(zip.file, read.file$Name, "rb")
+  .nBytes <- 2^30
+  
+  # readChar cannot read files that are very large
+  if (read.file$Length > .nBytes) {
+    rplexos_message("File '", read.file$Name, "' is large (", read.file$Length, " bytes)")
+  }
+  
+  nchunks <- ceiling(read.file$Length / .nBytes)
+  read.content <- character(nchunks)
+  
+  for (i in seq_len(nchunks)) {
+    nread <- min(.nBytes, read.file$Length - (i-1) * .nBytes)
+    read.content[i] <- readChar(read.con, nread, TRUE)
+  }
+  
   close(read.con)
   read.content
 }

@@ -21,13 +21,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // process_xml
-Rcpp::List process_xml(std::string xml);
+Rcpp::List process_xml(Rcpp::CharacterVector xml);
 RcppExport SEXP rplexos_process_xml(SEXP xmlSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< std::string >::type xml(xmlSEXP );
+        Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type xml(xmlSEXP );
         Rcpp::List __result = process_xml(xml);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
