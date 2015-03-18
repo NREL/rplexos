@@ -6,7 +6,7 @@
 * Expose function `query_sql`, which can be used to execute a SQL query on each PLEXOS
   database. (#20)
 * Add fast queries for phases, timeslices, samples, objects, classes, time, etc. in the
-  solutions (#20)
+  solutions. See `help("query_time")` and related functions. (#20)
 
 
 ## Bug fixes
