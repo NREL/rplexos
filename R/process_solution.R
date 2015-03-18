@@ -357,14 +357,19 @@ read_file_in_zip <- function(zip.file, position) {
   zip.content <- unzip(zip.file, list = TRUE)
   read.file <- zip.content[position, ]
   read.con <- unz(zip.file, read.file$Name)
+  .nBytes <- 2^30
   
   # readChar cannot read files that are very large
-  if (read.file$Length < 2^31) {
-    read.content <- readChar(read.con, read.file$Length)
-  } else {
-    rplexos_message("XML file is large (", read.file$Length, " bytes)")
-    read.content <- readLines(read.con)
-    
+  if (read.file$Length > .nBytes) {
+    rplexos_message("File '", read.file$Name, "' is large (", read.file$Length, " bytes)")
+  }
+  
+  nchunks <- ceiling(read.file$Length / .nBytes)
+  read.content <- character(nchunks)
+  
+  for (i in seq_len(nchunks)) {
+    nread <- min(.nBytes, read.file$Length - (i-1) * .nBytes)
+    read.content[i] <- readChar(read.con, nread, TRUE)
   }
   
   close(read.con)
