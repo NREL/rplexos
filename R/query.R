@@ -98,11 +98,8 @@ query_sql <- function(db, sql) {
 #'
 #' @export
 query_property <- function(db) {
-  out <- get_table_scenario(db, "property")
-  phases <- c("LT", "PASA", "MT", "ST")
-  phases.df <- data.frame(phase_id = 1:4, phase = factor(phases, levels = phases))
-  out %>%
-    inner_join(phases.df, by = "phase_id") %>%
+  get_table_scenario(db, "property") %>%
+    add_phase_names %>%
     reshape2::dcast(phase_id + phase + is_summary + class_group + class + collection + property + unit ~ scenario,
                     length, value.var = "unit")
 }
@@ -384,6 +381,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
     
     # Collect time data
     time.data <- tbl(thesql, "time") %>%
+      filter(phase_id == phase) %>%
       filter(between(time, min.time.data, max.time.data)) %>%
       filter_rplexos_time(time.range) %>%
       select(time) %>%
