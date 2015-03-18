@@ -76,15 +76,15 @@ query_class_member <- function(db, class) {
 
 #' @rdname query_class_member
 #' @export
-query_generator <- function(db) get_class_members(db, "Generator")
+query_generator <- function(db) query_class_member(db, "Generator")
 
 #' @rdname query_class_member
 #' @export
-query_region    <- function(db) get_class_members(db, "Region")
+query_region    <- function(db) query_class_member(db, "Region")
 
 #' @rdname query_class_member
 #' @export
-query_zone      <- function(db) get_class_members(db, "Zone")
+query_zone      <- function(db) query_class_member(db, "Zone")
 
 #' Get time spans from all databases
 #'
@@ -102,7 +102,7 @@ query_time <- function(db) {
     add_phase_names %>%
     mutate(start = lubridate::ymd_hms(start),
            end = lubridate::ymd_hms(end),
-           timestep = difftime(end, start, unit = "mins") / (count - 1)) %>%
+           timestep = difftime(end, start, units = "mins") / (count - 1)) %>%
     select(scenario, position, phase_id, phase, start, end, count, timestep) %>%
     arrange(position, phase_id)
 }

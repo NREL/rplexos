@@ -6,4 +6,5 @@ globalVariables(c("zone", "region", "parent_class", "child_class",
   "count_timeslice", "filename", "scenario", "key", "value",
   "interval_id", "interval_to_id", "db", "period_id", "time_from",
   "time_to", "Version", "rplexos", "d", "error", "interval",
-  "tables", "properties", "i"))
+  "tables", "properties", "i", "phase", "timestep", "name", "type",
+  "folder", "class_group"))
