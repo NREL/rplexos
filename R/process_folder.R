@@ -106,8 +106,10 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
       group_by(id) %>%
       do(if(.$type == "I") {
         process_input(.$filename)
+        data.frame()
       } else {
         process_solution(.$filename, keep.temp)
+        data.frame()
       })
   } else {
     foreach(i = df2$id, .packages = c("dplyr", "rplexos")) %dopar% {
