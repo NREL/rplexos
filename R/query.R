@@ -31,7 +31,17 @@ get_list_tables <- function(filename) {
   out
 }
 
-# Get a query for a SQLite file
+#' Get a query for a SQLite file
+#'
+#' Used internally by \code{\link{query_sql}}. Use that function instead to access data. The
+#' use of this function is not recommended
+#'
+#' @param filename SQLite file location
+#' @param sql String containing the SQL query to be performed
+#'
+#' @seealso \code{\link{query_sql}} to perform standard queries of data
+#' 
+#' @keywords internal
 #' @export
 get_query <- function(filename, sql) {
   out <- data.frame()
@@ -333,7 +343,16 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   out
 }
 
-# Open one database and query data (called by query_master)
+#' Open one database and query data
+#'
+#' Used internally by \code{\link{query_master}}. Use that function instead to access data. The
+#' use of this function is not recommended
+#'
+#' @inheritParams query_master
+#'
+#' @seealso \code{\link{query_master}} to query PLEXOS solutions
+#' 
+#' @keywords internal
 #' @export
 query_master_each <- function(db, time, col, prop, columns = "name", time.range = NULL, filter = NULL, phase = 4) {
   # Open connection
