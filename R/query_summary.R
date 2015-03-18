@@ -1,5 +1,7 @@
 # Functions to quickly query certain information from the solution
 
+# TODO: Expose functions (possible after renaming) and add documentation
+
 get_phases <- function(db) {
   sql <- "SELECT DISTINCT phase_id, period_type_id AS is_summary FROM key"
   query_sql(db, sql) %>%
