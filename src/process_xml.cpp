@@ -37,19 +37,20 @@ bool column_is_id(std::string col_name) {
 }
 
 // [[Rcpp::export]]
-Rcpp::List process_xml(std::vector<std::string> xml) {
+Rcpp::List process_xml(Rcpp::CharacterVector xml) {
     // Start XML variables
     xml_document<> doc;
     xml_node<> *root_node;
     
     // Merge all the strings into one
-    int xml_len = 0;
+    long xml_len = 0;
     for (int i = 0; i < xml.size(); ++i)
-        xml_len += xml.at(i).size();
+        xml_len += xml[i].size();
+    
     vector<char> contents(xml_len + 1);
     vector<char>::iterator it = contents.begin();
     for (int i = 0; i < xml.size(); ++i)
-        it = copy(xml.at(i).begin(), xml.at(i).end(), it);
+        it = copy(xml[i].begin(), xml[i].end(), it);
     
     // Parse XML file and find root node
     doc.parse<0> (&contents[0]);

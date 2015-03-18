@@ -356,7 +356,7 @@ process_solution <- function(file, keep.temp = FALSE) {
 read_file_in_zip <- function(zip.file, position) {
   zip.content <- unzip(zip.file, list = TRUE)
   read.file <- zip.content[position, ]
-  read.con <- unz(zip.file, read.file$Name)
+  read.con <- unz(zip.file, read.file$Name, "rb")
   .nBytes <- 2^30
   
   # readChar cannot read files that are very large
