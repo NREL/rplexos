@@ -159,12 +159,12 @@ process_solution <- function(file, keep.temp = FALSE) {
   for (i in times) {
     sql <- sprintf("CREATE TABLE data_%s (key integer, time real, value double)", i);
     DBI::dbGetQuery(dbf$con, sql)
+    
+    sql <- sprintf("CREATE VIEW %s AS    
+                    SELECT %s, datetime(d.time) AS time, d.value 		
+                    FROM data_%s d NATURAL LEFT JOIN key k ", i, view.k2, i);		
+    DBI::dbGetQuery(dbf$con, sql)
   }
-  
-  sql <- sprintf("CREATE VIEW %s AS  	
-                  SELECT %s, datetime(d.time) AS time, d.value 		
-                  FROM data_%s d NATURAL LEFT JOIN key k ", i, view.k2, i);		
-  DBI::dbGetQuery(dbf$con, sql)
   
   # Create interval data tables and views
   sql <- "SELECT DISTINCT table_name
