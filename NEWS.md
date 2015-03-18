@@ -10,6 +10,7 @@
 ## Bug fixes
 
 * Non-time filters are now correclty applied if `time.range` is not defined. (#15)
+* Fix detection of invalid properties in queries.
 
 
 # rplexos 0.12.1
