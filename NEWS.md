@@ -1,21 +1,26 @@
-# rplexos 0.12.1.99
+# rplexos 0.13
 
 ## Enhancements
-* Added shortcut functions to enable/disable debug mode: `start_debug_rplexos()` and
-  `stop_debug_rplexos()`.
+
+* Add capabilities to query (#10) and process files in parallel (#23). This mode can
+  be initiated and stopped with `start_parallel_rplexos()` and `stop_parallel_rplexos()`,
+  respectively
+* Add shortcut functions to enable/disable debug mode: `start_debug_rplexos()` and
+  `stop_debug_rplexos()`
 * `plexos_open` no longer opens the SQLite connections, so `plexos_close` is not needed
-  anymore.
+  anymore
 * Expose function `query_sql`, which can be used to execute a SQL query on each PLEXOS
-  database. (#20)
+  database (#20)
 * Add fast queries for phases, timeslices, samples, objects, classes, time, etc. in the
   solutions. See `help("query_time")` and related functions. (#20)
+* `process_folder` now processes all input and solution files that it can find
 
 
 ## Bug fixes
 
-* Non-time filters are now correclty applied if `time.range` is not defined. (#15)
-* Ability to read large (>3 GB) input files.
-* Fix detection of invalid properties in queries.
+* Non-time filters are now correclty applied if `time.range` is not defined (#15)
+* Ability to read large (>3 GB) XML files
+* Fix detection of invalid properties in queries
 
 
 # rplexos 0.12.1
