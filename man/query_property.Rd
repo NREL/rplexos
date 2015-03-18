@@ -16,5 +16,15 @@ the property appears.
 }
 \seealso{
 \code{\link{plexos_open}} to create the PLEXOS database object
+
+Other special.queries: \code{\link{query_band}},
+  \code{\link{query_phase}}, \code{\link{query_sample}},
+  \code{\link{query_timeslice}}; \code{\link{query_class}},
+  \code{\link{query_class_member}},
+  \code{\link{query_generator}},
+  \code{\link{query_region}}, \code{\link{query_zone}};
+  \code{\link{query_config}}; \code{\link{query_log}},
+  \code{\link{query_log_steps}}; \code{\link{query_sql}};
+  \code{\link{query_time}}
 }
 

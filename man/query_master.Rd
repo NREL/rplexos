@@ -116,5 +116,7 @@ from power time series (in MW).
 }
 \seealso{
 \code{\link{plexos_open}} to create the PLEXOS database object
+
+\code{\link{query_sql}} to perform custom queries
 }
 

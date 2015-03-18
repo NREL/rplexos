@@ -21,6 +21,8 @@ Do not rename the SQLite databases created with the \code{\link{process_folder}}
 The code expects those filenames to remain unchanged.
 }
 \seealso{
-\code{\link{query_master}}
+\code{\link{query_master}} to perform standard queries of data
+
+\code{\link{query_sql}} to perform custom queries
 }
 

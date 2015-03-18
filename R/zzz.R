@@ -9,7 +9,10 @@
   if(any(toset)) options(op.rplexos[toset])
   
   # By default, turn off parallel queries
-  stop_parallel_rplexos()
+  assign("rplexos_globals", new.env(), envir=parent.env(environment()))
+  if (!"cluster" %in% ls(rplexos_globals))
+    assign("cluster", NULL, rplexos_globals)
+  start_parallel_rplexos(1, TRUE)
 
   invisible()
 }
