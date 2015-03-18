@@ -55,6 +55,18 @@ get_regions    <- function(db) get_class_members(db, "Region")
 get_zones      <- function(db) get_class_members(db, "Zone")
 
 
+get_time <- function(db) {
+  sql <- "SELECT phase_id, min(time) start, max(time) end, count(time) count
+          FROM time GROUP BY phase_id"
+  query_sql(db, sql) %>%
+    add_phase_names %>%
+    mutate(start = lubridate::ymd_hms(start),
+           end = lubridate::ymd_hms(end),
+           timestep = difftime(end, start, unit = "mins") / (count - 1)) %>%
+    select(scenario, position, phase_id, phase, start, end, count, timestep) %>%
+    arrange(position, phase_id)
+}
+
 # Shortcut to add phase names to a result
 add_phase_names <- function(x) {
   phases <- c("LT", "PASA", "MT", "ST")
