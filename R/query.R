@@ -381,6 +381,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
     
     # Collect time data
     time.data <- tbl(thesql, "time") %>%
+      filter(phase_id == phase) %>%
       filter(between(time, min.time.data, max.time.data)) %>%
       filter_rplexos_time(time.range) %>%
       select(time) %>%
