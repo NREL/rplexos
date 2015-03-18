@@ -1,7 +1,6 @@
 # rplexos 0.12.1.99
 
 ## Enhancements
-
 * Added shortcut functions to enable/disable debug mode: `start_debug_rplexos()` and
   `stop_debug_rplexos()`.
 * `plexos_open` no longer opens the SQLite connections, so `plexos_close` is not needed
