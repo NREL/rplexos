@@ -254,7 +254,7 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   # Checks if properties are valid
   if (!identical(prop, "*")) {
     invalid.prop <- setdiff(prop, res$property)
-     if (length(invalid.prop) > 1L) {
+     if (length(invalid.prop) > 0L) {
       stop("Properties ", paste0("'", invalid.prop, "'", collapse = ", "), " in collection '", col,
            "' are not valid for ", is.summ.txt, " data and phase '", phase, "'.\n",
            "   Use query_property() for list of available collections and properties.",
