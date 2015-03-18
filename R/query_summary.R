@@ -1,8 +1,15 @@
 # Functions to quickly query certain information from the solution
 
-# TODO: Expose functions (possible after renaming) and add documentation
-
-get_phases <- function(db) {
+#' Get summary information from all databases
+#'
+#' Get the list of phases, samples, timeslices and bands  that are available in each database.
+#'
+#' @param db PLEXOS database object
+#'
+#' @family special queries
+#' 
+#' @export
+query_phase <- function(db) {
   sql <- "SELECT DISTINCT phase_id, period_type_id AS is_summary FROM key"
   query_sql(db, sql) %>%
     add_phase_names %>%
@@ -10,8 +17,9 @@ get_phases <- function(db) {
     arrange(position, phase_id, is_summary)
 }
 
-
-get_samples <- function(db) {
+#' @rdname query_phase
+#' @export
+query_sample <- function(db) {
   sql <- "SELECT DISTINCT phase_id, period_type_id AS is_summary, sample FROM key"
   query_sql(db, sql) %>%
     add_phase_names %>%
@@ -19,8 +27,9 @@ get_samples <- function(db) {
     arrange(position, phase_id, is_summary)
 }
 
-
-get_timeslices <- function(db) {
+#' @rdname query_phase
+#' @export
+query_timeslice <- function(db) {
   sql <- "SELECT DISTINCT phase_id, period_type_id AS is_summary, timeslice FROM key"
   query_sql(db, sql) %>%
     add_phase_names %>%
@@ -28,7 +37,9 @@ get_timeslices <- function(db) {
     arrange(position, phase_id, is_summary)
 }
 
-get_bands <- function(db) {
+#' @rdname query_phase
+#' @export
+query_band <- function(db) {
   sql <- "SELECT DISTINCT phase_id, period_type_id AS is_summary, band FROM key"
   query_sql(db, sql) %>%
     add_phase_names %>%
@@ -36,26 +47,55 @@ get_bands <- function(db) {
     arrange(position, phase_id, is_summary)
 }
 
-get_classes <- function(db) {
+#' @rdname query_class_member
+#' @export
+query_class <- function(db) {
   sql <- "SELECT DISTINCT class_group, class FROM key"
   query_sql(db, sql) %>%
     select(-filename) %>%
     arrange(position, class_group, class)
 }
 
-get_class_members <- function(db, class) {
+#' Get list of objects from all databases
+#'
+#' Get the list of objects and classes in each database. Shortcuts for generators, regions and zones
+#' are provided for convenience.
+#'
+#' @param db PLEXOS database object
+#' @param class Type of class to query
+#'
+#' @family special queries
+#' 
+#' @export
+query_class_member <- function(db, class) {
   sql <- sprintf("SELECT DISTINCT name, parent, region, zone FROM key WHERE class = '%s'", class)
   query_sql(db, sql) %>%
     select(-filename) %>%
     arrange(position, name)
 }
 
-get_generators <- function(db) get_class_members(db, "Generator")
-get_regions    <- function(db) get_class_members(db, "Region")
-get_zones      <- function(db) get_class_members(db, "Zone")
+#' @rdname query_class_member
+#' @export
+query_generator <- function(db) get_class_members(db, "Generator")
 
+#' @rdname query_class_member
+#' @export
+query_region    <- function(db) get_class_members(db, "Region")
 
-get_time <- function(db) {
+#' @rdname query_class_member
+#' @export
+query_zone      <- function(db) get_class_members(db, "Zone")
+
+#' Get time spans from all databases
+#'
+#' Get the time limits and time step lengths for each simulation phase.
+#'
+#' @param db PLEXOS database object
+#'
+#' @family special queries
+#' 
+#' @export
+query_time <- function(db) {
   sql <- "SELECT phase_id, min(time) start, max(time) end, count(time) count
           FROM time GROUP BY phase_id"
   query_sql(db, sql) %>%

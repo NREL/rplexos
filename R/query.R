@@ -61,7 +61,8 @@ get_table_scenario <- function(db, from) {
 #'
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
 #' @seealso \code{\link{query_master}} to perform standard queries of data
-#'
+#' @family special queries
+#' 
 #' @export
 query_sql <- function(db, sql) {
   # Check inputs
@@ -95,6 +96,7 @@ query_sql <- function(db, sql) {
 #' @param db PLEXOS database object
 #'
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
+#' @family special queries
 #'
 #' @export
 query_property <- function(db) {
@@ -113,6 +115,7 @@ query_property <- function(db) {
 #' @param db PLEXOS database object
 #'
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
+#' @family special queries
 #'
 #' @export
 query_config <- function(db) {
@@ -128,6 +131,7 @@ query_config <- function(db) {
 #' @param db PLEXOS database object
 #'
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
+#' @family special queries
 #'
 #' @export
 query_log <- function(db) {
