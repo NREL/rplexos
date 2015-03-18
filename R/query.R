@@ -77,7 +77,8 @@ query_sql <- function(db, sql) {
     out <- db %>%
       do(get_query(.$filename, sql))
   } else {
-    out <- foreach(i = db$position, .combine = rbind_list) %dopar% {
+    out <- foreach(i = db$position, .combine = rbind_list,
+                   .packages = c("dplyr", "rplexos", "DBI", "RSQLite")) %dopar% {
       db %>%
         filter(position == i) %>%
         do(get_query(.$filename, sql))
@@ -297,7 +298,8 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
     out <- db2 %>%
       do(query_master_each(., time, col, prop, columns, time.range, filter, phase))
   } else {
-    out <- foreach(i = db2$position, .combine = rbind_list) %dopar% {
+    out <- foreach(i = db2$position, .combine = rbind_list,
+                   .packages = c("dplyr", "rplexos", "DBI", "RSQLite")) %dopar% {
       db2 %>%
         filter(position == i) %>%
         do(query_master_each(., time, col, prop, columns, time.range, filter, phase))

@@ -112,7 +112,7 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
         data.frame()
       })
   } else {
-    foreach(i = df2$id, .packages = c("dplyr", "rplexos")) %dopar% {
+    foreach(i = df2$id, .packages = c("dplyr", "rplexos", "DBI", "RSQLite")) %dopar% {
       df3 <- df2 %>% filter(id == i)
       if (df3$type == "I") {
         process_input(df3$filename)
