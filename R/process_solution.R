@@ -95,6 +95,8 @@ process_solution <- function(file, keep.temp = FALSE) {
   # Store time stamps
   sql <- "CREATE TABLE data_time (interval INT PRIMARY KEY, time TEXT)"
   DBI::dbGetQuery(dbf$con, sql)
+  sql <- "CREATE TABLE data_phase_time (phase_id INT, interval INT, time TEXT)"
+  DBI::dbGetQuery(dbf$con, sql)
   sql <- "CREATE VIEW time AS
           SELECT interval, datetime(time) time
           FROM data_time"
@@ -116,6 +118,12 @@ process_solution <- function(file, keep.temp = FALSE) {
   # Add time data
   sql <- "INSERT INTO new.data_time
           SELECT DISTINCT interval_id, time
+          FROM temp_period_0"
+  DBI::dbGetQuery(dbt$con, sql)
+  
+  # Add time data with phase_id
+  sql <- "INSERT INTO new.data_phase_time
+          SELECT phase_id, interval_id, time
           FROM temp_period_0"
   DBI::dbGetQuery(dbt$con, sql)
   
