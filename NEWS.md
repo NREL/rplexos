@@ -9,6 +9,7 @@
 ## Bug fixes
 
 * Non-time filters are now correclty applied if `time.range` is not defined. (#15)
+* Ability to read large (>3 GB) input files.
 
 
 # rplexos 0.12.1
