@@ -9,29 +9,21 @@ using namespace Rcpp;
 Rcpp::DataFrame expand_tkey(Rcpp::DataFrame tkey);
 RcppExport SEXP rplexos_expand_tkey(SEXP tkeySEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< Rcpp::DataFrame >::type tkey(tkeySEXP );
-        Rcpp::DataFrame __result = expand_tkey(tkey);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type tkey(tkeySEXP);
+    __result = Rcpp::wrap(expand_tkey(tkey));
+    return __result;
 END_RCPP
 }
 // process_xml
 Rcpp::List process_xml(Rcpp::CharacterVector xml);
 RcppExport SEXP rplexos_process_xml(SEXP xmlSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type xml(xmlSEXP );
-        Rcpp::List __result = process_xml(xml);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type xml(xmlSEXP);
+    __result = Rcpp::wrap(process_xml(xml));
+    return __result;
 END_RCPP
 }
