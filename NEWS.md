@@ -1,5 +1,12 @@
 # rplexos 0.13
 
+## Database structure
+
+Has not changed since v0.13
+
+
+# rplexos 0.13
+
 ## Enhancements
 
 * Add capabilities to query (#10) and process files in parallel (#23). This mode can

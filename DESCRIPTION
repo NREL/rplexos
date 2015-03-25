@@ -1,7 +1,7 @@
 Package: rplexos
 Type: Package
 Title: Read and Analyze PLEXOS Solutions
-Version: 0.13
+Version: 0.13.0.99
 Date: 2015-03-18
 Authors@R: c(
     person("Eduardo", "Ibanez", , "eduardo.ibanez@nrel.gov", c("aut", "cre")),
