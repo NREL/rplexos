@@ -16,6 +16,13 @@ library(rplexos)
 ```
 
 The rest of this file presents the preferred workflow to process PLEXOS solutions with this package.
+We will use an example database that comes preloaded with the package. This is the location of that
+database in your system.
+
+```{r}
+location <- system.file("extdata", "solution", package = "rplexos")
+location
+```
 
 
 ## Organize solutions
@@ -36,6 +43,11 @@ For example, let us assume we have two scenarios loaded in two folders: `HiWind`
 process_folder(c("HiWind", "HiSolar"))
 ```
 
+Let's process the sample database
+```{r}
+process_folder(location)
+```
+
 
 ## Open databases
 
@@ -44,6 +56,12 @@ Scenarios names can be defined at this point (if not provided, they default to t
 
 ```
 db <- plexos_open(c("HiWind", "HiSolar"), name = c("High Wind", "High Solar"))
+```
+
+To open the sample database:
+
+```{r}
+db <- plexos_open(location, "Sc1")
 ```
 
 
@@ -59,3 +77,8 @@ result4 <- query_month(a, "Generators", "Units Started", c("category", "region")
 ```
 
 The list of available properties can be seen with `?query_property`.
+
+```{r}
+query_property(db)
+```
+
