@@ -275,12 +275,15 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
            "   Use query_property() for list of available collections and properties.",
            call. = FALSE)
      }
+    
+    # Filter properties
+    res <- res %>%
+      filter(property %in% prop)
   }
   
   # Find if the data is going to have multiple sample, timeslices or bands
   res2 <- res %>%
     ungroup() %>%
-    filter(property %in% prop) %>%
     summarize(is_multi_band      = max(count_band) > 1,
               is_multi_sample    = max(count_sample) > 1,
               is_multi_timeslice = max(count_timeslice) > 1)
