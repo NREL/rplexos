@@ -30,22 +30,17 @@ location
 It is recommended to create a folder for each of your scenarios. If a run is divided in different
 solution files, copy them together in the same folder.
 
-For each folder, run the following command, where `folder` is a string representing the folder name.
+For each folder, run the following command to convert the zip file into a SQLite database.
+
+```{r}
+process_folder(location)
+```
+
 We can also provide a vector of strings with the names of all the folders that need to be processed.
-
-```
-process_folder(folder)
-```
-
 For example, let us assume we have two scenarios loaded in two folders: `HiWind` and `HiSolar`. 
 
 ```
 process_folder(c("HiWind", "HiSolar"))
-```
-
-Let's process the sample database
-```{r}
-process_folder(location)
 ```
 
 
@@ -54,20 +49,34 @@ process_folder(location)
 Once the databases have been processed, we can access them by first opening a connection with `plexos_open`.
 Scenarios names can be defined at this point (if not provided, they default to the folder names).
 
-```
-db <- plexos_open(c("HiWind", "HiSolar"), name = c("High Wind", "High Solar"))
-```
-
-To open the sample database:
-
 ```{r}
 db <- plexos_open(location, "Sc1")
+```
+
+Again, you can provide a vector of folders to open and a vector of scenario names.
+
+```
+db <- plexos_open(c("HiWind", "HiSolar"), name = c("High Wind", "High Solar"))
 ```
 
 
 ## Query data
 
 We can now use the `db` object to query and aggregate data using the functions documented in `query_master`.
+
+The list of available properties can be seen with `?query_property`.
+
+```{r}
+query_property(db)
+```
+
+There are also a number of queries that can be used to explore the contents of the solutions. For example,
+let's take a look at the list of generators:
+
+```{r}
+query_generator(db)
+```
+
 
 ```
 result1 <- query_interval(a, "Generators", "Net Generation")
@@ -76,9 +85,4 @@ result3 <- query_month(a, "Generators", "Generation")
 result4 <- query_month(a, "Generators", "Units Started", c("category", "region"))
 ```
 
-The list of available properties can be seen with `?query_property`.
-
-```{r}
-query_property(db)
-```
 
