@@ -35,3 +35,7 @@ test_that("Expected errors", {
   expect_error(process_folder(loc2ZIP))
   expect_warning(process_folder(c(loc, locERR)))
 })
+
+# Delete XML file to leave things the way they were
+file.remove(locDB)
+file.remove(locXML)
