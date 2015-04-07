@@ -32,4 +32,6 @@ test_that("Process vector of folders", {
 test_that("Expected errors", {
   skip_on_cran()
   expect_error(process_folder(locERR))
+  expect_error(process_folder(loc2ZIP))
+  expect_warning(process_folder(c(loc, locERR)))
 })
