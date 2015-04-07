@@ -57,4 +57,15 @@ location_solution_rplexos <- function() {
 #' @export
 location_input_rplexos <- function() {
   out <- system.file("extdata", "database", package = "rplexos")
+  
+  # File comes compressed by default. Decompress it
+  zip.path <- file.path(a, "three_nodes.zip")
+  if (file.exists(zip.path))
+    unzip(zip.path)
+  
+  # Remove zip file
+  file.remove(zip.path)
+  
+  # Return folder location
+  out
 }
