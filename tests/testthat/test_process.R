@@ -1,6 +1,7 @@
 library(rplexos)
 context("Process files")
 
+
 loc <- location_input_rplexos()
 locXML <- file.path(loc, "three_nodes.xml")
 locDB  <- file.path(loc, "three_nodes-input.db")
@@ -12,19 +13,23 @@ loc2DB  <- file.path(loc2, "Model_Base_Solution-rplexos.db")
 locERR <- system.file("extdata", package = "rplexos")
 
 test_that("Process database", {
+  skip_on_cran()
   expect_true(process_folder(loc))
   expect_equal(process_input(locXML), locDB)
 })
 
 test_that("Process solution", {
+  skip_on_cran()
   expect_true(process_folder(loc2))
   expect_equal(process_solution(loc2ZIP), loc2DB)
 })
 
 test_that("Process vector of folders", {
+  skip_on_cran()
   expect_true(process_folder(c(loc, loc2)))
 })
 
 test_that("Expected errors", {
+  skip_on_cran()
   expect_error(process_folder(locERR))
 })
