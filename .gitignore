@@ -1,4 +1,5 @@
 develop.r
+*.xml
 *.db
 src/*.o
 src/*.so
