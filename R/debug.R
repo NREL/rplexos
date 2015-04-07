@@ -59,9 +59,9 @@ location_input_rplexos <- function() {
   out <- system.file("extdata", "database", package = "rplexos")
   
   # File comes compressed by default. Decompress it
-  zip.path <- file.path(out, "three_nodes.zip")
   xml.path <- file.path(out, "three_nodes.xml")
-  if (file.exists(zip.path))
+  zip.path <- system.file("extdata", "three_nodes.zip", package = "rplexos")
+  if (!file.exists(xml.path))
     unzip(zip.path, exdir = out)
   
   # Return folder location
