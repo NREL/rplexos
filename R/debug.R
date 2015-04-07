@@ -60,11 +60,12 @@ location_input_rplexos <- function() {
   
   # File comes compressed by default. Decompress it
   zip.path <- file.path(a, "three_nodes.zip")
-  if (file.exists(zip.path))
+  if (file.exists(zip.path)) {
     unzip(zip.path)
-  
-  # Remove zip file
-  file.remove(zip.path)
+    
+    # Remove zip file
+    file.remove(zip.path)
+  }
   
   # Return folder location
   out
