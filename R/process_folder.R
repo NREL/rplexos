@@ -93,13 +93,13 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
     arrange(filename) %>%
     mutate(id = paste0(type, 1:n()))
   
-  cat("Found files:\n")
+  rplexos_message("Found files:")
   for (i in 1:nrow(df2))
-    cat("\t", df2$id[i], ":\t", df2$filename[i], "\n", sep = "")
-  cat("\n")
+    rplexos_message("\t", df2$id[i], ":\t", df2$filename[i], sep = "")
+  rplexos_message("")
   
   # Process files
-  cat("Processing files:\n")
+  rplexos_message("Processing files:")
   
   if (!is_parallel_rplexos()) {
     df2 %>%

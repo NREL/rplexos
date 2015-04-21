@@ -75,7 +75,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   }
   
   # Create an empty database and add the XML information
-  cat("  - Solution: '", file, "'\n", sep = "")
+  rplexos_message("  - Solution: '", file, "'", sep = "")
   
   # Open connection to SQLite for R
   dbt <- src_sqlite(db.temp, create = TRUE)
