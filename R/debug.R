@@ -42,3 +42,28 @@ check_debug_rplexos <- function() {
 is_debug_rplexos <- function() {
   getOption("rplexos.debug", FALSE)
 }
+
+#' Shortcut functions for rplexos sample files
+#'
+#' These functions return the folder where the PLEXOS sample files
+#' are located. They are uses in different examples and the vignettes.
+#'
+#' @export
+location_solution_rplexos <- function() {
+  system.file("extdata", "solution", package = "rplexos")
+}
+
+#' @rdname location_solution_rplexos
+#' @export
+location_input_rplexos <- function() {
+  out <- system.file("extdata", "database", package = "rplexos")
+  
+  # File comes compressed by default. Decompress it
+  xml.path <- file.path(out, "three_nodes.xml")
+  zip.path <- system.file("extdata", "three_nodes.zip", package = "rplexos")
+  if (!file.exists(xml.path))
+    unzip(zip.path, exdir = out)
+  
+  # Return folder location
+  out
+}

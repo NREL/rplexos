@@ -30,7 +30,8 @@ Imports:
     parallel,
     doParallel,
     foreach
-Suggests:
-    knitr
+Suggests: 
+    knitr,
+    testthat
 LinkingTo: Rcpp (>= 0.11.5)
 VignetteBuilder: knitr

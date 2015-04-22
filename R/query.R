@@ -248,6 +248,17 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
     assert_that(is.character(time.range), length(time.range) == 2L)
     time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
     assert_that(correct_date(time.range2))
+    
+    # If both entries are the same and given as YMD, the result is not correct
+    if (time.range2[1] == time.range2[2]) {
+      trh <- lubridate::hour(time.range2[2])
+      trm <- lubridate::minute(time.range2[2])
+      trs <- lubridate::second(time.range2[2])
+      
+      if (trh == 0  && trm == 0 && trs == 0) {
+        time.range[2] <- paste(time.range[2], "00:00:00")
+      }
+    }
   }
   
   ### BEGIN: Master query checks
@@ -275,12 +286,15 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
            "   Use query_property() for list of available collections and properties.",
            call. = FALSE)
      }
+    
+    # Filter properties
+    res <- res %>%
+      filter(property %in% prop)
   }
   
   # Find if the data is going to have multiple sample, timeslices or bands
   res2 <- res %>%
     ungroup() %>%
-    filter(property %in% prop) %>%
     summarize(is_multi_band      = max(count_band) > 1,
               is_multi_sample    = max(count_sample) > 1,
               is_multi_timeslice = max(count_timeslice) > 1)
@@ -522,19 +536,15 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
   columns2 <- c(setdiff(columns, "time"), "time")
   
   # Run query_master to get the raw data
-  df <- query_master(db, time, col, prop, columns2, time.range, filter, phase)
+  out <- query_master(db, time, col, prop, columns2, time.range, filter, phase)
   
   # If empty query is returned, return empty data.frame
-  if(nrow(df) == 0L)
+  if(nrow(out) == 0L)
     return(data.frame())
   
-  # Aggregate the data
-  out <- df %>% group_by_char(c("scenario", "collection", "property", columns2)) %>%
-    summarise(value = sum(value))
-  
-  if (identical(time, "interval") & multiply.time) {
+  if (identical(time, "interval") && (!"time" %in% columns) && multiply.time) {
     # Get length of intervals in hours
-    times <- get_table_scenario(d, "time")
+    times <- get_table_scenario(db, "time")
     delta <- times %>%
       group_by(scenario) %>%
       mutate(time = lubridate::ymd_hms(time)) %>%
@@ -543,6 +553,7 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
     # Add interval duration to the sum
     out <- out %>%
       inner_join(delta, by = "scenario") %>%
+      group_by_char(c("scenario", "collection", "property", columns)) %>%
       summarise(value = sum(value * interval))  
     
     # If unit is a column, modify column
@@ -553,12 +564,9 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
   } else {
     # Sum values
     out <- out %>%
+      group_by_char(c("scenario", "collection", "property", columns)) %>%
       summarise(value = sum(value))  
   }
-  
-  # Convert columns to factors
-  for (i in setdiff(columns2, "time"))
-    out[[i]] <- factor(out[[i]])
   
   out
 }

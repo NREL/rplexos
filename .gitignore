@@ -1,6 +1,6 @@
 develop.r
+*.xml
 *.db
-*.zip
 src/*.o
 src/*.so
 src/*.dll
