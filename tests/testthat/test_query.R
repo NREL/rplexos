@@ -106,6 +106,17 @@ test_that("Filters in queries", {
   expect_identical(query_interval(db, "Generator", "Generation", filter = lstWin, time.range = halfTimeHH) %>% nrow, 12L)
 })
 
+test_that("Sum queries", {
+  expect_equal(sum_interval(db, "Generator", "Generation", filter = lstWin)$value,
+               query_day(db, "Generator", "Generation", filter = lstWin)$value * 1000)
+  expect_equal(sum_day(db, "Generator", "Generation", NULL)$value,
+               sum_day(db, "Region", "Load")$value)
+  expect_equal(sum_interval(db, "Generator", "Generation", "time")$value,
+               sum_interval(db, "Region", "Load", "time")$value)
+  expect_equal(sum_interval(db, "Generator", "Generation")$value,
+               sum_interval(db, "Generator", "Generation", multiply.time = TRUE)$value)
+})
+
 test_that("Log queries", {
   expect_is(query_log(db), "tbl_df")
   expect_named(query_log(db), c("scenario", "filename", "phase", "time", "rel_gap_perc", "infeas"))
