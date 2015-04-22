@@ -1,5 +1,5 @@
-.db
-.xml
+.db$
+.xml$
 develop.r
 NEWS\.md
 ^appveyor\.yml$
