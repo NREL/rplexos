@@ -20,24 +20,6 @@ process_input <- function(file) {
     stop_ifnot_delete(db.name)
   }
   
-  # Read content from the XML file
-  read.con <- file(file, open = "r")
-  xml.content.temp <- NULL
-  try(xml.content.temp <- readLines(read.con, warn = FALSE))
-  if (is.null(xml.content.temp)) {
-    stop("Error reading XML file into memory", call. = FALSE)
-  }
-  xml.content <- paste(xml.content.temp, collapse = " ")
-  close(read.con)
-  
-  # Check that XML is a valid PLEXOS file
-  plexos.check <- grep("MasterDataSet", xml.content)
-  if (length(plexos.check) == 0L) {
-    rplexos_message("Invalid XML content in ", file)
-    warning(file, " is not a PLEXOS input file and was ignored.", call. = FALSE, immediate. = TRUE)
-    return(invisible(""))
-  }
-  
   # Create an empty database and add the XML information
   rplexos_message("  - Input: '", file, "'", sep = "")
   
@@ -45,8 +27,12 @@ process_input <- function(file) {
   dbf <- src_sqlite(db.name, create = TRUE)
   
   # Add basic XML structure and delete cached XML file
-  new_database(dbf, xml.content, is.solution = FALSE)
-  rm(xml.content)
+  if (!new_database(dbf, file, is.solution = FALSE)) {
+    warning("'", file, "'' is not a PLEXOS input file and was ignored.", call. = FALSE, immediate. = TRUE)
+    DBI::dbDisconnect(dbf$con)
+    stop_ifnot_delete(db.name)
+    return(invisible(""))
+  }
   
   # Add a few tables that will be useful later on
   add_extra_tables_input(dbf)

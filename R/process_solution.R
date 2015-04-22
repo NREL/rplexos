@@ -60,17 +60,6 @@ process_solution <- function(file, keep.temp = FALSE) {
     }
   }
   
-  # Read content from the XML file
-  xml.content <- zip_buffer(file, "^Model.*xml$")
-  
-  # Check that XML is a valid PLEXOS file
-  plexos.check <- grep("SolutionDataset", xml.content[1])
-  if (length(plexos.check) == 0L) {
-    rplexos_message("Invalid XML content in ", file)
-    warning(file, " is not a PLEXOS database and was ignored.", call. = FALSE, immediate. = TRUE)
-    return(invisible(""))
-  }
-  
   # Create an empty database and add the XML information
   rplexos_message("  - Solution: '", file, "'", sep = "")
   
@@ -78,8 +67,12 @@ process_solution <- function(file, keep.temp = FALSE) {
   dbt <- src_sqlite(db.temp, create = TRUE)
   
   # Add basic XML structure and delete cached XML file
-  new_database(dbt, xml.content)
-  rm(xml.content)
+  if (!new_database(dbt, file)) {
+    warning(file, " is not a PLEXOS database and was ignored.", call. = FALSE, immediate. = TRUE)
+    DBI::dbDisconnect(dbt$con)
+    stop_ifnot_delete(db.temp)
+    return(invisible(""))
+  }
   
   # Add a few tables that will be useful later on
   add_extra_tables(dbt)
@@ -372,11 +365,28 @@ read_file_in_zip <- function(zip.file, pattern) {
 
 
 # Populate new database with XML contents
-new_database <- function(db, xml, is.solution = TRUE) {
+new_database <- function(db, file, is.solution = TRUE) {
   rplexos_message("Reading XML file and saving content")
   
-  # Read XML and convert to a list
-  xml.list <- process_xml(xml)
+  if (is.solution) {
+    # Read XML and convert to a list
+    xml.list <- process_zipped_xml(file)
+  } else {
+    # Read content from the XML file
+    read.con <- file(file, open = "r")
+    xml.content <- readLines(read.con, warn = FALSE)
+    close(read.con)
+    
+    # Check that XML is a valid PLEXOS file
+    plexos.check <- grep("MasterDataSet", xml.content[1])
+    if (length(plexos.check) == 0L) {
+      warning("'", file, "'' is not a PLEXOS input file and was ignored.", call. = FALSE, immediate. = TRUE)
+      return(invisible(FALSE))
+    }
+    
+    # Read XML and convert to a list
+    xml.list <- process_log_xml(xml.content)
+  }
   
   # Print PLEXOS version when debuging
   ver.pos <- grep("Version|version", xml.list$t_config[, 1])
@@ -415,7 +425,7 @@ new_database <- function(db, xml, is.solution = TRUE) {
   for (t in names(xml.list))
     DBI::dbWriteTable(db$con, t, xml.list[[t]], append = TRUE, row.names = FALSE)
   
-  0
+  invisible(TRUE)
 }
 
 # Add a few tables that will be useful later on

@@ -9,6 +9,14 @@ process_xml <- function(xml) {
     .Call('rplexos_process_xml', PACKAGE = 'rplexos', xml)
 }
 
+process_zipped_xml <- function(zip_path) {
+    .Call('rplexos_process_zipped_xml', PACKAGE = 'rplexos', zip_path)
+}
+
+process_log_xml <- function(xml) {
+    .Call('rplexos_process_log_xml', PACKAGE = 'rplexos', xml)
+}
+
 zip_buffer <- function(zip_path, pattern) {
     .Call('rplexos_zip_buffer', PACKAGE = 'rplexos', zip_path, pattern)
 }

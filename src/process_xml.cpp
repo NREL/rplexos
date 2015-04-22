@@ -1,8 +1,8 @@
 
 #include <vector>
-#include <string>
 #include <Rcpp.h>
 #include "rapidxml.h"
+#include "zip.h"
 
 #define ALT_INDEX "index2"
 
@@ -37,23 +37,14 @@ bool column_is_id(std::string col_name) {
 }
 
 // [[Rcpp::export]]
-Rcpp::List process_xml(Rcpp::CharacterVector xml) {
+Rcpp::List process_xml(std::string xml) {
     // Start XML variables
     xml_document<> doc;
     xml_node<> *root_node;
     
-    // Merge all the strings into one
-    long xml_len = 0;
-    for (int i = 0; i < xml.size(); ++i)
-        xml_len += xml[i].size();
-    
-    vector<char> contents(xml_len + 1);
-    vector<char>::iterator it = contents.begin();
-    for (int i = 0; i < xml.size(); ++i)
-        it = copy(xml[i].begin(), xml[i].end(), it);
-    
     // Parse XML file and find root node
-    doc.parse<0> (&contents[0]);
+    xml.push_back('\0');
+    doc.parse<0> (&xml[0]);
     root_node = doc.first_node();
     
     // Variables for the loop
@@ -179,4 +170,20 @@ Rcpp::List process_xml(Rcpp::CharacterVector xml) {
     
     // Return output
     return(out);
+}
+
+// [[Rcpp::export]]
+Rcpp::List process_zipped_xml(const std::string& zip_path) {
+    // Read XML file
+    std::string xml(zip_buffer(zip_path, "^Model.*xml$"));
+    
+    // Check beginning of file
+    // TODO
+    
+    return(process_xml(xml));
+}
+
+// [[Rcpp::export]]
+Rcpp::List process_log_xml(Rcpp::CharacterVector xml) {
+    return(process_xml(join_strings(xml)));
 }

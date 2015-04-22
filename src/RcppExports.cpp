@@ -17,13 +17,35 @@ BEGIN_RCPP
 END_RCPP
 }
 // process_xml
-Rcpp::List process_xml(Rcpp::CharacterVector xml);
+Rcpp::List process_xml(std::string xml);
 RcppExport SEXP rplexos_process_xml(SEXP xmlSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type xml(xmlSEXP);
+    Rcpp::traits::input_parameter< std::string >::type xml(xmlSEXP);
     __result = Rcpp::wrap(process_xml(xml));
+    return __result;
+END_RCPP
+}
+// process_zipped_xml
+Rcpp::List process_zipped_xml(const std::string& zip_path);
+RcppExport SEXP rplexos_process_zipped_xml(SEXP zip_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const std::string& >::type zip_path(zip_pathSEXP);
+    __result = Rcpp::wrap(process_zipped_xml(zip_path));
+    return __result;
+END_RCPP
+}
+// process_log_xml
+Rcpp::List process_log_xml(Rcpp::CharacterVector xml);
+RcppExport SEXP rplexos_process_log_xml(SEXP xmlSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type xml(xmlSEXP);
+    __result = Rcpp::wrap(process_log_xml(xml));
     return __result;
 END_RCPP
 }
