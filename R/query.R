@@ -193,7 +193,8 @@ query_log_steps <- function(db) {
 #' \code{filter = list(name = c("Generator1", "Generator2"), region = "Region1")}
 #' 
 #' To filter by time use the \code{time.range} parameter, instead of adding it as an entry in the
-#' \code{filter} parameter.
+#' \code{filter} parameter. For example use \code{c("2015-03-14", "2015-03-15")} in your query.
+#' Please note that the year/month/date starts at midnight (00:00:00).
 #' 
 #' If a scenario has multiple databases, the data will be aggregated automatically. If two or more
 #' databases within the same scenario have overlapping time periods, the default is to select the
@@ -213,7 +214,7 @@ query_log_steps <- function(db) {
 #' @param col character. Collection to query
 #' @param prop character vector. Property or properties to query
 #' @param columns character. Data columns to query or aggregate by (defaults to \code{name})
-#' @param time.range character. Range of dates (Give in 'ymdhms' or 'ymd' format)
+#' @param time.range character. Range of dates of length 2 (given in 'ymdhms' or 'ymd' format)
 #' @param filter list. Used to filter by data columns (see details)
 #' @param phase integer. PLEXOS optimization phase (1-LT, 2-PASA, 3-MT, 4-ST)
 #' @param multiply.time boolean. When summing interval data, provide the value multiplied by interval duration (See details).

@@ -52,7 +52,7 @@ sum_year(db, ...)
 
 \item{columns}{character. Data columns to query or aggregate by (defaults to \code{name})}
 
-\item{time.range}{character. Range of dates (Give in 'ymdhms' or 'ymd' format)}
+\item{time.range}{character. Range of dates of length 2 (given in 'ymdhms' or 'ymd' format)}
 
 \item{filter}{list. Used to filter by data columns (see details)}
 
@@ -99,7 +99,8 @@ could define it as follows:
 \code{filter = list(name = c("Generator1", "Generator2"), region = "Region1")}
 
 To filter by time use the \code{time.range} parameter, instead of adding it as an entry in the
-\code{filter} parameter.
+\code{filter} parameter. For example use \code{c("2015-03-14", "2015-03-15")} in your query.
+Please note that the year/month/date starts at midnight (00:00:00).
 
 If a scenario has multiple databases, the data will be aggregated automatically. If two or more
 databases within the same scenario have overlapping time periods, the default is to select the
