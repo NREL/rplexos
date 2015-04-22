@@ -125,7 +125,3 @@ is_folder <- function(x) {
 on_failure(is_folder) <- function(call, env) {
   paste0("'folders' must be a vector of existing folders or the wildcard \"*\"")
 }
-
-
-# *** test_that functions ***
-expect_nrow <- function(a, b, ...) expect_identical(nrow(a), b)
