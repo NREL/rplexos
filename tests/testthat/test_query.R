@@ -19,14 +19,54 @@ test_that("Expected errors and warnings", {
   expect_warning(plexos_open(c(loc, locERR)))
 })
 
+try(qday <- query_day(db, "Generator", "Generation"))
+try(qint <- query_interval(db, "Generator", "Generation"))
+try(qday2 <- query_day(db, "Generator", "Generation", c("region", "name")))
+try(qint2 <- query_interval(db, "Generator", "Generation", c("region", "name")))
+try(qday3 <- query_day(db, "Generator", "*"))
+try(qint3 <- query_interval(db, "Generator", "*"))
+
+test_that("Basic query functions", {
+  expect_is(qday, "tbl_df")
+  expect_named(qday, c("scenario", "collection", "property", "unit", "name", "parent", "time", "value"))
+  expect_nrow(qday, 3L)
+  
+  expect_is(qint, "tbl_df")
+  expect_named(qint, c("scenario", "collection", "property", "unit", "name", "parent", "time", "value"))
+  expect_nrow(qint, 72L)
+  
+  expect_is(qday2, "tbl_df")
+  expect_named(qday2, c("scenario", "collection", "property", "unit", "name", "parent", "region", "time", "value"))
+  expect_nrow(qday2, 3L)
+  
+  expect_is(qint2, "tbl_df")
+  expect_named(qint2, c("scenario", "collection", "property", "unit", "name", "parent", "region", "time", "value"))
+  expect_nrow(qint2, 72L)
+  
+  expect_is(qday3, "tbl_df")
+  expect_named(qday, c("scenario", "collection", "property", "unit", "name", "parent", "time", "value"))
+  expect_nrow(qday3, 9L)
+  
+  expect_is(qint3, "tbl_df")
+  expect_named(qint3, c("scenario", "collection", "property", "unit", "name", "parent", "time", "value"))
+  expect_nrow(qint3, 360L)
+  
+  expect_error(query_day(db, "Generator", "Generation", phase = 3))
+  expect_error(query_interval(db, "Generator", "Generation", phase = 3))
+  expect_error(query_day(db, "Generator", "Generation2"))
+  expect_error(query_interval(db, "Generator", "Generation2"))
+  expect_error(query_day(db, "Generator2", "Generation"))
+  expect_error(query_interval(db, "Generator2", "Generation"))
+})
+
 test_that("Log queries", {
   expect_is(query_log(db), "tbl_df")
   expect_named(query_log(db), c("scenario", "filename", "phase", "time", "rel_gap_perc", "infeas"))
-  expect_identical(query_log(db) %>% nrow, 5L)
+  expect_nrow(query_log(db), 5L)
   
   expect_is(query_log_steps(db), "tbl_df")
   expect_named(query_log_steps(db), c("scenario", "filename", "phase", "step", "total_step", "time", "elapsed"))
-  expect_identical(query_log_steps(db) %>% nrow, 25L)
+  expect_nrow(query_log_steps(db), 25L)
 })
 
 test_that("Auxiliary queries", {
