@@ -9,7 +9,7 @@
 * `process_folder` does not print to screen by default.
 
 
-## Bugs
+## Bug fixes
 
 * Fixed erroneous results when the second entry in `time.range` is given as date.
 * Fixed `sum_master` and associated functions (#31).
