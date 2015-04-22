@@ -128,6 +128,12 @@ test_that("Log queries", {
 })
 
 test_that("Auxiliary queries", {
+  expect_is(query_time(db), "tbl_df")
+  expect_named(query_time(db), c("scenario", "position", "phase_id", "phase", "start", "end", "count", "timestep"))
+  expect_identical(query_time(db) %>% nrow, 1L)
+  expect_equal(query_time(db)$count, 24)
+  expect_equal(query_time(db)$timestep %>% as.numeric, 60)
+  
   expect_is(query_phase(db), "tbl_df")
   expect_named(query_phase(db), c("scenario", "position", "phase_id", "phase", "is_summary"))
   expect_identical(query_phase(db) %>% nrow, 2L)
