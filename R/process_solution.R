@@ -169,11 +169,13 @@ process_solution <- function(file, keep.temp = FALSE) {
     sql <- sprintf("CREATE VIEW %s AS
                     SELECT %s, t1.time time_from, t2.time time_to, d.value 
                     FROM %s d
-                    NATURAL JOIN key k 
+                    NATURAL JOIN key k
                     JOIN time t1
                       ON t1.interval = d.time_from
+                     AND t1.phase_id = k.phase_id
                     JOIN time t2
                       ON t2.interval = d.time_to
+                     AND t2.phase_id = k.phase_id
                     WHERE k.table_name = '%s'", view.name, view.k2, p, p);
     DBI::dbGetQuery(dbf$con, sql)
   }
