@@ -13,6 +13,7 @@
 
 * Fixed erroneous results when the second entry in `time.range` is given as date.
 * Fixed `sum_master` and associated functions (#31).
+* Fixed error in interval queries for databases with multiple phases (#29).
 
 
 ## Database structure
