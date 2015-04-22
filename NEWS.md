@@ -1,5 +1,4 @@
-# rplexos 0.13.0.99
-
+# rplexos 1.0
 
 ## Enhancements
 
@@ -18,7 +17,8 @@
 
 ## Database structure
 
-Has not changed since v0.13
+Structure has changed since v0.13. Do not run queries on solutions processed with an
+older version.
 
 
 # rplexos 0.13
