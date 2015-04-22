@@ -27,3 +27,15 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// zip_buffer
+std::string zip_buffer(const std::string& zip_path, const std::string& pattern);
+RcppExport SEXP rplexos_zip_buffer(SEXP zip_pathSEXP, SEXP patternSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const std::string& >::type zip_path(zip_pathSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type pattern(patternSEXP);
+    __result = Rcpp::wrap(zip_buffer(zip_path, pattern));
+    return __result;
+END_RCPP
+}

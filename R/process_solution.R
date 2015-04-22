@@ -61,10 +61,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   }
   
   # Read content from the XML file
-  xml.content <- try(read_file_in_zip(file, xml.pos), silent = !is_debug_rplexos())
-  if (inherits(xml.content, "try-error")) {
-    stop("Error reading XML file into memory", call. = FALSE)
-  }
+  xml.content <- zip_buffer(file, "^Model.*xml$")
   
   # Check that XML is a valid PLEXOS file
   plexos.check <- grep("SolutionDataset", xml.content[1])
@@ -315,25 +312,19 @@ process_solution <- function(file, keep.temp = FALSE) {
   
   # Read Log file into memory
   rplexos_message("Reading and processing log file")
-  log.content <- try(read_file_in_zip(file, log.pos), silent = !is_debug_rplexos())
-  if (inherits(log.content, "try-error")) {
-    # Error reading log file, throw a warning
-    warning("Could not read Log in solution '", file, "'\n",
+  log.content <- zip_buffer(file, "^Model.*Log.*.txt$")
+  
+  # Try to parse log file
+  log.result <- plexos_log_parser(log.content)
+  
+  if (length(log.result) < 2L) {
+    warning("Log in solution '", file, "' did not parse correctly.\n",
             "    Data parsed correctly if no other errors were found.",
             call. = FALSE)
-  } else {
-    # Success reading file, try to parse it
-    log.result <- plexos_log_parser(log.content)
+  }
     
-    if (length(log.result) < 2L) {
-      warning("Log in solution '", file, "' did not parse correctly.\n",
-              "    Data parsed correctly if no other errors were found.",
-              call. = FALSE)
-    }
-    
-    for (i in names(log.result)) {
-      DBI::dbWriteTable(dbf$con, i, log.result[[i]] %>% as.data.frame, row.names = FALSE)
-    }
+  for (i in names(log.result)) {
+    DBI::dbWriteTable(dbf$con, i, log.result[[i]] %>% as.data.frame, row.names = FALSE)
   }
   
   # Close database connections
@@ -353,28 +344,32 @@ process_solution <- function(file, keep.temp = FALSE) {
 }
 
 # Read a file in a zip file onto memory
-read_file_in_zip <- function(zip.file, position) {
-  zip.content <- unzip(zip.file, list = TRUE)
-  read.file <- zip.content[position, ]
-  read.con <- unz(zip.file, read.file$Name, "rb")
-  .nBytes <- 2^30
+read_file_in_zip <- function(zip.file, pattern) {
+  files <- unzip(zip.file, list = TRUE)
+  indx <- grep(pattern, files$Name)
   
-  # readChar cannot read files that are very large
-  if (read.file$Length > .nBytes) {
-    rplexos_message("File '", read.file$Name, "' is large (", read.file$Length, " bytes)")
+  if (is.na(indx)) {
+    stop("Couldn't find pattern '", pattern, "' in '", zip.file, "'", call. = FALSE)
+  } else if (length(indx) > 1L) {
+    warning("Found ", length(indx), " results for pattern '", pattern, "' in '", zip.file, "'. Using the first.", call. = FALSE)
+    indx <- indx[1]
   }
   
-  nchunks <- ceiling(read.file$Length / .nBytes)
+  .nBytes <- 2^30
+  con <- unz(zip.file, files$Name[indx], open = "rb")
+  nchunks <- ceiling(files$Length[indx] / .nBytes)
   read.content <- character(nchunks)
   
   for (i in seq_len(nchunks)) {
-    nread <- min(.nBytes, read.file$Length - (i-1) * .nBytes)
-    read.content[i] <- readChar(read.con, nread, TRUE)
+    nread <- min(.nBytes, files$Length[indx] - (i-1) * .nBytes)
+    read.content[i] <- readChar(con, nread, TRUE)
   }
   
-  close(read.con)
+  close(con)
+  
   read.content
 }
+
 
 # Populate new database with XML contents
 new_database <- function(db, xml, is.solution = TRUE) {
