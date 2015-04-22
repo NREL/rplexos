@@ -536,19 +536,15 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
   columns2 <- c(setdiff(columns, "time"), "time")
   
   # Run query_master to get the raw data
-  df <- query_master(db, time, col, prop, columns2, time.range, filter, phase)
+  out <- query_master(db, time, col, prop, columns2, time.range, filter, phase)
   
   # If empty query is returned, return empty data.frame
-  if(nrow(df) == 0L)
+  if(nrow(out) == 0L)
     return(data.frame())
   
-  # Aggregate the data
-  out <- df %>% group_by_char(c("scenario", "collection", "property", columns2)) %>%
-    summarise(value = sum(value))
-  
-  if (identical(time, "interval") & multiply.time) {
+  if (identical(time, "interval") && (!"time" %in% columns) && multiply.time) {
     # Get length of intervals in hours
-    times <- get_table_scenario(d, "time")
+    times <- get_table_scenario(db, "time")
     delta <- times %>%
       group_by(scenario) %>%
       mutate(time = lubridate::ymd_hms(time)) %>%
@@ -557,6 +553,7 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
     # Add interval duration to the sum
     out <- out %>%
       inner_join(delta, by = "scenario") %>%
+      group_by_char(c("scenario", "collection", "property", columns)) %>%
       summarise(value = sum(value * interval))  
     
     # If unit is a column, modify column
@@ -567,12 +564,9 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
   } else {
     # Sum values
     out <- out %>%
+      group_by_char(c("scenario", "collection", "property", columns)) %>%
       summarise(value = sum(value))  
   }
-  
-  # Convert columns to factors
-  for (i in setdiff(columns2, "time"))
-    out[[i]] <- factor(out[[i]])
   
   out
 }
