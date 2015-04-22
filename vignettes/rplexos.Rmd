@@ -84,14 +84,16 @@ query_generator(db)
 
 ### Query summary data
 
-The following command 
+The following command extract data from the "summary" tables created by PLEXOS. If selected during the
+solution process in PLEXOS, data is available in daily, weekly, monthly and yearly summaries. `rplexos`
+provides a family of functions to access each type of data.
 
 ```{r}
 query_day(db, "Generator", "Generation")
 ```
 
 
-You can also use an asterisk to query all the properties in a collection:
+For convenience, you can also use an asterisk to query all the properties in a collection:
 
 ```{r}
 query_day(db, "Region", "*")
@@ -100,7 +102,7 @@ query_day(db, "Region", "*")
 
 ### Query interval data
 
-The quer
+You can also query the interval data. This example queries and plots the generation data:
 
 ```{r}
 library(ggplot2, quietly = TRUE)
@@ -112,6 +114,7 @@ ggplot(gen, aes(x = time, y = value, fill = name)) +
 ```
 
 
+Similary, this example looks at nodal prices:
 
 ```{r}
 price <- query_interval(db, "Node", "Price")
@@ -120,6 +123,9 @@ ggplot(price, aes(x = time, y = value, color = name)) +
   labs(x = "Time", y = "Price ($/MW)", color = "Node")
 ```
 
+
+Finally, this one looks at line flows:
+
 ```{r}
 price <- query_interval(db, "Line", "Flow")
 ggplot(price, aes(x = time, y = value, color = name)) +
@@ -127,6 +133,40 @@ ggplot(price, aes(x = time, y = value, color = name)) +
   labs(x = "Time", y = "Flow (MW)", color = "Generator")
 ```
 
+
+### Using filters in queries
+
+`rplexos` includes the capability of applying filters to both summary and interval data queries. This can be used
+to select the part of the data that is of interest, reducing the time it takes to query the database.
+
+For example, the following query is limited to a given time range:
+
+```{r}
+gen.time.filter <- query_interval(db, "Generator", "Generation",
+                                  time.range = c("2015-03-14 00:00:00", "2015-03-14 12:00:00"))
+ggplot(gen.time.filter, aes(x = time, y = value, fill = name)) +
+  geom_area() +
+  labs(x = "Time", y = "Generation (MW)", fill = "Generator")
+
+```
+
+Similarly, the parameter `filter` can be used to create other filtering conditions. The following code extracts
+generation data for one or two generators: 
+
+```{r}
+gen.gral.filter1 <- query_interval(db, "Generator", "Generation",
+                                   filter = list(name = "Baseload"))
+ggplot(gen.gral.filter1, aes(x = time, y = value, fill = name)) +
+  geom_area() +
+  labs(x = "Time", y = "Generation (MW)", fill = "Generator")
+gen.gral.filter2 <- query_interval(db, "Generator", "Generation",
+                                   filter = list(name = c("Baseload", "Wind")))
+ggplot(gen.gral.filter2, aes(x = time, y = value, fill = name)) +
+  geom_area() +
+  labs(x = "Time", y = "Generation (MW)", fill = "Generator")
+```
+
+Both filtering mechanisms can be combined or used independently.
 
 
 ## Processing inputs
