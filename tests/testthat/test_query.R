@@ -118,37 +118,44 @@ test_that("Sum queries", {
 })
 
 test_that("Log queries", {
-  expect_is(query_log(db), "tbl_df")
-  expect_named(query_log(db), c("scenario", "filename", "phase", "time", "rel_gap_perc", "infeas"))
-  expect_identical(query_log(db) %>% nrow, 5L)
+  qlog <- query_log(db)
+  expect_is(qlog, "tbl_df")
+  expect_named(qlog, c("scenario", "filename", "phase", "time", "rel_gap_perc", "infeas"))
+  expect_identical(nrow(qlog), 5L)
   
-  expect_is(query_log_steps(db), "tbl_df")
-  expect_named(query_log_steps(db), c("scenario", "filename", "phase", "step", "total_step", "time", "elapsed"))
-  expect_identical(query_log_steps(db) %>% nrow, 25L)
+  qlogsteps <- query_log_steps(db)
+  expect_is(qlogsteps, "tbl_df")
+  expect_named(qlogsteps, c("scenario", "filename", "phase", "step", "total_step", "time", "elapsed"))
+  expect_identical(nrow(qlogsteps), 25L)
 })
 
 test_that("Auxiliary queries", {
-  expect_is(query_time(db), "tbl_df")
-  expect_named(query_time(db), c("scenario", "position", "phase_id", "phase", "start", "end", "count", "timestep"))
-  expect_identical(query_time(db) %>% nrow, 1L)
-  expect_equal(query_time(db)$count, 24)
-  expect_equal(query_time(db)$timestep %>% as.numeric, 60)
+  qtime <- query_time(db)
+  expect_is(qtime, "tbl_df")
+  expect_named(qtime, c("scenario", "position", "phase_id", "phase", "start", "end", "count", "timestep"))
+  expect_identical(nrow(qtime), 1L)
+  expect_equal(qtime$count, 24)
+  expect_equal(qtime$timestep %>% as.numeric, 60)
   
-  expect_is(query_phase(db), "tbl_df")
-  expect_named(query_phase(db), c("scenario", "position", "phase_id", "phase", "is_summary"))
-  expect_identical(query_phase(db) %>% nrow, 2L)
+  qphase <- query_phase(db)
+  expect_is(qphase, "tbl_df")
+  expect_named(qphase, c("scenario", "position", "phase_id", "phase", "is_summary"))
+  expect_identical(nrow(qphase), 2L)
   
-  expect_is(query_band(db), "tbl_df")
-  expect_named(query_band(db), c("scenario", "position", "phase_id", "phase", "is_summary", "band"))
-  expect_identical(query_band(db) %>% nrow, 2L)
+  qband <- query_band(db)
+  expect_is(qband, "tbl_df")
+  expect_named(qband, c("scenario", "position", "phase_id", "phase", "is_summary", "band"))
+  expect_identical(nrow(qband), 2L)
   
-  expect_is(query_sample(db), "tbl_df")
-  expect_named(query_sample(db), c("scenario", "position", "phase_id", "phase", "is_summary", "sample"))
-  expect_identical(query_sample(db) %>% nrow, 2L)
+  qsample <- query_sample(db)
+  expect_is(qsample, "tbl_df")
+  expect_named(qsample, c("scenario", "position", "phase_id", "phase", "is_summary", "sample"))
+  expect_identical(nrow(qsample), 2L)
   
-  expect_is(query_timeslice(db), "tbl_df")
-  expect_named(query_timeslice(db), c("scenario", "position", "phase_id", "phase", "is_summary", "timeslice"))
-  expect_identical(query_timeslice(db) %>% nrow, 2L)
+  qtimeslice <- query_timeslice(db)
+  expect_is(qtimeslice, "tbl_df")
+  expect_named(qtimeslice, c("scenario", "position", "phase_id", "phase", "is_summary", "timeslice"))
+  expect_identical(nrow(qtimeslice), 2L)
   
   expect_is(query_class(db), "tbl_df")
   expect_named(query_class(db), c("scenario", "position", "class_group", "class"))
@@ -165,17 +172,19 @@ test_that("Auxiliary queries", {
   expect_identical(query_class_member(db, "Region"), query_region(db))
   expect_identical(query_class_member(db, "Zone"), query_zone(db))
   
-  expect_is(query_config(db), "data.frame")
-  expect_named(query_config(db),
+  qconfig <- query_config(db)
+  expect_is(qconfig, "data.frame")
+  expect_named(qconfig,
                c("position", "scenario", "filename", "Computer", "Date", "Description", "File",
                  "Model", "Path", "rplexos", "Sim Samples", "Time", "Username", "Version"))
-  expect_identical(query_config(db) %>% nrow, 1L)
+  expect_identical(nrow(qconfig), 1L)
   
-  expect_is(query_property(db), "data.frame")
-  expect_named(query_property(db),
+  qproperty <- query_property(db)
+  expect_is(qproperty, "data.frame")
+  expect_named(qproperty,
                c("phase_id", "phase", "is_summary", "class_group", "class", "collection", "property",
                  "unit", db$scenario[1] %>% as.character))
-  expect_identical(query_property(db) %>% nrow, 35L)
+  expect_identical(nrow(qproperty), 35L)
 })
 
 
