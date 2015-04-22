@@ -11,7 +11,8 @@ vignette: >
 knitr::opts_chunk$set(collapse = T, comment = "#>", fig.height = 3, fig.width = 7)
 options(width = 200)
 library(rplexos, quietly = TRUE)
-ggplot2::theme_set(ggplot2::theme_bw())
+library(ggplot2, quietly = TRUE)
+theme_set(theme_bw())
 ```
 
 
@@ -105,8 +106,6 @@ query_day(db, "Region", "*")
 You can also query the interval data. This example queries and plots the generation data:
 
 ```{r}
-library(ggplot2, quietly = TRUE)
-
 gen <- query_interval(db, "Generator", "Generation")
 ggplot(gen, aes(x = time, y = value, fill = name)) +
   geom_area() +
