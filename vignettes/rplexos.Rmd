@@ -10,9 +10,8 @@ vignette: >
 ```{r, echo = FALSE, message = FALSE}
 knitr::opts_chunk$set(collapse = T, comment = "#>", fig.height = 3, fig.width = 7)
 options(width = 200)
-library(rplexos, quietly = FALSE)
-library(ggplot2, quietly = FALSE)
-theme_set(theme_bw())
+library(rplexos, quietly = TRUE)
+ggplot2::theme_set(ggplot2::theme_bw())
 ```
 
 
@@ -104,6 +103,8 @@ query_day(db, "Region", "*")
 The quer
 
 ```{r}
+library(ggplot2, quietly = TRUE)
+
 gen <- query_interval(db, "Generator", "Generation")
 ggplot(gen, aes(x = time, y = value, fill = name)) +
   geom_area() +
