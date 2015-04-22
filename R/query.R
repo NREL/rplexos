@@ -248,6 +248,17 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
     assert_that(is.character(time.range), length(time.range) == 2L)
     time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
     assert_that(correct_date(time.range2))
+    
+    # If both entries are the same and given as YMD, the result is not correct
+    if (time.range2[1] == time.range2[2]) {
+      trh <- lubridate::hour(time.range2[2])
+      trm <- lubridate::minute(time.range2[2])
+      trs <- lubridate::second(time.range2[2])
+      
+      if (trh == 0  && trm == 0 && trs == 0) {
+        time.range[2] <- paste(time.range[2], "00:00:00")
+      }
+    }
   }
   
   ### BEGIN: Master query checks
