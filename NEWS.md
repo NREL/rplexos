@@ -1,4 +1,19 @@
-# rplexos 0.13
+# rplexos 0.13.0.99
+
+
+## Enhancements
+
+* Add example of input and output database. Updated examples and vignette with these
+  example files (#1).
+* Add tests to file processing and queries (#1).
+* `process_folder` does not print to screen by default.
+
+
+## Bugs
+
+* Fixed erroneous results when the second entry in `time.range` is given as date.
+* Fixed `sum_master` and associated functions (#31).
+
 
 ## Database structure
 
