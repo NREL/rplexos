@@ -174,9 +174,6 @@ test_that("Auxiliary queries", {
   
   qconfig <- query_config(db)
   expect_is(qconfig, "data.frame")
-  expect_named(qconfig,
-               c("position", "scenario", "filename", "Computer", "Date", "Description", "File",
-                 "Model", "Path", "rplexos", "Sim Samples", "Time", "Username", "Version"))
   expect_identical(nrow(qconfig), 1L)
   
   qproperty <- query_property(db)
