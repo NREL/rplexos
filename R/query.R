@@ -67,7 +67,7 @@ get_table_scenario <- function(db, from) {
 #'
 #' Send a SQL query to all the files in a PLEXOS database object.
 #'
-#' @param db PLEXOS database object
+#' @inheritParams query_master
 #' @param sql String containing the SQL query to be performed
 #'
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
@@ -106,8 +106,7 @@ query_sql <- function(db, sql) {
 #' Additionally, a column is created for each scenario that indicates in how many databases
 #' the property appears.
 #'
-#' @param db PLEXOS database object
-#'
+#' @inheritParams query_master
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
 #' @family special queries
 #'
@@ -127,8 +126,7 @@ query_property <- function(db) {
 #' date and time, machine and location of PLEXOS input database, model description and user
 #' name. Additionally, it stores the version of rplexos used to process the PLEXOS database.
 #'
-#' @param db PLEXOS database object
-#'
+#' @inheritParams query_master
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
 #' @family special queries
 #'
@@ -144,8 +142,7 @@ query_config <- function(db) {
 #' During the processing of the PLEXOS databases, information from the log file is saved
 #' into the database. This includes solution times and infeasibilities for the different phases.
 #'
-#' @param db PLEXOS database object
-#'
+#' @inheritParams query_master
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
 #' @family special queries
 #'
