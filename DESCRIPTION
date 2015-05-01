@@ -26,7 +26,6 @@ Imports:
     lubridate,
     reshape2,
     stringi,
-    assertthat,
     parallel,
     doParallel,
     foreach
