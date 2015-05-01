@@ -1,7 +1,7 @@
 # Get one table from a SQLite database
 get_table <- function(filename, table) {
   # Opern connection
-  thesql <- src_sqlite(filename)
+  thesql <- src_sqlite(filename, create = FALSE)
   
   if (table %in% src_tbls(thesql)) {
     out <- tbl(thesql, table) %>% collect
@@ -19,7 +19,7 @@ get_table <- function(filename, table) {
 # Get one table from a SQLite database
 get_list_tables <- function(filename) {
   # Open connection
-  thesql <- src_sqlite(filename)
+  thesql <- src_sqlite(filename, create = FALSE)
   
   # Read names
   out <- data.frame(tables = src_tbls(thesql))
@@ -45,7 +45,7 @@ get_list_tables <- function(filename) {
 #' @export
 get_query <- function(filename, sql) {
   out <- data.frame()
-  thesql <- src_sqlite(filename)
+  thesql <- src_sqlite(filename, create = FALSE)
   try(out <- RSQLite::dbGetQuery(thesql$con, sql))
   DBI::dbDisconnect(thesql$con)
   out
@@ -54,7 +54,8 @@ get_query <- function(filename, sql) {
 # Get a table for all scenarios
 get_table_scenario <- function(db, from) {
   # Check inputs
-  assert_that(is.rplexos(db), is.string(from))
+  check_rplexos(db)
+  stopifnot(is.character(from), length(from) == 1L)
   
   db %>%
     group_by(scenario, position, filename) %>%
@@ -76,7 +77,8 @@ get_table_scenario <- function(db, from) {
 #' @export
 query_sql <- function(db, sql) {
   # Check inputs
-  assert_that(is.rplexos(db), is.string(sql))
+  check_rplexos(db)
+  stopifnot(is.character(sql), length(sql) == 1L)
   
   # Make sure that columns are reported
   db <- db %>%
@@ -230,31 +232,39 @@ query_log_steps <- function(db) {
 #' @importFrom foreach foreach %dopar%
 query_master <- function(db, time, col, prop, columns = "name", time.range = NULL, filter = NULL, phase = 4) {
   # Check inputs
-  assert_that(is.rplexos(db))
-  assert_that(is.string(time), is.string(col), is.character(prop), is.character(columns), is.scalar(phase))
-  assert_that(correct_time(time), correct_phase(phase))
-  assert_that(are_columns(columns))
+  check_rplexos(db)
+  stopifnot(is.character(time), length(time) == 1L)
+  stopifnot(is.character(col), length(col) == 1L)
+  stopifnot(is.character(prop), is.character(columns))
+  stopifnot(is.numeric(phase), length(phase) == 1L)
+  if (!time %in% c("interval", "day", "week", "month", "year"))
+    stop("'time' must be one of: interval, day, week, month or year", call. = FALSE)
+  if(!phase %in% 1:4)
+    stop("'phase' must be one of: 1 (LT), 2 (PASA), 3 (MT) or 4 (ST)", call. = FALSE)
+  if(!all(columns %in% valid_columns()))
+    stop("Incorrect column parameter. Use valid_columns() to get the full list.", call. = FALSE)
   
   # Key filter checks
   if (!is.null(filter)) {
-    assert_that(is.list(filter))
-    assert_that(names_are_columns(filter))
-    assert_that(time_not_a_name(filter))
+    stopifnot(is.list(filter))
+    if ("time" %in% names(filter))
+      stop("time should not be an entry in filter. Use time.range instead.", call. = FALSE)
+    if(!all(names(filter) %in% valid_columns()))
+      stop("The names in 'filter' must correspond to correct columns. Use valid_columns() to get the full list.", call. = FALSE)
   }
   
   # Time range checks and convert to POSIXct
   #    time.range2 could be renamed to time.range in the future
   #    https://github.com/hadley/dplyr/issues/857
   if (!is.null(time.range)) {
-    assert_that(is.character(time.range), length(time.range) == 2L)
+    stopifnot(is.character(time.range), length(time.range) == 2L)
     time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
-    assert_that(correct_date(time.range2))
     
-    # If second entry is given as YMD, the result is might not be correct,
-    #   especially if the two entries are the same
-    if (lubridate::floor_date(time.range2[2]) == time.range2[2]) {
-      time.range[2] <- paste(time.range[2], "00:00:00")
-    }
+    if(any(is.na(time.range2)))
+      stop("Could not convert time.range. Use 'ymdhms' or 'ymd' formats", call. = FALSE)
+    
+    # Convert dates to ymdhms format, so that queries work correctly
+    time.range <- format(time.range2, "%Y-%m-%d %H:%M:%S")
   }
   
   ### BEGIN: Master query checks
@@ -366,7 +376,7 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
 #' @export
 query_master_each <- function(db, time, col, prop, columns = "name", time.range = NULL, filter = NULL, phase = 4) {
   # Open connection
-  thesql <- src_sqlite(db$filename)
+  thesql <- src_sqlite(db$filename, create = FALSE)
   
   if (!identical(time, "interval")) {
     # Query interval data
@@ -526,7 +536,7 @@ query_year     <- function(db, ...) query_master(db, "year", ...)
 #' @export
 sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL, filter = NULL, phase = 4, multiply.time = FALSE) {
   # Check inputs to unique
-  assert_that(is.flag(multiply.time))
+  stopifnot(is.logical(multiply.time), length(multiply.time) == 1L)
 
   # Make sure to include time
   columns2 <- c(setdiff(columns, "time"), "time")

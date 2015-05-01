@@ -17,6 +17,6 @@
 #' 
 #' @docType package
 #' @name rplexos
-#' @import dplyr assertthat
+#' @import dplyr
 #' @importFrom Rcpp evalCpp
 NULL

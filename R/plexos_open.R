@@ -16,7 +16,8 @@
 #' @export
 plexos_open <- function(folders = ".", names = folders) {
   # Check inputs
-  assert_that(is.character(folders), is.character(names), is_folder(folders))
+  stopifnot(is.character(folders), is.character(names))
+  check_is_folder(folders)
   
   # Check for wildcard
   if (length(folders) == 1L) {
@@ -27,7 +28,7 @@ plexos_open <- function(folders = ".", names = folders) {
   }
   
   # Check that folder and names have the same length
-  assert_that(length(folders) == length(names))
+  stopifnot(length(folders) == length(names))
   
   # Change default scenario name to something better than '.'
   if (length(folders) == 1L) {

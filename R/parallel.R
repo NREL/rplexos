@@ -18,7 +18,8 @@
 #' @export
 start_parallel_rplexos <- function(ncores = 1, silent = FALSE) {
   # Check inputs
-  assert_that(is.count(ncores), ncores >= 1)
+  stopifnot(is.numeric(ncores), length(ncores) == 1L, ncores >= 1)
+  ncores <- floor(ncores)
   cluster <- get("cluster", rplexos_globals)
   
   # If one cluster is selected, turn of parallel capabilities

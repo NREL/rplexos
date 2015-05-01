@@ -3,13 +3,7 @@ clean_string <- function(x) {
   gsub(" |&|'|-|\\.", "", x)
 }
 
-# Delete file and give error if unsuccesfull
-stop_ifnot_delete <- function(x) {
-  # Error if file cannot be removed
-  suppressWarnings(did.remove <- file.remove(x))
-  if (!did.remove)
-    stop("Unable to delete file: ", x, call. = FALSE)
-}
+
 
 # Regroup with characters
 group_by_char <- function(x, vars) {
@@ -61,67 +55,30 @@ list_folders <- function() {
 }
 
 
-# *** assert_that validation functions ***
+#### Validation rules ####
 
-# Check that columns are valid
-are_columns <- function(col) all(col %in% valid_columns())
-
-on_failure(are_columns) <- function(call, env) {
-  paste0("Incorrect column parameter. Use valid_columns() to get the full list.")
+# Check that object is valid rplexos databasae
+check_rplexos <- function(x) {
+  if(!inherits(x, "rplexos"))
+    stop("db is not a valid database object. It should be created with plexos_open().", call. = FALSE)
 }
 
-# Check that names are valid columns
-names_are_columns <- function(x) are_columns(names(x))
-
-on_failure(names_are_columns) <- function(call, env) {
-  paste0("The names in ", deparse(call$x), " must correspond to correct columns. Use valid_columns() to get the full list.")
-}
-
-# Check that names are valid columns
-time_not_a_name <- function(x) !"time" %in% (names(x))
-
-on_failure(time_not_a_name) <- function(call, env) {
-  paste0("time should not be an entry in ", deparse(call$x), ". Use time.range instead.")
-}
-
-# Check that object is valid
-is.rplexos <- function(x) inherits(x, "rplexos")
-
-on_failure(is.rplexos) <- function(call, env) {
-  paste0(eval(call$x, env), " is not a valid database object. 'db' should be created with plexos_open().")
-}
-
-# Check date range inputs
-correct_date <- function(x) all(!is.na(x))
-
-on_failure(correct_date) <- function(call, env) {
-  paste0("Could not convert time.range. Use 'ymdhms' or 'ymd' formats")
-}
-
-# Check phase inputs
-correct_phase <- function(x) x %in% 1:4
-
-on_failure(correct_phase) <- function(call, env) {
-  paste0("'phase' must be one of: 1 (LT), 2 (PASA), 3 (MT) or 4 (ST)")
-}
-
-# Check time
-correct_time <- function(x) x %in% c("interval", "day", "week", "month", "year")
-
-on_failure(correct_time) <- function(call, env) {
-    paste0("'time' must be one of: interval, day, week, month or year")
+# Delete file and give error if unsuccesfull
+stop_ifnot_delete <- function(x) {
+  # Error if file cannot be removed
+  suppressWarnings(did.remove <- file.remove(x))
+  if (!did.remove)
+    stop("Unable to delete file: ", x, call. = FALSE)
 }
 
 # Check that a vector of characters are folder names
-is_folder <- function(x) {
-  if (length(x) == 1L) {
-    if(identical(x, "*")) {
-      return(TRUE)
-    }
+check_is_folder <- function(x) {
+  if ((length(x) == 1L) && identical(x, "*")) {
+    test <- TRUE
+  } else {
+    test <- all(file.exists(x)) & all(file.info(x)$isdir, na.rm = FALSE)
   }
-  all(file.exists(x)) & all(file.info(x)$isdir, na.rm = FALSE)
-}
-
-on_failure(is_folder) <- function(call, env) {
-  paste0("'folders' must be a vector of existing folders or the wildcard \"*\"")
+  
+  if (!test)
+    stop(paste0("'folders' must be a vector of existing folders or the wildcard \"*\""), call. = FALSE)
 }

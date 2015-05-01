@@ -4,7 +4,7 @@
 #' @export
 process_solution <- function(file, keep.temp = FALSE) {
   # Check that inputs are valid
-  assert_that(is.string(file))
+  stopifnot(is.string(file))
   
   # Check that file exists
   if (!file.exists(file)) {

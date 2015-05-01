@@ -4,7 +4,7 @@
 #' @export
 process_input <- function(file) {
   # Check that inputs are valid
-  assert_that(is.string(file))
+  stopifnot(is.string(file))
   
   # Check that file exists
   if (!file.exists(file)) {
