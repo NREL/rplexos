@@ -4,7 +4,7 @@
 #'
 #' Get the list of phases, samples, timeslices and bands  that are available in each database.
 #'
-#' @param db PLEXOS database object
+#' @inheritParams query_master
 #'
 #' @family special queries
 #' 
@@ -61,7 +61,7 @@ query_class <- function(db) {
 #' Get the list of objects and classes in each database. Shortcuts for generators, regions and zones
 #' are provided for convenience.
 #'
-#' @param db PLEXOS database object
+#' @inheritParams query_master
 #' @param class Type of class to query
 #'
 #' @family special queries
@@ -90,7 +90,7 @@ query_zone      <- function(db) query_class_member(db, "Zone")
 #'
 #' Get the time limits and time step lengths for each simulation phase.
 #'
-#' @param db PLEXOS database object
+#' @inheritParams query_master
 #'
 #' @family special queries
 #' 
