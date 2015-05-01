@@ -115,8 +115,10 @@ query_sql <- function(db, sql) {
 query_property <- function(db) {
   get_table_scenario(db, "property") %>%
     add_phase_names %>%
-    reshape2::dcast(phase_id + phase + is_summary + class_group + class + collection + property + unit ~ scenario,
-                    length, value.var = "unit")
+    group_by(phase_id, phase, is_summary, class_group, class, collection, property, unit, scenario) %>%
+    summarize(n = n()) %>%
+    tidyr::spread(scenario, n) %>%
+    as.data.frame
 }
 
 #' Query configuration tables
@@ -133,7 +135,8 @@ query_property <- function(db) {
 #' @export
 query_config <- function(db) {
   data <- get_table_scenario(db, "config")
-  reshape2::dcast(data, position + scenario + filename ~ element, value.var = "value")
+    tidyr::spread(data, element, value) %>%
+    as.data.frame
 }
 
 #' Query log file information

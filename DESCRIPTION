@@ -24,7 +24,7 @@ Imports:
     DBI,
     data.table,
     lubridate,
-    reshape2,
+    tidyr,
     stringi,
     parallel,
     doParallel,

@@ -192,7 +192,8 @@ add_extra_tables_input <- function(db) {
     
     tag.table <- tbl(db, "temp_tag") %>%
       collect %>%
-      reshape2::dcast(data_id ~ class, value.var = "name")
+      tidyr::spread(class, name) %>%
+      as.data.frame
     
     DBI::dbGetQuery(db$con, "DROP VIEW [temp_tag]")
     
@@ -226,7 +227,8 @@ add_extra_tables_input <- function(db) {
       
     text.table <- tbl(db, "temp_text") %>%
       collect %>%
-      reshape2::dcast(data_id ~ class, value.var = "value")
+      tidyr::spread(class, value) %>%
+      as.data.frame
     
     DBI::dbGetQuery(db$con, "DROP VIEW [temp_text]")
     
