@@ -19,6 +19,16 @@ test_that("Expected errors and warnings", {
   expect_warning(plexos_open(c(loc, locERR)))
 })
 
+test_that("Query errors", {
+  expect_error(query_interval(db, "Generator", "Gen"))
+  expect_error(query_interval(db, "Gen", "Generation"))
+  expect_error(query_interval(db, "Generator", "Generation", phase = 3))
+  expect_error(query_interval(db, "Generator", "Generation", filter = c("2010-01-10", "2011-01-01")))
+  expect_error(query_interval(db, "Generator", "Generation", filter = list(time = c("2010-01-10", "2011-01-01"))))
+  expect_warning(query_interval(db, "Generator", "Generation", filter = list(name = "test")))
+  expect_warning(query_interval(db, "Generator", "Generation", time.range = c("2010-01-10", "2011-01-01")))
+})
+
 try(qday <- query_day(db, "Generator", "Generation"))
 try(qint <- query_interval(db, "Generator", "Generation"))
 try(qday2 <- query_day(db, "Generator", "Generation", c("region", "name")))

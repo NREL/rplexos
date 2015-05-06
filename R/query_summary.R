@@ -100,8 +100,8 @@ query_time <- function(db) {
           FROM time GROUP BY phase_id"
   query_sql(db, sql) %>%
     add_phase_names %>%
-    mutate(start = lubridate::ymd_hms(start),
-           end = lubridate::ymd_hms(end),
+    mutate(start = as.POSIXct(start, format = "%Y-%m-%d %H:%M:%S"),
+           end = as.POSIXct(end, format = "%Y-%m-%d %H:%M:%S"),
            timestep = difftime(end, start, units = "mins") / (count - 1)) %>%
     select(scenario, position, phase_id, phase, start, end, count, timestep) %>%
     arrange(position, phase_id)

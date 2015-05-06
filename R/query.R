@@ -395,7 +395,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
       filter_rplexos_time(time.range) %>%
       select_rplexos(columns, add.key = FALSE) %>%
       collect %>%
-      mutate(time = lubridate::ymd_hms(time, quiet = TRUE))
+      mutate(time = as.POSIXct(time, format = "%Y-%m-%d %H:%M:%S"))
   } else {
     # Query interval data
     # Get the table names that store the data
@@ -410,6 +410,12 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
       filter(collection == col, phase_id == phase, is_summary == 0) %>%
       select(collection, property, table_name) %>%
       mutate(table_name = gsub("data_interval_", "", table_name))
+    
+    # If t.name is empty (data is not available), return an empty data frame
+    if (nrow(t.name) == 0L) {
+      DBI::dbDisconnect(thesql$con)
+      return(data.frame())
+    }
     
     # Get max/min time existing in the table to be queried
     #   In case time table has more time stamps than those in the dataset
@@ -439,7 +445,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
     }
     
     # Convert into R time-data format
-    time.data$time <- lubridate::ymd_hms(time.data$time)
+    time.data$time <- as.POSIXct(time.data$time, format = "%Y-%m-%d %H:%M:%S")
     
     # Get interval data
     out <- t.name %>%
@@ -454,7 +460,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
            collect
       ) %>%
       ungroup %>%
-      mutate(time = lubridate::ymd_hms(time))
+      mutate(time = as.POSIXct(time, format = "%Y-%m-%d %H:%M:%S"))
   
     # Expand data
     #   This will be easier when dplyr supports rolling joins
@@ -553,7 +559,7 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
     times <- get_table_scenario(db, "time")
     delta <- times %>%
       group_by(scenario) %>%
-      mutate(time = lubridate::ymd_hms(time)) %>%
+      mutate(time = as.POSIXct(time, format = "%Y-%m-%d %H:%M:%S")) %>%
       summarize(interval = min(lubridate::int_length(lubridate::int_diff(time))) / 3600)
     
     # Add interval duration to the sum

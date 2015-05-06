@@ -1,5 +1,9 @@
 # rplexos 1.0.0.99
 
+## Bug fixes
+
+* Correctly handle interval queries for databases that don't have the requested data.
+
 
 # rplexos 1.0
 
