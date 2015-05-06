@@ -560,7 +560,9 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
     delta <- times %>%
       group_by(scenario) %>%
       mutate(time = as.POSIXct(time, format = "%Y-%m-%d %H:%M:%S")) %>%
-      summarize(interval = min(lubridate::int_length(lubridate::int_diff(time))) / 3600)
+      summarize(interval = difftime(lead(time), time, units = "hours") %>%
+                  min(na.rm = TRUE) %>%
+                  as.numeric)
     
     # Add interval duration to the sum
     out <- out %>%
