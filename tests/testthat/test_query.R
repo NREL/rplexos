@@ -23,6 +23,7 @@ test_that("Query errors", {
   expect_error(query_interval(db, "Generator", "Gen"))
   expect_error(query_interval(db, "Gen", "Generation"))
   expect_error(query_interval(db, "Generator", "Generation", phase = 3))
+  expect_error(query_interval(db, "Generator", "Generation", filter = c("2010-13-10", "2011-14-01")))
   expect_error(query_interval(db, "Generator", "Generation", filter = c("2010-01-10", "2011-01-01")))
   expect_error(query_interval(db, "Generator", "Generation", filter = list(time = c("2010-01-10", "2011-01-01"))))
   expect_warning(query_interval(db, "Generator", "Generation", filter = list(name = "test")))
@@ -93,6 +94,9 @@ test_that("Filters in queries", {
   expect_equal(query_day(db, "Generator", "Generation", time.range = allTimeHH), qday)
   expect_equal(query_interval(db, "Generator", "Generation", time.range = allTimeDD), qint)
   expect_equal(query_interval(db, "Generator", "Generation", time.range = allTimeHH), qint)
+  
+  expect_identical(query_day(db, "Generator", "Generation", time.range = as.POSIXct(oneTimeDD)) %>% nrow, 3L)
+  expect_identical(query_day(db, "Generator", "Generation", time.range = as.POSIXct(oneTimeHH)) %>% nrow, 3L)
   
   expect_identical(query_day(db, "Generator", "Generation", time.range = oneTimeDD) %>% nrow, 3L)
   expect_identical(query_day(db, "Generator", "Generation", time.range = oneTimeHD) %>% nrow, 3L)

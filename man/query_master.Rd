@@ -52,7 +52,7 @@ sum_year(db, ...)
 
 \item{columns}{character. Data columns to query or aggregate by (defaults to \code{name})}
 
-\item{time.range}{character. Range of dates of length 2 (given in 'ymdhms' or 'ymd' format)}
+\item{time.range}{POSIXt or character. Range of dates of length 2 (given as date, datetime or character in 'ymdhms' or 'ymd' format)}
 
 \item{filter}{list. Used to filter by data columns (see details)}
 

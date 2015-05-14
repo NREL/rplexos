@@ -216,7 +216,7 @@ query_log_steps <- function(db) {
 #' @param col character. Collection to query
 #' @param prop character vector. Property or properties to query
 #' @param columns character. Data columns to query or aggregate by (defaults to \code{name})
-#' @param time.range character. Range of dates of length 2 (given in 'ymdhms' or 'ymd' format)
+#' @param time.range POSIXt or character. Range of dates of length 2 (given as date, datetime or character in 'ymdhms' or 'ymd' format)
 #' @param filter list. Used to filter by data columns (see details)
 #' @param phase integer. PLEXOS optimization phase (1-LT, 2-PASA, 3-MT, 4-ST)
 #' @param multiply.time boolean. When summing interval data, provide the value multiplied by interval duration (See details).
@@ -253,15 +253,22 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
       stop("The names in 'filter' must correspond to correct columns. Use valid_columns() to get the full list.", call. = FALSE)
   }
   
-  # Time range checks and convert to POSIXct
-  #    time.range2 could be renamed to time.range in the future
-  #    https://github.com/hadley/dplyr/issues/857
+  # Time range checks
   if (!is.null(time.range)) {
-    stopifnot(is.character(time.range), length(time.range) == 2L)
-    time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
+    stopifnot(length(time.range) == 2L)
     
-    if(any(is.na(time.range2)))
-      stop("Could not convert time.range. Use 'ymdhms' or 'ymd' formats", call. = FALSE)
+    if (inherits(time.range, "POSIXt")) {
+      time.range2 <- time.range
+    } else {
+      time.range2 <- c(NA, NA)
+      
+      if (inherits(time.range, "character")) {
+        try(time.range2 <- c(as.POSIXct(time.range[1]), as.POSIXct(time.range[2])), silent = TRUE)
+      }
+      
+      if(any(is.na(time.range2)))
+        stop("time.range must be POSIXt or character with 'ymdhms' or 'ymd' formats", call. = FALSE)
+    }
     
     # Convert dates to ymdhms format, so that queries work correctly
     time.range <- format(time.range2, "%Y-%m-%d %H:%M:%S")

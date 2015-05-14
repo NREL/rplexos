@@ -23,7 +23,6 @@ Imports:
     RSQLite (>= 1.0),
     DBI,
     data.table,
-    lubridate,
     tidyr,
     stringi,
     parallel,

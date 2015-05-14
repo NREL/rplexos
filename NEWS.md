@@ -1,8 +1,18 @@
 # rplexos 1.0.0.99
 
+## Enhancements
+
+* Reduced the dependency of a few other packages.
+* `time.range` can be defined as a R date or datetime object.
+
 ## Bug fixes
 
 * Correctly handle interval queries for databases that don't have the requested data.
+
+
+## Database structure
+
+Structure has not changed since v1.0.
 
 
 # rplexos 1.0
