@@ -54,26 +54,18 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
   }
   
   # Function to list PLEXOS files in each folder
-  plexos_list_files <- function(df, is.xml = TRUE) {
-    filt.str <- ifelse(is.xml, ".xml$|.XML$", ".zip$|.ZIP$")
+  plexos_list_files <- function(df) {
+    filename <- list.files(df$folder, ".xml$|.XML$|.zip$|.ZIP$", full.names = TRUE)
     
-    filename <- list.files(df$folder, filt.str, full.names = TRUE)
-    
-    if (length(filename) == 0L) {
-      return(data.frame())
-    }
-    
-    data.frame(type = ifelse(is.xml, "I", "S"),
-               filename,
-               stringsAsFactors = FALSE)
+    data_frame(type = ifelse(grepl(".xml$|.XML$", filename), "I", "S"),
+               filename)
   }
   
   # Get database file names
   df <- data.frame(folder = folders,
                    stringsAsFactors = FALSE) %>%
     group_by(folder) %>%
-    do(rbind(plexos_list_files(., TRUE),
-             plexos_list_files(., FALSE)))
+    do(plexos_list_files(.))
   
   # Error if all folders were empty
   if (nrow(df) == 0L)
