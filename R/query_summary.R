@@ -76,15 +76,25 @@ query_class_member <- function(db, class) {
 
 #' @rdname query_class_member
 #' @export
-query_generator <- function(db) query_class_member(db, "Generator")
+query_generator <- function(db) {
+  query_class_member(db, "Generator") %>%
+    filter(parent == "System") %>%
+    select(-parent)
+}
 
 #' @rdname query_class_member
 #' @export
-query_region    <- function(db) query_class_member(db, "Region")
+query_region <- function(db) {
+  query_class_member(db, "Region") %>%
+    select(-region, -zone)
+}
 
 #' @rdname query_class_member
 #' @export
-query_zone      <- function(db) query_class_member(db, "Zone")
+query_zone <- function(db) {
+  query_class_member(db, "Zone") %>%
+    select(-region, -zone)
+}
 
 #' Get time spans from all databases
 #'
