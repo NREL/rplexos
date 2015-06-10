@@ -120,6 +120,12 @@ test_that("Filters in queries", {
   expect_identical(query_interval(db, "Generator", "Generation", filter = lstWin, time.range = halfTimeHH) %>% nrow, 12L)
 })
 
+lstNot <- list(name = "GenNotPresent")
+test_that("Empty queries", {
+  expect_identical(query_day(db, "Generator", "Generation", filter = lstNot) %>% nrow, 0L)
+  expect_identical(query_interval(db, "Generator", "Generation", filter = lstNot) %>% nrow, 0L)
+})
+
 test_that("Sum queries", {
   expect_equal(sum_interval(db, "Generator", "Generation", filter = lstWin)$value,
                query_day(db, "Generator", "Generation", filter = lstWin)$value * 1000)
