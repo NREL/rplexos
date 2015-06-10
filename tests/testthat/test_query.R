@@ -188,10 +188,6 @@ test_that("Auxiliary queries", {
   expect_identical(query_class_member(db, "Line") %>% nrow, 3L)
   expect_identical(query_class_member(db, "Region") %>% nrow, 1L)
   
-  expect_identical(query_class_member(db, "Generator"), query_generator(db))
-  expect_identical(query_class_member(db, "Region"), query_region(db))
-  expect_identical(query_class_member(db, "Zone"), query_zone(db))
-  
   qconfig <- query_config(db)
   expect_is(qconfig, "data.frame")
   expect_identical(nrow(qconfig), 1L)
