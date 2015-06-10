@@ -8,6 +8,7 @@
 ## Bug fixes
 
 * Correctly handle interval queries for databases that don't have the requested data.
+* Fixed an error in `process_folder` when dplyr 0.4.2 is installed.
 
 
 ## Database structure
