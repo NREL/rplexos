@@ -182,7 +182,7 @@ query_config <- function(db) {
 #' # Query data
 #' db <- plexos_open(location)
 #' query_log(db)
-#' querty_log_steps(db)
+#' query_log_steps(db)
 #' 
 #' @export
 query_log <- function(db) {

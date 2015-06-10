@@ -24,7 +24,7 @@ process_folder(location)
 # Query data
 db <- plexos_open(location)
 query_log(db)
-querty_log_steps(db)
+query_log_steps(db)
 }
 \seealso{
 \code{\link{plexos_open}} to create the PLEXOS database object
