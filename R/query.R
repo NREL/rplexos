@@ -403,11 +403,8 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
   
   # Check if any scenario is missing from the results
   missing.scenario <- setdiff(unique(db$scenario), unique(out$scenario))
-  if (length(missing.scenario) == 1L) {
-    warning("Query returned no results for scenario: ", missing.scenario,,
-            call. = FALSE)
-  } else if (length(missing.scenario) > 1L) {
-    warning("Query returned no results for scenarios: ",
+  if (length(missing.scenario) >= 1L) {
+    warning("Query returned no results for scenario(s): ",
             paste(missing.scenario, collapse = ", "),
             call. = FALSE)
   }
