@@ -1,6 +1,6 @@
 # Get one table from a SQLite database
 get_table <- function(filename, table) {
-  # Opern connection
+  # Open connection
   thesql <- src_sqlite(filename, create = FALSE)
   
   if (table %in% src_tbls(thesql)) {

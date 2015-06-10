@@ -10,3 +10,5 @@ inst/web
 .Rproj.user
 *.Rproj
 .Rhistory
+
+.Rapp.history
