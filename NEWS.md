@@ -1,12 +1,13 @@
-# rplexos 1.0.0.99
+# rplexos 1.1
 
 ## Enhancements
 
-* Reduce the dependency of a few other packages.
+* Reduce the dependency on a few other packages.
 * `time.range` can be defined as a R date or datetime object.
 * Use the built-in data in the documentation examples. (#35)
 * Add filter to `query_generator` so that it only returns the list of generators.
 * Delete unused columns from `query_zone` and `query_region`.
+
 
 ## Bug fixes
 
