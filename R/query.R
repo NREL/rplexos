@@ -312,7 +312,7 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
       time.range2 <- c(NA, NA)
       
       if (inherits(time.range, "character")) {
-        try(time.range2 <- c(as.POSIXct(time.range[1]), as.POSIXct(time.range[2])), silent = TRUE)
+        time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
       }
       
       if(any(is.na(time.range2)))
@@ -448,7 +448,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
       filter_rplexos_time(time.range) %>%
       select_rplexos(columns, add.key = FALSE) %>%
       collect %>%
-      mutate(time = as.POSIXct(time, format = "%Y-%m-%d %H:%M:%S"))
+      mutate(time = lubridate::ymd_hms(time, quiet = TRUE))
   } else {
     # Query interval data
     # Get the table names that store the data
@@ -498,10 +498,10 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
     }
     
     # Convert into R time-data format
-    time.data$time <- as.POSIXct(time.data$time, format = "%Y-%m-%d %H:%M:%S")
+    time.data$time <- lubridate::ymd_hms(time.data$time, quiet = TRUE)
     
     # Get interval data
-    out <- t.name %>%
+    out1 <- t.name %>%
       group_by(collection, property) %>%
       do(tbl(thesql, .$table_name) %>%
            filter(phase_id == phase) %>%
@@ -513,12 +513,12 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
            collect
       ) %>%
       ungroup %>%
-      mutate(time = as.POSIXct(time, format = "%Y-%m-%d %H:%M:%S"))
+      mutate(time = lubridate::ymd_hms(time, quiet = TRUE))
   
     # Expand data
     #   This will be easier when dplyr supports rolling joins
-    out2 <- data.table(out, key = "key,time")
-    cj2 <- CJ(key = unique(out$key), time = time.data$time)
+    out2 <- data.table(out1, key = "key,time")
+    cj2 <- CJ(key = unique(out1$key), time = time.data$time)
     
     out3 <- out2[cj2, roll = TRUE]
     out <- out3 %>%
@@ -612,7 +612,7 @@ sum_master <- function(db, time, col, prop, columns = "name", time.range = NULL,
     times <- get_table_scenario(db, "time")
     delta <- times %>%
       group_by(scenario) %>%
-      mutate(time = as.POSIXct(time, format = "%Y-%m-%d %H:%M:%S")) %>%
+      mutate(time = lubridate::ymd_hms(time, quiet = TRUE)) %>%
       summarize(interval = difftime(lead(time), time, units = "hours") %>%
                   min(na.rm = TRUE) %>%
                   as.numeric)

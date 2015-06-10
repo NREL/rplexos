@@ -199,5 +199,3 @@ test_that("Auxiliary queries", {
                  "unit", db$scenario[1] %>% as.character))
   expect_identical(nrow(qproperty), 35L)
 })
-
-
