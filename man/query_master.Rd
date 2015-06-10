@@ -115,6 +115,17 @@ The parameter \code{multiply.time} allows to multiply values by interval duratio
 doing the sum of interval data. This can be used, for example, to obtain total energy (in MWh)
 from power time series (in MW).
 }
+\examples{
+# Process the folder with the solution file provided by rplexos
+location <- location_solution_rplexos()
+process_folder(location)
+
+# Query data
+db <- plexos_open(location)
+query_day(db, "Generator", "Generation")
+query_day(db, "Region", "*")
+query_interval(db, "Generator", "Generation")
+}
 \seealso{
 \code{\link{plexos_open}} to create the PLEXOS database object
 

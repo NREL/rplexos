@@ -14,6 +14,15 @@ Get information from the \code{config} table, which includes: PLEXOS version, so
 date and time, machine and location of PLEXOS input database, model description and user
 name. Additionally, it stores the version of rplexos used to process the PLEXOS database.
 }
+\examples{
+# Process the folder with the solution file provided by rplexos
+location <- location_solution_rplexos()
+process_folder(location)
+
+# Query data
+db <- plexos_open(location)
+query_config(db)
+}
 \seealso{
 \code{\link{plexos_open}} to create the PLEXOS database object
 

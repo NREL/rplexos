@@ -14,9 +14,14 @@ In stochastic simulations, PLEXOS will return sample results and their statistic
 makes it easy to separate them with a filter.
 }
 \examples{
-\dontrun{db <- plexos_open()}
-\dontrun{res <- query_month(db, "Generator", "Generation")}
-\dontrun{res \%>\% filter(sample_stats(sample))    # To obtain statistics}
-\dontrun{res \%>\% filter(!sample_stats(sample))   # To obtain sample results}
+# Process the folder with the solution file provided by rplexos
+location <- location_solution_rplexos()
+process_folder(location)
+
+# Query data
+db <- plexos_open(location)
+res <- query_month(db, "Generator", "Generation")
+res \%>\% filter(sample_stats(sample))    # To obtain statistics
+res \%>\% filter(!sample_stats(sample))   # To obtain sample results
 }
 

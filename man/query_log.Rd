@@ -16,6 +16,16 @@ query_log_steps(db)
 During the processing of the PLEXOS databases, information from the log file is saved
 into the database. This includes solution times and infeasibilities for the different phases.
 }
+\examples{
+# Process the folder with the solution file provided by rplexos
+location <- location_solution_rplexos()
+process_folder(location)
+
+# Query data
+db <- plexos_open(location)
+query_log(db)
+querty_log_steps(db)
+}
 \seealso{
 \code{\link{plexos_open}} to create the PLEXOS database object
 

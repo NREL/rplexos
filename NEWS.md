@@ -2,13 +2,14 @@
 
 ## Enhancements
 
-* Reduced the dependency of a few other packages.
+* Reduce the dependency of a few other packages.
 * `time.range` can be defined as a R date or datetime object.
+* Use the built-in data in the documentation examples (#35)
 
 ## Bug fixes
 
 * Correctly handle interval queries for databases that don't have the requested data.
-* Fixed an error in `process_folder` when dplyr 0.4.2 is installed.
+* Fix an error in `process_folder` when dplyr 0.4.2 is installed (#37).
 
 
 ## Database structure

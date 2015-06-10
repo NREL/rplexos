@@ -44,8 +44,16 @@ Do not rename the SQLite databases created with these functions. Other code expe
 those filenames to remain unchanged.
 }
 \examples{
+# Process the folder with the solution file provided by rplexos
+location <- location_solution_rplexos()
+process_folder(location)
+
+# Process the folder with the input file provided by rplexos
+location2 <- location_input_rplexos()
+process_folder(location2)
+
+# Other examples
 \dontrun{process_folder()}
-\dontrun{process_folder("HiWind")}
 \dontrun{process_solution("HiWind/Model WWSIS_c_RT_CoreB_M01_SC3 Solution.zip")}
 \dontrun{process_input("WWSIS model.xml")}
 }

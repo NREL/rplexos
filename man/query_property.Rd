@@ -14,6 +14,15 @@ Produce a list of available properties, their units and the collections they bel
 Additionally, a column is created for each scenario that indicates in how many databases
 the property appears.
 }
+\examples{
+# Process the folder with the solution file provided by rplexos
+location <- location_solution_rplexos()
+process_folder(location)
+
+# Query data
+db <- plexos_open(location)
+query_property(db)
+}
 \seealso{
 \code{\link{plexos_open}} to create the PLEXOS database object
 

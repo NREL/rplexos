@@ -74,6 +74,16 @@ get_table_scenario <- function(db, from) {
 #' @seealso \code{\link{query_master}} to perform standard queries of data
 #' @family special queries
 #' 
+#' @examples
+#' # Process the folder with the solution file provided by rplexos
+#' location <- location_solution_rplexos()
+#' process_folder(location)
+#' 
+#' # Query data
+#' db <- plexos_open(location)
+#' query_sql(db, "SELECT * from day")
+#' query_sql(db, "SELECT * from time")
+#' 
 #' @export
 query_sql <- function(db, sql) {
   # Check inputs
@@ -109,7 +119,16 @@ query_sql <- function(db, sql) {
 #' @inheritParams query_master
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
 #' @family special queries
-#'
+#' 
+#' @examples
+#' # Process the folder with the solution file provided by rplexos
+#' location <- location_solution_rplexos()
+#' process_folder(location)
+#' 
+#' # Query data
+#' db <- plexos_open(location)
+#' query_property(db)
+#' 
 #' @export
 query_property <- function(db) {
   get_table_scenario(db, "property") %>%
@@ -130,6 +149,15 @@ query_property <- function(db) {
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
 #' @family special queries
 #'
+#' @examples
+#' # Process the folder with the solution file provided by rplexos
+#' location <- location_solution_rplexos()
+#' process_folder(location)
+#' 
+#' # Query data
+#' db <- plexos_open(location)
+#' query_config(db)
+#'
 #' @export
 query_config <- function(db) {
   data <- get_table_scenario(db, "config")
@@ -146,6 +174,16 @@ query_config <- function(db) {
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
 #' @family special queries
 #'
+#' @examples
+#' # Process the folder with the solution file provided by rplexos
+#' location <- location_solution_rplexos()
+#' process_folder(location)
+#' 
+#' # Query data
+#' db <- plexos_open(location)
+#' query_log(db)
+#' querty_log_steps(db)
+#' 
 #' @export
 query_log <- function(db) {
   get_table_scenario(db, "log_info") %>%
@@ -226,6 +264,17 @@ query_log_steps <- function(db) {
 #' 
 #' @seealso \code{\link{plexos_open}} to create the PLEXOS database object
 #' @seealso \code{\link{query_sql}} to perform custom queries
+#' 
+#' @examples
+#' # Process the folder with the solution file provided by rplexos
+#' location <- location_solution_rplexos()
+#' process_folder(location)
+#' 
+#' # Query data
+#' db <- plexos_open(location)
+#' query_day(db, "Generator", "Generation")
+#' query_day(db, "Region", "*")
+#' query_interval(db, "Generator", "Generation")
 #' 
 #' @export
 #' @importFrom data.table data.table CJ

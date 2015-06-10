@@ -14,6 +14,16 @@ query_sql(db, sql)
 \description{
 Send a SQL query to all the files in a PLEXOS database object.
 }
+\examples{
+# Process the folder with the solution file provided by rplexos
+location <- location_solution_rplexos()
+process_folder(location)
+
+# Query data
+db <- plexos_open(location)
+query_sql(db, "SELECT * from day")
+query_sql(db, "SELECT * from time")
+}
 \seealso{
 \code{\link{plexos_open}} to create the PLEXOS database object
 
