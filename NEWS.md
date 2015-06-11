@@ -1,3 +1,8 @@
+# rplexos 1.1.1
+
+* Minor revision to the description, as requested by CRAN maintainers.
+
+
 # rplexos 1.1
 
 ## Enhancements
