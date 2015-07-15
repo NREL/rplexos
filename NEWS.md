@@ -1,3 +1,8 @@
+# rplexos 1.1.2
+
+* Minor revision to the description to update package maintainer.
+
+
 # rplexos 1.1.1
 
 * Minor revision to the description, as requested by CRAN maintainers.
