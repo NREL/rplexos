@@ -13,6 +13,7 @@
 #' @seealso \code{\link{query_master}} to perform standard queries of data
 #' @seealso \code{\link{query_sql}} to perform custom queries
 #' 
+#' @importFrom utils packageVersion compareVersion
 #' @export
 plexos_open <- function(folders = ".", names = folders) {
   # Check inputs

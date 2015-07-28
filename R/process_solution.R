@@ -1,6 +1,7 @@
 #' @rdname process_folder
 #' 
 #' @useDynLib rplexos
+#' @importFrom utils packageVersion unzip
 #' @export
 process_solution <- function(file, keep.temp = FALSE) {
   # Check that inputs are valid
@@ -355,6 +356,7 @@ process_solution <- function(file, keep.temp = FALSE) {
 }
 
 # Read a file in a zip file onto memory
+#' @importFrom utils unzip
 read_file_in_zip <- function(zip.file, position) {
   zip.content <- unzip(zip.file, list = TRUE)
   read.file <- zip.content[position, ]

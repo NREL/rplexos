@@ -1,4 +1,4 @@
-# rplexos 1.1.2
+# rplexos 1.1.2 and 1.1.3
 
 * Minor revision to the description to update package maintainer.
 

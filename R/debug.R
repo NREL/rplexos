@@ -54,6 +54,7 @@ location_solution_rplexos <- function() {
 }
 
 #' @rdname location_solution_rplexos
+#' @importFrom utils unzip
 #' @export
 location_input_rplexos <- function() {
   out <- system.file("extdata", "database", package = "rplexos")
