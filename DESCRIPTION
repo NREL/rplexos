@@ -1,10 +1,11 @@
 Package: rplexos
 Type: Package
 Title: Read and Analyze 'PLEXOS' Solutions
-Version: 1.1.3
-Date: 2015-06-10
+Version: 1.1.5
+Date: 2016-06-17
 Authors@R: c(
     person("Eduardo", "Ibanez", , "edu.ibanez@gmail.com", c("aut", "cre")),
+    person("Jef", "Daniels", , " ", role=c("aut")),
     person("Marcin", "Kalicinski", , "kalita@poczta.onet.pl", "ctb", "for the included RapidXml source"),
     person("National Renewable Energy Laboratory", role = "cph")
     )
@@ -32,7 +33,7 @@ Imports:
     parallel,
     doParallel,
     foreach
-Suggests: 
+Suggests:
     knitr,
     testthat,
     ggplot2
