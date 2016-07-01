@@ -1,3 +1,9 @@
+# rplexos 1.1.5 and 1.1.6
+
+* Bugfix in the C code to cope columns (properties) that have 3 or less characters
+* Change rbind() to bind_rows() because the former will be depreciated in a future dplyr release
+* Improve the collect call so that it includes the n=Inf argument. The default value changed in dplyr.
+
 # rplexos 1.1.2 and 1.1.3
 
 * Minor revision to the description to update package maintainer.
