@@ -4,7 +4,7 @@ get_table <- function(filename, table) {
   thesql <- src_sqlite(filename, create = FALSE)
 
   if (table %in% src_tbls(thesql)) {
-    out <- tbl(thesql, table) %>% collect
+    out <- tbl(thesql, table) %>% collect(n=Inf)
   } else {
     out <- data.frame()
   }
@@ -447,7 +447,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
       filter_rplexos(filter) %>%
       filter_rplexos_time(time.range) %>%
       select_rplexos(columns, add.key = FALSE) %>%
-      collect %>%
+      collect(n=Inf) %>%
       mutate(time = lubridate::ymd_hms(time, quiet = TRUE))
   } else {
     # Query interval data
@@ -478,7 +478,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
         tbl(thesql, .$table_name) %>%
           filter(phase_id == phase) %>%
           summarize(time_from = min(time_from), time_to = max(time_to)) %>%
-          collect
+          collect(n=Inf)
       )
     min.time.data <- min(time.limit$time_from)
     max.time.data <- max(time.limit$time_to)
@@ -489,7 +489,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
       filter(between(time, min.time.data, max.time.data)) %>%
       filter_rplexos_time(time.range) %>%
       select(time) %>%
-      collect
+      collect(n=Inf)
 
     # If time data is empty, return an empty data frame
     if (nrow(time.data) == 0L) {
@@ -510,7 +510,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
            select(-time_to) %>%
            rename(time = time_from) %>%
            select_rplexos(columns, add.key = TRUE) %>%
-           collect
+           collect(n=Inf)
       ) %>%
       ungroup %>%
       mutate(time = lubridate::ymd_hms(time, quiet = TRUE))
