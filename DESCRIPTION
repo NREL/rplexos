@@ -9,12 +9,12 @@ Authors@R: c(
     person("Marcin", "Kalicinski", , "kalita@poczta.onet.pl", "ctb", "for the included RapidXml source"),
     person("National Renewable Energy Laboratory", role = "cph")
     )
-Description: Efficiently read and analyze 'PLEXOS' solutions by converting them
-    into 'SQLite' databases that can be easily queried. It supports collation of
-    solutions that may have been divided into different time partitions,
-    as well as the comparison across different scenarios. 'PLEXOS' is a power systems
-    production cost model, created and distributed by Energy Exemplar
-    (see URL below for more information).
+Description: Efficiently read and analyze 'PLEXOS' solutions by converting
+    them into 'SQLite' databases that can be easily queried. It supports collation
+    of solutions that may have been divided into different time partitions, as
+    well as the comparison across different scenarios. 'PLEXOS' is a power systems
+    production cost model, created and distributed by Energy Exemplar (see URL below
+    for more information).
 License: MIT + file LICENSE
 URL: https://github.com/NREL/rplexos,
     http://energyexemplar.com/software/plexos-desktop-edition/
@@ -39,3 +39,4 @@ Suggests:
     ggplot2
 LinkingTo: Rcpp (>= 0.11.5)
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1
