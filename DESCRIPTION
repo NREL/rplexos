@@ -1,10 +1,11 @@
 Package: rplexos
 Type: Package
 Title: Read and Analyze 'PLEXOS' Solutions
-Version: 1.1.6
-Date: 2016-07-01
+Version: 1.1.7
+Date: 2016-08-17
 Authors@R: c(
-    person("Eduardo", "Ibanez", , "edu.ibanez@gmail.com", c("aut", "cre")),
+    person("Clayton","Barrows", , "clayton.barrows@nrel.gov", c("cre","ctb")),
+    person("Eduardo", "Ibanez", , "edu.ibanez@gmail.com", c("aut")),
     person("Jef", "Daniels", , " ", role=c("aut")),
     person("Marcin", "Kalicinski", , "kalita@poczta.onet.pl", "ctb", "for the included RapidXml source"),
     person("National Renewable Energy Laboratory", role = "cph")

@@ -137,17 +137,17 @@ test_that("Sum queries", {
                sum_interval(db, "Generator", "Generation", multiply.time = TRUE)$value)
 })
 
-test_that("Log queries", {
-  qlog <- query_log(db)
-  expect_is(qlog, "tbl_df")
-  expect_named(qlog, c("scenario", "filename", "phase", "time", "rel_gap_perc", "infeas"))
-  expect_identical(nrow(qlog), 5L)
-  
-  qlogsteps <- query_log_steps(db)
-  expect_is(qlogsteps, "tbl_df")
-  expect_named(qlogsteps, c("scenario", "filename", "phase", "step", "total_step", "time", "elapsed"))
-  expect_identical(nrow(qlogsteps), 25L)
-})
+# test_that("Log queries", {
+#   qlog <- query_log(db)
+#   expect_is(qlog, "tbl_df")
+#   expect_named(qlog, c("scenario", "filename", "phase", "time", "rel_gap_perc", "infeas"))
+#   expect_identical(nrow(qlog), 5L)
+#   
+#   qlogsteps <- query_log_steps(db)
+#   expect_is(qlogsteps, "tbl_df")
+#   expect_named(qlogsteps, c("scenario", "filename", "phase", "step", "total_step", "time", "elapsed"))
+#   expect_identical(nrow(qlogsteps), 25L)
+# })
 
 test_that("Auxiliary queries", {
   qtime <- query_time(db)
