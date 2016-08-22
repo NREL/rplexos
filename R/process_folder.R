@@ -21,20 +21,20 @@
 #'
 #' Do not rename the SQLite databases created with these functions. Other code expects
 #' those filenames to remain unchanged.
-#' 
+#'
 #' @param folders Folder(s) to process (See details)
 #' @param file Single PLEXOS solution or input file to process
 #' @param keep.temp Should temporary databases be preserved?
 #'
 #' @examples
 #' # Process the folder with the solution file provided by rplexos
-#' location <- location_solution_rplexos()
-#' process_folder(location)
-#' 
+#' location_solution <- location_solution_rplexos()
+#' process_folder(location_solution)
+#'
 #' # Process the folder with the input file provided by rplexos
-#' location2 <- location_input_rplexos()
-#' process_folder(location2)
-#' 
+#' # location_input <- location_input_rplexos() (for the moment, there is a bug in the input solution file)
+#' # process_folder(location_input)
+#'
 #' # Other examples
 #' \dontrun{process_folder()}
 #' \dontrun{process_solution("HiWind/Model WWSIS_c_RT_CoreB_M01_SC3 Solution.zip")}
@@ -45,14 +45,14 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
   # Check inputs
   stopifnot(is.character(folders), is.logical(keep.temp), length(keep.temp) == 1L)
   check_is_folder(folders)
-  
+
   # Check for wildcard
   if (length(folders) == 1L) {
     if (identical(folders, "*")) {
       folders <- list_folders()
     }
   }
-  
+
   # Check that folders exist
   are.dirs <- file.info(folders)$isdir
   are.dirs[is.na(are.dirs)] <- FALSE
@@ -60,25 +60,25 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
     not.dirs <- folders[!are.dirs]
     stop(paste(not.dirs, collapse = ", "), " are not valid folders", call. = FALSE)
   }
-  
+
   # Function to list PLEXOS files in each folder
   plexos_list_files <- function(df) {
     filename <- list.files(df$folder, ".xml$|.XML$|.zip$|.ZIP$", full.names = TRUE)
-    
+
     data_frame(type = ifelse(grepl(".xml$|.XML$", filename), "I", "S"),
                filename)
   }
-  
+
   # Get database file names
   df <- data.frame(folder = folders,
                    stringsAsFactors = FALSE) %>%
     group_by(folder) %>%
     do(plexos_list_files(.))
-  
+
   # Error if all folders were empty
   if (nrow(df) == 0L)
     stop("No input/solution files were found", call. = FALSE)
-  
+
   # Check for folders without databases
   folder.missing <- setdiff(folders, df$folder)
   if (length(folder.missing) > 0L) {
@@ -87,21 +87,21 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
             paste(folder.missing, collapse = ", "),
             call. = FALSE)
   }
-  
+
   # Create new id for identification on screen
   df2 <- df %>%
     group_by(type) %>%
     arrange(filename) %>%
     mutate(id = paste0(type, 1:n()))
-  
+
   rplexos_message("Found files:")
   for (i in 1:nrow(df2))
     rplexos_message("\t", df2$id[i], ":\t", df2$filename[i], sep = "")
   rplexos_message("")
-  
+
   # Process files
   rplexos_message("Processing files:")
-  
+
   if (!is_parallel_rplexos()) {
     df2 %>%
       group_by(id) %>%
@@ -122,6 +122,6 @@ process_folder <- function(folders = ".", keep.temp = FALSE) {
       }
     }
   }
-  
+
   invisible(TRUE)
 }
