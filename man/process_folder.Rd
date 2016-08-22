@@ -45,12 +45,12 @@ those filenames to remain unchanged.
 }
 \examples{
 # Process the folder with the solution file provided by rplexos
-location <- location_solution_rplexos()
-process_folder(location)
+location_solution <- location_solution_rplexos()
+process_folder(location_solution)
 
 # Process the folder with the input file provided by rplexos
-location2 <- location_input_rplexos()
-process_folder(location2)
+# location_input <- location_input_rplexos() (for the moment, there is a bug in the input solution file)
+# process_folder(location_input)
 
 # Other examples
 \dontrun{process_folder()}
