@@ -1,3 +1,8 @@
+# rplexos 1.1.8
+
+* Solves a few bugs to prepare the package for CRAN
+ * The package does not work anymore on input files. All the examples have been commented. A future release will hopefully fix this issue.
+
 # rplexos 1.1.5 and 1.1.6
 
 * Bugfix in the C code to cope columns (properties) that have 3 or less characters
