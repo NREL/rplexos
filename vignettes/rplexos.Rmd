@@ -183,5 +183,5 @@ location2
 The input files are processed with the same function that is used for the solutions.
 
 ```{r}
-process_folder(location2)
+# process_folder(location2)
 ```
