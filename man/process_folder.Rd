@@ -49,7 +49,7 @@ location_solution <- location_solution_rplexos()
 process_folder(location_solution)
 
 # Process the folder with the input file provided by rplexos
-# location_input <- location_input_rplexos() (for the moment, there is a bug in the input solution file)
+# location_input <- location_input_rplexos() (for the moment, there is a bug in the soln file)
 # process_folder(location_input)
 
 # Other examples
