@@ -1,3 +1,7 @@
+# rplexos 1.1.9
+
+* Added a more specific regex to look for the xml inside the solution zip (solves #52)
+
 # rplexos 1.1.8
 
 * Solves a few bugs to prepare the package for CRAN

@@ -1,8 +1,8 @@
 Package: rplexos
 Type: Package
 Title: Read and Analyze 'PLEXOS' Solutions
-Version: 1.1.8
-Date: 2016-08-22
+Version: 1.1.9
+Date: 2016-09-29
 Authors@R: c(
     person("Clayton","Barrows", , "clayton.barrows@nrel.gov", c("cre","ctb")),
     person("Eduardo", "Ibanez", , "edu.ibanez@gmail.com", c("aut")),
@@ -14,7 +14,7 @@ Description: Efficiently read and analyze 'PLEXOS' solutions by converting
     them into 'SQLite' databases that can be easily queried. It supports collation
     of solutions that may have been divided into different time partitions, as
     well as the comparison across different scenarios. 'PLEXOS' is a power systems
-    production cost model, created and distributed by Energy Exemplar (see <http://energyexemplar.com/software/plexos-desktop-edition> 
+    production cost model, created and distributed by Energy Exemplar (see <http://energyexemplar.com/software/plexos-desktop-edition>
     for more information).
 License: MIT + file LICENSE
 URL: https://github.com/NREL/rplexos,
