@@ -5,3 +5,5 @@ NEWS\.md
 ^appveyor\.yml$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^packrat/
+^\.Rprofile$

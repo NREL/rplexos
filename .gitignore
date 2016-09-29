@@ -12,3 +12,4 @@ inst/web
 .Rhistory
 
 .Rapp.history
+packrat/lib*/
