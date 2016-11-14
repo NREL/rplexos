@@ -74,6 +74,7 @@ lstWin <- list(name = "Wind")
 lstAll <- list(name = c("Baseload", "Peaker", "Wind"))
 lstPos <- list(name = c("Baseload", "Peaker"))
 lstNeg <- list(name = c("-Wind"))
+lstNeg2 <- list(name = c("-Baseload", "-Peaker"))
 lstComb <- list(name = c("-Baseload", "Wind"))
 
 allTimeDD <- c("2015-03-14", "2015-03-15")
@@ -127,6 +128,12 @@ test_that("Filters in queries", {
                    query_interval(db, "Generator", "Generation", filter = lstNeg, time.range = halfTimeHD)) # positive versus negative filter
   expect_identical(query_interval(db, "Generator", "Generation", filter = lstPos, time.range = halfTimeHH),
                    query_interval(db, "Generator", "Generation", filter = lstNeg, time.range = halfTimeHH)) # positive versus negative filter
+
+
+  expect_identical(query_interval(db, "Generator", "Generation", filter = lstWin, time.range = halfTimeHD),
+                   query_interval(db, "Generator", "Generation", filter = lstNeg2, time.range = halfTimeHD)) # double negation
+  expect_identical(query_interval(db, "Generator", "Generation", filter = lstWin, time.range = halfTimeHH),
+                   query_interval(db, "Generator", "Generation", filter = lstNeg2, time.range = halfTimeHH)) # double negation
 
   expect_identical(query_interval(db, "Generator", "Generation", filter = lstComb, time.range = halfTimeHD),
                    query_interval(db, "Generator", "Generation", filter = lstWin, time.range = halfTimeHD)) # combined filter (positive is always stronger)

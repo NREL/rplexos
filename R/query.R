@@ -699,8 +699,8 @@ filter_rplexos <- function(out, filt) {
     vals_out <- lapply(filt_out, function(x)
       paste0("\"", x, "\"", collapse = ", ")) %>%
       paste0("c(", ., ")")
-    cons_out <- ifelse(lapply(filt_out, length) == 1L, "!=", "Negate(`%in%`)")
-    cond_out <- paste(names(filt_out), cons_out, vals_out)
+    cons_out <- ifelse(lapply(filt_out, length) == 1L, "==", "%in%")
+    cond_out <- paste('!(', names(filt_out), cons_out, vals_out, ')')
     out <- out %>%
       filter_(.dots = cond_out) # Apply condition
   }
