@@ -312,11 +312,11 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
       time.range2 <- c(NA, NA)
 
       if (inherits(time.range, "character")) {
-        time.range2 <- lubridate::parse_date_time(time.range, c("ymdhms", "ymd"), quiet = TRUE)
+        time.range2 <- lubridate::parse_date_time(time.range, c("ymdHMS", "ymd"), quiet = TRUE)
       }
 
       if(any(is.na(time.range2)))
-        stop("time.range must be POSIXt or character with 'ymdhms' or 'ymd' formats", call. = FALSE)
+        stop("time.range must be POSIXt or character with 'ymdHMS' or 'ymd' formats", call. = FALSE)
     }
 
     # Convert dates to ymdhms format, so that queries work correctly
