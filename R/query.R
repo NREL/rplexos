@@ -679,15 +679,43 @@ filter_rplexos <- function(out, filt) {
   if (length(filt) == 0L)
     return(out)
 
-  # Write the condition as text
-  vals <- lapply(filt, function(x)
-    paste0("\"", x, "\"", collapse = ", ")) %>%
-    paste0("c(", ., ")")
-  cons <- ifelse(lapply(filt, length) == 1L, "==", "%in%")
-  cond <- paste(names(filt), cons, vals)
+  # Split in positive and negative filters
+  filt_out <- lapply(filt, function(x){
+    neg <- substr(x, 1, 1)=='-'
+    x <- x[neg]
+    x <- sapply(x, function(y) substr(y,2,nchar(y)+1), USE.NAMES = F) # remove the minus
+    x
+  })
+  filt_out <- filt_out[lapply(filt_out,length)>0] # remove empty categories
 
-  # Apply condition
-  out %>% filter_(.dots = cond)
+  filt_in <- lapply(filt, function(x){
+    pos <- substr(x, 1, 1)!='-'
+    x[pos]
+  })
+  filt_in <- filt_in[lapply(filt_in,length)>0] # remove empty categories
+
+  # Write the condition as text
+  if(length(filt_out)>0){
+    vals_out <- lapply(filt_out, function(x)
+      paste0("\"", x, "\"", collapse = ", ")) %>%
+      paste0("c(", ., ")")
+    cons_out <- ifelse(lapply(filt_out, length) == 1L, "!=", "Negate(`%in%`)")
+    cond_out <- paste(names(filt_out), cons_out, vals_out)
+    out <- out %>%
+      filter_(.dots = cond_out) # Apply condition
+  }
+
+  if(length(filt_in)>0){
+    vals_in <- lapply(filt_in, function(x)
+      paste0("\"", x, "\"", collapse = ", ")) %>%
+      paste0("c(", ., ")")
+    cons_in <- ifelse(lapply(filt_in, length) == 1L, "==", "%in%")
+    cond_in <- paste(names(filt_in), cons_in, vals_in)
+    out <- out %>%
+      filter_(.dots = cond_in) # Apply condition
+  }
+
+  out
 }
 
 # Dynamically select the columns

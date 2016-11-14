@@ -1,3 +1,7 @@
+# rplexos 1.1.10
+
+* Also allow for negative filtering in the queries (e.g. filter = list(Name = c('-Wind')) to select all plants except Wind)
+
 # rplexos 1.1.9
 
 * Added a more specific regex to look for the xml inside the solution zip (solves #52)
