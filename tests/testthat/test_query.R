@@ -222,3 +222,18 @@ test_that("Auxiliary queries", {
                  "unit", db$scenario[1] %>% as.character))
   expect_identical(nrow(qproperty), 35L)
 })
+
+test_that("Time range", {
+  time_range_db <- query_time(db) %>% dplyr::select(start,end)
+  time_range <- c(format(time_range_db$start[1], '%Y-%m-%d %H:%M:%S'),
+                  format(time_range_db$end[1], '%Y-%m-%d %H:%M:%S'))
+  expect_identical(query_interval(db, "Generator", "Generation", time.range = time_range),
+                   query_interval(db, "Generator", "Generation"))
+  
+  time_range <- as.POSIXct(c(format(time_range_db$start[1], '%Y-%m-%d %H:%M:%S'),
+                             format(time_range_db$end[1], '%Y-%m-%d %H:%M:%S')),
+                           tz = 'UTC')
+  expect_identical(query_interval(db, "Generator", "Generation", time.range = time_range),
+                   query_interval(db, "Generator", "Generation")) # test to see if the Plexos data is indeed
+                                                                  # parsed under UTC
+})
