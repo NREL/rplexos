@@ -143,8 +143,10 @@ test_that("Filters in queries", {
 
 lstNot <- list(name = "GenNotPresent")
 test_that("Empty queries", {
-  expect_identical(query_day(db, "Generator", "Generation", filter = lstNot) %>% nrow, 0L)
-  expect_identical(query_interval(db, "Generator", "Generation", filter = lstNot) %>% nrow, 0L)
+  suppressWarnings(expect_identical(query_day(db, "Generator", "Generation", filter = lstNot) %>% nrow, 0L))
+  suppressWarnings(expect_identical(query_interval(db, "Generator", "Generation", filter = lstNot) %>% nrow, 0L))
+  expect_warning(query_day(db, "Generator", "Generation", filter = lstNot), 'Query returned no results')
+  expect_warning(query_interval(db, "Generator", "Generation", filter = lstNot), 'Query returned no results')
 })
 
 test_that("Sum queries", {
