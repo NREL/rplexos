@@ -1,6 +1,7 @@
 # rplexos 1.1.10
 
 * Also allow for negative filtering in the queries (e.g. filter = list(Name = c('-Wind')) to select all plants except Wind)
+* Fix for missing regions in batteries (#54)
 
 # rplexos 1.1.9
 
