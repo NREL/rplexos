@@ -239,3 +239,21 @@ test_that("Time range", {
                    query_interval(db, "Generator", "Generation")) # test to see if the Plexos data is indeed
                                                                   # parsed under UTC
 })
+
+test_that("All tables exist", {
+  expect_true(query_interval(db, "Battery", "Generation", time.range = time_range) %>% nrow == 24L)
+  expect_true(query_interval(db, "Battery", "Load", time.range = time_range) %>% nrow == 24L)
+  expect_true(query_interval(db, "Battery", "Net Generation", time.range = time_range) %>% nrow == 24L)
+  expect_true(query_interval(db, "Battery", "SoC", time.range = time_range) %>% nrow == 24L)
+  expect_true(query_interval(db, "Generator", "Capacity Curtailed", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Generator", "Generation", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Generator", "Generation Cost", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Generator", "Price Received", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Generator", "Units Generating", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Line", "Export Limit", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Line", "Flow", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Line", "Import Limit", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Node", "Generation", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Node", "Load", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Node", "Price", time.range = time_range) %>% nrow == 72L)
+})
