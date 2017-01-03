@@ -66,23 +66,25 @@ log_steps <- function(txt) {
                                   "Completed .*? Step +[0-9]+ of [0-9]+.*?(?:\n|\r\n)",
                                   opts_regex = dotall)
   steps2 <- stringi::stri_replace_all_regex(steps[[1]], "Completed |\r\n|\n", "")
-  steps3 <- stringi::stri_split_regex(steps2, " step| of |time: |elapsed:? ", n_max = 5, opts_regex = caseins)
+  steps3 <- stringi::stri_split_regex(steps2, " step | of |[.] time: |[.] elapsed:? |[.] remaining:? ", n_max = 5, opts_regex = caseins)
 
-  steps4 <- do.call("bind_rows", steps3)
-  steps4 <- data.frame(steps4, stringsAsFactors = FALSE)
-  names(steps4) <- c("phase", "step", "total_step", "time", "elapsed")
+  steps4 <- data.frame(matrix(unlist(steps3), ncol=6, byrow=T), stringsAsFactors = FALSE)
+  # steps4 <- do.call("bind_rows", steps3)
+  # steps4 <- data.frame(steps4, stringsAsFactors = FALSE)
+  names(steps4) <- c("phase", "step", "total_step", "time", "elapsed", "remaining")
 
   steps4$step       <- as.numeric(steps4$step)
   steps4$total_step <- as.numeric(steps4$total_step)
-  steps4$time       <- sub(" .$|. $|.$", "", steps4$time) %>% to_seconds
-  steps4$elapsed    <- sub(" .$|. $|.$", "", steps4$elapsed) %>% to_seconds
+  steps4$time       <- sub(" [.]$|[.] $|[.]$", "", steps4$time) %>% to_seconds
+  steps4$elapsed    <- sub(" [.]$|[.] $|[.]$", "", steps4$elapsed) %>% to_seconds
   steps4
 }
 
 # Convert an HH:MM:SS to seconds
 to_seconds <- function(x) {
   x2 <- stringi::stri_split_fixed(x, ":", 3) %>%
-    do.call("bind_rows", .) %>%
+    unlist() %>%
+    matrix(ncol=3, byrow=T) %>%
     data.frame(stringsAsFactors = FALSE) %>%
     sapply(as.numeric)
   3600 * x2[, 1] + 60 * x2[, 2] + x2[, 3]
