@@ -285,9 +285,9 @@ process_solution <- function(file, keep.temp = FALSE) {
       if (period > 0) {
         tdata3 <- tdata2 %>% select(key, time, value)
 
-        RSQLite::dbGetPreparedQuery(dbf$con,
-          sprintf("INSERT INTO data_%s VALUES(?, ?, ?)", times[period]),
-          bind.data = tdata3 %>% as.data.frame)
+        DBI::dbExecute(dbf$con,
+                           sprintf("INSERT INTO data_%s VALUES($key, $time, $value)", times[period]),
+                           tdata3 %>% as.data.frame)
       } else {
         # Eliminate consecutive repeats
         default.interval.to.id <- max(tdata2$interval_id)
@@ -297,10 +297,10 @@ process_solution <- function(file, keep.temp = FALSE) {
           mutate(interval_to_id = lead(interval_id - 1, default = default.interval.to.id)) %>%
           select(key, time_from = interval_id, time_to = interval_to_id, value)
 
-        RSQLite::dbGetPreparedQuery(dbf$con,
-          sprintf("INSERT INTO %s (key, time_from, time_to, value)
-                  VALUES(?, ?, ?, ?)", trow$table_name),
-          bind.data = tdata3 %>% as.data.frame)
+        DBI::dbExecute(dbf$con,
+                       sprintf("INSERT INTO %s (key, time_from, time_to, value)
+                                     VALUES($key, $time_from, $time_to, $value)", trow$table_name),
+                       tdata3 %>% as.data.frame)
       }
 
       # Read next row from the query
