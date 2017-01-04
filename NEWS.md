@@ -1,11 +1,12 @@
 # rplexos 1.1.10
 
-* Also allow for negative filtering in the queries (e.g. filter = list(Name = c('-Wind')) to select all plants except Wind)
-* Fix for missing regions in batteries (#54)
-
-# rplexos 1.1.9
-
-* Added a more specific regex to look for the xml inside the solution zip (solves #52)
+* Also allow for negative filtering in the queries (e.g. filter = list(Name = c('-Wind')) to select all plants except Wind).
+* Fix dependencies: RSQLite (#55) and lubridate (#53).
+* Fix for missing regions in batteries (#54).
+* Added a more specific regex to look for the xml inside the solution zip (solves #52).
+* Log files are now processed successfully (#47).
+* More tests on the package.
+* Improved documentation (especially for the time.range part).
 
 # rplexos 1.1.8
 
