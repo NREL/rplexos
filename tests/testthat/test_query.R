@@ -225,17 +225,18 @@ test_that("Auxiliary queries", {
   expect_identical(nrow(qproperty), 43L)
 })
 
+time_range_db <- query_time(db) %>% dplyr::select(start,end)
+time_range <- c(format(time_range_db$start[1], '%Y-%m-%d %H:%M:%S'),
+                format(time_range_db$end[1], '%Y-%m-%d %H:%M:%S'))
+
+time_range_UTC <- as.POSIXct(c(format(time_range_db$start[1], '%Y-%m-%d %H:%M:%S'),
+                               format(time_range_db$end[1], '%Y-%m-%d %H:%M:%S')),
+                             tz = 'UTC')
+
 test_that("Time range", {
-  time_range_db <- query_time(db) %>% dplyr::select(start,end)
-  time_range <- c(format(time_range_db$start[1], '%Y-%m-%d %H:%M:%S'),
-                  format(time_range_db$end[1], '%Y-%m-%d %H:%M:%S'))
   expect_identical(query_interval(db, "Generator", "Generation", time.range = time_range),
-                   query_interval(db, "Generator", "Generation"))
-  
-  time_range <- as.POSIXct(c(format(time_range_db$start[1], '%Y-%m-%d %H:%M:%S'),
-                             format(time_range_db$end[1], '%Y-%m-%d %H:%M:%S')),
-                           tz = 'UTC')
-  expect_identical(query_interval(db, "Generator", "Generation", time.range = time_range),
+                   query_interval(db, "Generator", "Generation")) # test to see if it indeed queries the whole solution
+  expect_identical(query_interval(db, "Generator", "Generation", time.range = time_range_UTC),
                    query_interval(db, "Generator", "Generation")) # test to see if the Plexos data is indeed
                                                                   # parsed under UTC
 })
