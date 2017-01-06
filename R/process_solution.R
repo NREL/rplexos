@@ -242,75 +242,7 @@ process_solution <- function(file, keep.temp = FALSE) {
     # All the data is inserted in one transaction
     DBI::dbBegin(dbf$con)
 
-    # Read one row from the query
-    num.rows <- ifelse(period == 0, 1, 1000)
-    trow <- DBI::dbFetch(tki, num.rows)
-    num.read <- 0
-
-    # Iterate through the query results
-    while (nrow(trow) > 0) {
-      # Fix length if necessary
-      if (!correct.length)
-        trow <- trow %>% mutate(length = length - period_offset)
-
-      # Expand data
-      tdata <- trow %>%
-        select(key_id = key, phase_id, period_offset, length) %>%
-        expand_tkey
-
-      # Query data
-      value.data <- readBin(bin.con,
-                            "double",
-                            n = nrow(tdata),
-                            size = 8L,
-                            endian = "little")
-      num.read <- num.read + length(value.data)
-
-      # Check the size of data (they won't match if there is a problem)
-      if (length(value.data) < nrow(tdata)) {
-        rplexos_message("   ", num.read, " values read")
-        stop("Problem reading ", period.name, " binary data (reached end of file).\n",
-             "  ", nrow(tdata), " values requested, ", length(value.data), " returned.\n",
-             "  This is likely a bug in rplexos. Please report it.", call. = FALSE)
-      }
-
-      # Copy data
-      tdata$value <- value.data
-
-      # Join with time
-      tdata2 <- tdata %>%
-        inner_join(t.time, by = c("phase_id", "period_id"))
-
-      # Add data to SQLite
-      if (period > 0) {
-        tdata3 <- tdata2 %>% select(key, time, value)
-
-        DBI::dbExecute(dbf$con,
-                           sprintf("INSERT INTO data_%s VALUES($key, $time, $value)", times[period]),
-                           tdata3 %>% as.data.frame)
-      } else {
-        # Eliminate consecutive repeats
-        default.interval.to.id <- max(tdata2$interval_id)
-        tdata3 <- tdata2 %>%
-          arrange(interval_id) %>%
-          filter(value != lag(value, default = Inf)) %>%
-          mutate(interval_to_id = lead(interval_id - 1, default = default.interval.to.id)) %>%
-          select(key, time_from = interval_id, time_to = interval_to_id, value)
-
-        DBI::dbExecute(dbf$con,
-                       sprintf("INSERT INTO %s (key, time_from, time_to, value)
-                                     VALUES($key, $time_from, $time_to, $value)", trow$table_name),
-                       tdata3 %>% as.data.frame)
-      }
-
-      # Read next row from the query
-      trow <- DBI::dbFetch(tki, num.rows)
-    }
-
-    # Finish transaction
-    rplexos_message("   ", num.read, " values read")
-    DBI::dbClearResult(tki)
-    DBI::dbCommit(dbf$con)
+    add_data(dbf$con, period, tki, correct.length, bin.con, t.time, dbf, times, add_tables = 'add_all')
 
     # Close binary file connection
     close(bin.con)
@@ -354,6 +286,89 @@ process_solution <- function(file, keep.temp = FALSE) {
   # Return the name of the database that was created
   invisible(db.name)
 }
+
+add_data <- function(conn, period, tki, correct.length, bin.con, t.time, dbf, times, add_tables){
+  # Read one row from the query
+  num.rows <- ifelse(period == 0, 1, 1000)
+  trow <- DBI::dbFetch(tki, num.rows)
+  num.read <- 0
+  
+  # Iterate through the query results
+  while (nrow(trow) > 0) {
+    # Fix length if necessary
+    if (!correct.length)
+      trow <- trow %>% mutate(length = length - period_offset)
+    
+    # Expand data
+    tdata <- trow %>%
+      select(key_id = key, phase_id, period_offset, length) %>%
+      expand_tkey
+    
+    # Skip table if it is not present in add_tables
+    if (!all(trow$table_name %in% add_tables) & all(add_tables != 'add_all')){
+      readBin(bin.con, 
+              "double", 
+              n = sum(trow$length), 
+              size = 8L, 
+              endian = "little") # trick to move the pointer, but the data will not be used
+      trow <- DBI::dbFetch(tki, num.rows)
+      next
+    }
+    
+    # Query data
+    value.data <- readBin(bin.con,
+                          "double",
+                          n = nrow(tdata),
+                          size = 8L,
+                          endian = "little")
+    num.read <- num.read + length(value.data)
+    
+    # Check the size of data (they won't match if there is a problem)
+    if (length(value.data) < nrow(tdata)) {
+      rplexos_message("   ", num.read, " values read")
+      stop("Problem reading ", period.name, " binary data (reached end of file).\n",
+           "  ", nrow(tdata), " values requested, ", length(value.data), " returned.\n",
+           "  This is likely a bug in rplexos. Please report it.", call. = FALSE)
+    }
+    
+    # Copy data
+    tdata$value <- value.data
+    
+    # Join with time
+    tdata2 <- tdata %>%
+      inner_join(t.time, by = c("phase_id", "period_id"))
+    
+    # Add data to SQLite
+    if (period > 0) {
+      tdata3 <- tdata2 %>% select(key, time, value)
+      
+      DBI::dbExecute(dbf$con,
+                     sprintf("INSERT INTO data_%s VALUES($key, $time, $value)", times[period]),
+                     tdata3 %>% as.data.frame)
+    } else {
+      # Eliminate consecutive repeats
+      default.interval.to.id <- max(tdata2$interval_id)
+      tdata3 <- tdata2 %>%
+        arrange(interval_id) %>%
+        filter(value != lag(value, default = Inf)) %>%
+        mutate(interval_to_id = lead(interval_id - 1, default = default.interval.to.id)) %>%
+        select(key, time_from = interval_id, time_to = interval_to_id, value)
+      
+      DBI::dbExecute(dbf$con,
+                     sprintf("INSERT INTO %s (key, time_from, time_to, value)
+                             VALUES($key, $time_from, $time_to, $value)", trow$table_name),
+                     tdata3 %>% as.data.frame)
+    }
+    
+    # Read next row from the query
+    trow <- DBI::dbFetch(tki, num.rows)
+  }
+  
+  # Finish transaction
+  rplexos_message("   ", num.read, " values read")
+  DBI::dbClearResult(tki)
+  DBI::dbCommit(dbf$con)
+  }
 
 # Read a file in a zip file onto memory
 #' @importFrom utils unzip
