@@ -331,25 +331,20 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all'){
         select(key_id = key, phase_id, period_offset, length) %>%
         expand_tkey
       
-      if(any(grepl('day',trow$table_name))){
-        print('data_day')
-      }
-      if(length(trow$table_name)>1){
-        print('test')
-      }
-      
       # Skip table if it is not present in add_tables
-      if(all(add_tables != 'add_all')){ # only true if all the add_tables entries equal 'add_all'
-                                        # a table can never be skipped if all tables should be added
-        if (all(trow$table_name %out% add_tables)){ # only true if all the table names are outside of add_tables
-                                                    # if any table should be added, add all of them
-          readBin(bin.con, 
-                  "double", 
-                  n = sum(trow$length), 
-                  size = 8L, 
-                  endian = "little") # trick to move the pointer, but the data will not be used
-          trow <- DBI::dbFetch(tki, num.rows)
-          next
+      if(period == 0){ # other periods will be loaded anyway
+        if(all(add_tables != 'add_all')){ # only true if all the add_tables entries equal 'add_all'
+                                          # a table can never be skipped if all tables should be added
+          if (all(trow$table_name %out% add_tables)){ # only true if all the table names are outside of add_tables
+            # if any table should be added, add all of them
+            readBin(bin.con, 
+                    "double", 
+                    n = sum(trow$length), 
+                    size = 8L, 
+                    endian = "little") # trick to move the pointer, but the data will not be used
+            trow <- DBI::dbFetch(tki, num.rows)
+            next
+          }
         }
       }
       
@@ -379,15 +374,22 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all'){
       # Add data to SQLite
       if (period > 0) {
         tdata3 <- tdata2 %>% select(key, time, value)
+        table_otf <- paste0('data_',times[period])
+        tables_otf_done <- collect(tbl(dbf, 'on_the_fly'), n = Inf)
         
-        DBI::dbExecute(dbf$con,
-                       sprintf("INSERT INTO data_%s VALUES($key, $time, $value)", times[period]),
-                       tdata3 %>% as.data.frame)
-        
-        DBI::dbExecute(dbf$con,
-                       "INSERT INTO on_the_fly (key, table_name)
+        if(!(table_otf %in% tables_otf_done$table_name)){
+          
+          DBI::dbExecute(dbf$con,
+                         sprintf("INSERT INTO data_%s VALUES($key, $time, $value)", times[period]),
+                         tdata3 %>% as.data.frame)
+          
+          table_data <- trow %>% select(key, table_name) %>% as.data.frame
+          table_data$table_name <- table_otf
+          DBI::dbExecute(dbf$con,
+                         "INSERT INTO on_the_fly (key, table_name)
                        VALUES($key, $table_name)",
-                       paste0('data_',times[period]))
+                         table_data)
+        }
       } else {
         # Eliminate consecutive repeats
         default.interval.to.id <- max(tdata2$interval_id)
