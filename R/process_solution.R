@@ -5,7 +5,7 @@
 #' @export
 process_solution <- function(file, keep.temp = FALSE) {
   # keep the temp db to insert data later if processing is on the fly
-  if(is_process_on_the_fly()){
+  if(is_otf_rplexos()){
     keep.temp <- T
   }
   # Check that inputs are valid
@@ -116,7 +116,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   DBI::dbGetQuery(dbt$con, "CREATE TABLE new.config AS SELECT * FROM t_config")
   sql <- sprintf("INSERT INTO new.config VALUES ('rplexos', '%s')", packageVersion("rplexos"))
   DBI::dbGetQuery(dbt$con, sql)
-  sql <- sprintf("INSERT INTO new.config VALUES ('OTF', '%s')", is_process_on_the_fly())
+  sql <- sprintf("INSERT INTO new.config VALUES ('OTF', '%s')", is_otf_rplexos())
   DBI::dbGetQuery(dbt$con, sql)
 
   # Add time data
@@ -220,7 +220,7 @@ process_solution <- function(file, keep.temp = FALSE) {
                  "CREATE TABLE 'on_the_fly' (key INT, table_name TEXT)")
 
   # Add the data into the db
-  if (is_process_on_the_fly()){
+  if (is_otf_rplexos()){
     add_data(file, dbt, dbf, add_tables = '')
   } else {
     add_data(file, dbt, dbf, add_tables = 'add_all')
