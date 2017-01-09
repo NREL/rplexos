@@ -1,6 +1,8 @@
 library(rplexos)
 context("Query solutions")
 
+options(rplexos.process_on_the_fly = F)
+
 loc <- location_solution_rplexos()
 locERR <- system.file("extdata", package = "rplexos")
 
@@ -257,4 +259,32 @@ test_that("All tables exist", {
   expect_true(query_interval(db, "Node", "Generation", time.range = time_range) %>% nrow == 72L)
   expect_true(query_interval(db, "Node", "Load", time.range = time_range) %>% nrow == 72L)
   expect_true(query_interval(db, "Node", "Price", time.range = time_range) %>% nrow == 72L)
+})
+
+options(rplexos.process_on_the_fly = T)
+
+loc <- location_solution_rplexos()
+locERR <- system.file("extdata", package = "rplexos")
+
+process_folder(loc)
+db <- plexos_open(loc)
+
+test_that("Process queries on the fly", {
+  expect_true(query_interval(db, "Battery", "Generation", time.range = time_range) %>% nrow == 24L)
+  expect_true(query_interval(db, "Battery", "Generation", time.range = time_range) %>% nrow == 24L) # no double processing
+  expect_true(query_interval(db, "Battery", "Load", time.range = time_range) %>% nrow == 24L)
+  expect_true(query_interval(db, "Battery", "Net Generation", time.range = time_range) %>% nrow == 24L)
+  expect_true(query_interval(db, "Battery", "SoC", time.range = time_range) %>% nrow == 24L)
+  expect_true(query_interval(db, "Generator", "Capacity Curtailed", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Generator", "Generation", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Generator", "Generation Cost", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Generator", "Price Received", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Generator", "Units Generating", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Line", "Export Limit", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Line", "Flow", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Line", "Import Limit", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Node", "Generation", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Node", "Load", time.range = time_range) %>% nrow == 72L)
+  expect_true(query_interval(db, "Node", "Price", time.range = time_range) %>% nrow == 72L)
+  expect_equal(query_day(db, "Generator", "Generation", filter = lstWin) %>% nrow, 1L)
 })
