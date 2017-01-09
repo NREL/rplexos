@@ -82,3 +82,17 @@ check_is_folder <- function(x) {
   if (!test)
     stop(paste0("'folders' must be a vector of existing folders or the wildcard \"*\""), call. = FALSE)
 }
+
+get_times <- function(){
+  c("day", "week", "month", "year")
+}
+
+get_dbtemp_name <- function(file){
+  db.temp <- gsub(".zip", "-temp.db", file)
+  return(db.temp)
+}
+
+get_dbfinal_name <- function(file){
+  db.name <- gsub(".zip", "-rplexos.db", file)
+  return(db.name)
+}

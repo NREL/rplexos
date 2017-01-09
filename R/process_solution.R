@@ -4,6 +4,10 @@
 #' @importFrom utils packageVersion unzip
 #' @export
 process_solution <- function(file, keep.temp = FALSE) {
+  # keep the temp db to insert data later if processing is on the fly
+  if(is_process_on_the_fly()){
+    keep.temp <- T
+  }
   # Check that inputs are valid
   stopifnot(is.character(file), length(file) == 1L)
 
@@ -14,8 +18,8 @@ process_solution <- function(file, keep.temp = FALSE) {
   }
 
   # Database name will match that of the zip file
-  db.temp <- gsub(".zip", "-temp.db", file)
-  db.name <- gsub(".zip", "-rplexos.db", file)
+  db.temp <- get_dbtemp_name(file)
+  db.name <- get_dbfinal_name(file)
 
   # Delete old files, if possible
   if (file.exists(db.temp)) {
@@ -112,6 +116,8 @@ process_solution <- function(file, keep.temp = FALSE) {
   DBI::dbGetQuery(dbt$con, "CREATE TABLE new.config AS SELECT * FROM t_config")
   sql <- sprintf("INSERT INTO new.config VALUES ('rplexos', '%s')", packageVersion("rplexos"))
   DBI::dbGetQuery(dbt$con, sql)
+  sql <- sprintf("INSERT INTO new.config VALUES ('OTF', '%s')", is_process_on_the_fly())
+  DBI::dbGetQuery(dbt$con, sql)
 
   # Add time data
   sql <- "INSERT INTO new.data_time
@@ -155,7 +161,7 @@ process_solution <- function(file, keep.temp = FALSE) {
 
   # For each summary time, create a table and a view
   rplexos_message("Creating data tables and views")
-  times <- c("day", "week", "month", "year")
+  times <- get_times()
   for (i in times) {
     sql <- sprintf("CREATE TABLE data_%s (key integer, time real, value double)", i);
     DBI::dbGetQuery(dbf$con, sql)
@@ -209,44 +215,7 @@ process_solution <- function(file, keep.temp = FALSE) {
           ORDER BY phase_id, period_type_id, class_group, class, collection, property"
   DBI::dbGetQuery(dbf$con, sql)
 
-  # Add binary data
-  for (period in 0:4) {
-    # Check if binary file exists, otherwise, skip this period
-    period.name <- ifelse(period == 0, "interval", times[period])
-    bin.name <- sprintf("t_data_%s.BIN", period)
-    if(!bin.name %in% zip.content$Name)
-      next
-    bin.con <- unz(file, bin.name, open = "rb")
-
-    # Print debug message
-    rplexos_message("Reading ", period.name, " binary data")
-
-    # Check if length in t_key_index is correct
-    correct.length <- correct_length(dbt, period)
-
-    # Read time data
-    t.time <- tbl(dbt, sprintf("temp_period_%s", period)) %>%
-      arrange(phase_id, period_id) %>%
-      select(phase_id, period_id, time, interval_id) %>%
-      collect(n=Inf)
-
-    # Read t_key_index entries for period data
-    sql <- sprintf("SELECT nk.[key], nk.phase_id, nk.table_name, tki.period_offset, tki.length
-                    FROM t_key_index tki
-                    JOIN temp_key nk
-                    ON tki.key_id = nk.[key]
-                    WHERE tki.period_type_id = %s
-                    ORDER BY tki.position", period)
-    tki <- DBI::dbSendQuery(dbt$con, sql)
-
-    # All the data is inserted in one transaction
-    DBI::dbBegin(dbf$con)
-
-    add_data(dbf$con, period, tki, correct.length, bin.con, t.time, dbf, times, add_tables = 'add_all')
-
-    # Close binary file connection
-    close(bin.con)
-  }
+  add_data(file, dbt, dbf, add_tables = 'add_all')
 
   # Read Log file into memory
   rplexos_message("Reading and processing log file")
@@ -287,88 +256,141 @@ process_solution <- function(file, keep.temp = FALSE) {
   invisible(db.name)
 }
 
-add_data <- function(conn, period, tki, correct.length, bin.con, t.time, dbf, times, add_tables){
-  # Read one row from the query
-  num.rows <- ifelse(period == 0, 1, 1000)
-  trow <- DBI::dbFetch(tki, num.rows)
-  num.read <- 0
+add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all'){
+  if(is.null(dbt) | is.null(dbf)){
+    # Database name will match that of the zip file
+    db.temp <- get_dbtemp_name(file)
+    db.name <- get_dbfinal_name(file)
+    
+    
+    # Open connection to SQLite for R
+    dbt <- src_sqlite(db.temp, create = F)
+    dbf <- src_sqlite(db.name, create = F)
+  }
   
-  # Iterate through the query results
-  while (nrow(trow) > 0) {
-    # Fix length if necessary
-    if (!correct.length)
-      trow <- trow %>% mutate(length = length - period_offset)
-    
-    # Expand data
-    tdata <- trow %>%
-      select(key_id = key, phase_id, period_offset, length) %>%
-      expand_tkey
-    
-    # Skip table if it is not present in add_tables
-    if (!all(trow$table_name %in% add_tables) & all(add_tables != 'add_all')){
-      readBin(bin.con, 
-              "double", 
-              n = sum(trow$length), 
-              size = 8L, 
-              endian = "little") # trick to move the pointer, but the data will not be used
-      trow <- DBI::dbFetch(tki, num.rows)
+  # Read list of files in the zip file
+  zip.content <- unzip(file, list = TRUE)
+  
+  times <- get_times()
+  
+  # Add binary data
+  for (period in 0:4) {
+    # Check if binary file exists, otherwise, skip this period
+    period.name <- ifelse(period == 0, "interval", times[period])
+    bin.name <- sprintf("t_data_%s.BIN", period)
+    if(!bin.name %in% zip.content$Name)
       next
-    }
+    bin.con <- unz(file, bin.name, open = "rb")
     
-    # Query data
-    value.data <- readBin(bin.con,
-                          "double",
-                          n = nrow(tdata),
-                          size = 8L,
-                          endian = "little")
-    num.read <- num.read + length(value.data)
+    # Print debug message
+    rplexos_message("Reading ", period.name, " binary data")
     
-    # Check the size of data (they won't match if there is a problem)
-    if (length(value.data) < nrow(tdata)) {
-      rplexos_message("   ", num.read, " values read")
-      stop("Problem reading ", period.name, " binary data (reached end of file).\n",
-           "  ", nrow(tdata), " values requested, ", length(value.data), " returned.\n",
-           "  This is likely a bug in rplexos. Please report it.", call. = FALSE)
-    }
+    # Check if length in t_key_index is correct
+    correct.length <- correct_length(dbt, period)
     
-    # Copy data
-    tdata$value <- value.data
+    # Read time data
+    t.time <- tbl(dbt, sprintf("temp_period_%s", period)) %>%
+      arrange(phase_id, period_id) %>%
+      select(phase_id, period_id, time, interval_id) %>%
+      collect(n=Inf)
     
-    # Join with time
-    tdata2 <- tdata %>%
-      inner_join(t.time, by = c("phase_id", "period_id"))
+    # Read t_key_index entries for period data
+    sql <- sprintf("SELECT nk.[key], nk.phase_id, nk.table_name, tki.period_offset, tki.length
+                   FROM t_key_index tki
+                   JOIN temp_key nk
+                   ON tki.key_id = nk.[key]
+                   WHERE tki.period_type_id = %s
+                   ORDER BY tki.position", period)
+    tki <- DBI::dbSendQuery(dbt$con, sql)
     
-    # Add data to SQLite
-    if (period > 0) {
-      tdata3 <- tdata2 %>% select(key, time, value)
-      
-      DBI::dbExecute(dbf$con,
-                     sprintf("INSERT INTO data_%s VALUES($key, $time, $value)", times[period]),
-                     tdata3 %>% as.data.frame)
-    } else {
-      # Eliminate consecutive repeats
-      default.interval.to.id <- max(tdata2$interval_id)
-      tdata3 <- tdata2 %>%
-        arrange(interval_id) %>%
-        filter(value != lag(value, default = Inf)) %>%
-        mutate(interval_to_id = lead(interval_id - 1, default = default.interval.to.id)) %>%
-        select(key, time_from = interval_id, time_to = interval_to_id, value)
-      
-      DBI::dbExecute(dbf$con,
-                     sprintf("INSERT INTO %s (key, time_from, time_to, value)
-                             VALUES($key, $time_from, $time_to, $value)", trow$table_name),
-                     tdata3 %>% as.data.frame)
-    }
+    # All the data is inserted in one transaction
+    DBI::dbBegin(dbf$con)
     
-    # Read next row from the query
+    # Read one row from the query
+    num.rows <- ifelse(period == 0, 1, 1000)
     trow <- DBI::dbFetch(tki, num.rows)
+    num.read <- 0
+    
+    # Iterate through the query results
+    while (nrow(trow) > 0) {
+      # Fix length if necessary
+      if (!correct.length)
+        trow <- trow %>% mutate(length = length - period_offset)
+      
+      # Expand data
+      tdata <- trow %>%
+        select(key_id = key, phase_id, period_offset, length) %>%
+        expand_tkey
+      
+      # Skip table if it is not present in add_tables
+      if (!all(trow$table_name %in% add_tables) & all(add_tables != 'add_all')){
+        readBin(bin.con, 
+                "double", 
+                n = sum(trow$length), 
+                size = 8L, 
+                endian = "little") # trick to move the pointer, but the data will not be used
+        trow <- DBI::dbFetch(tki, num.rows)
+        next
+      }
+      
+      # Query data
+      value.data <- readBin(bin.con,
+                            "double",
+                            n = nrow(tdata),
+                            size = 8L,
+                            endian = "little")
+      num.read <- num.read + length(value.data)
+      
+      # Check the size of data (they won't match if there is a problem)
+      if (length(value.data) < nrow(tdata)) {
+        rplexos_message("   ", num.read, " values read")
+        stop("Problem reading ", period.name, " binary data (reached end of file).\n",
+             "  ", nrow(tdata), " values requested, ", length(value.data), " returned.\n",
+             "  This is likely a bug in rplexos. Please report it.", call. = FALSE)
+      }
+      
+      # Copy data
+      tdata$value <- value.data
+      
+      # Join with time
+      tdata2 <- tdata %>%
+        inner_join(t.time, by = c("phase_id", "period_id"))
+      
+      # Add data to SQLite
+      if (period > 0) {
+        tdata3 <- tdata2 %>% select(key, time, value)
+        
+        DBI::dbExecute(dbf$con,
+                       sprintf("INSERT INTO data_%s VALUES($key, $time, $value)", times[period]),
+                       tdata3 %>% as.data.frame)
+      } else {
+        # Eliminate consecutive repeats
+        default.interval.to.id <- max(tdata2$interval_id)
+        tdata3 <- tdata2 %>%
+          arrange(interval_id) %>%
+          filter(value != lag(value, default = Inf)) %>%
+          mutate(interval_to_id = lead(interval_id - 1, default = default.interval.to.id)) %>%
+          select(key, time_from = interval_id, time_to = interval_to_id, value)
+        
+        DBI::dbExecute(dbf$con,
+                       sprintf("INSERT INTO %s (key, time_from, time_to, value)
+                             VALUES($key, $time_from, $time_to, $value)", trow$table_name),
+                       tdata3 %>% as.data.frame)
+      }
+      
+      # Read next row from the query
+      trow <- DBI::dbFetch(tki, num.rows)
+    }
+    
+    # Finish transaction
+    rplexos_message("   ", num.read, " values read")
+    DBI::dbClearResult(tki)
+    DBI::dbCommit(dbf$con)
+    
+    # Close binary file connection
+    close(bin.con)
   }
-  
-  # Finish transaction
-  rplexos_message("   ", num.read, " values read")
-  DBI::dbClearResult(tki)
-  DBI::dbCommit(dbf$con)
-  }
+}
 
 # Read a file in a zip file onto memory
 #' @importFrom utils unzip
@@ -668,4 +690,8 @@ correct_length <- function(db, p) {
           call. = FALSE, immediate. = TRUE)
 
   TRUE
+}
+
+is_process_on_the_fly <- function(){
+  getOption("rplexos.process_on_the_fly", F)
 }
