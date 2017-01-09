@@ -18,7 +18,10 @@ query_master_each(db, time, col, prop, columns = "name", time.range = NULL,
 
 \item{columns}{character. Data columns to query or aggregate by (defaults to \code{name})}
 
-\item{time.range}{POSIXt or character. Range of dates of length 2 (given as date, datetime or character in 'ymdhms' or 'ymd' format)}
+\item{time.range}{POSIXt or character. Range of dates of length 2 (given as date, datetime or character in 'ymdhms' 
+or 'ymd' format). The Plexos data is assumed to be in UTC so providing a POSIXt vector in a different
+timezone might cause conflicts. Character vectors are also converted to the UTC format, so here there
+is not issue.}
 
 \item{filter}{list. Used to filter by data columns (see details)}
 

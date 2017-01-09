@@ -2,9 +2,13 @@
 
 S3method(print,rplexos)
 export(check_debug_rplexos)
+export(check_otf_rplexos)
 export(check_parallel_rplexos)
+export(disable_otf_rplexos)
+export(enable_otf_rplexos)
 export(get_query)
 export(is_debug_rplexos)
+export(is_otf_rplexos)
 export(is_parallel_rplexos)
 export(is_sample_stats)
 export(list_folders)

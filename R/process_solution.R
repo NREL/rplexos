@@ -725,5 +725,46 @@ correct_length <- function(db, p) {
 }
 
 is_process_on_the_fly <- function(){
+  .Deprecated('is_otf_rplexos()')
+  is_otf_rplexos()
+}
+
+#' Enable or disable on-the-fly mode
+#'
+#' The on-the-fly mode will only generate the sql db after a specific query. This mode is very
+#' useful for a Plexos db with many report items while only a handful are required for the post-
+#' processing. The initial generation of the db will be very quick. The first queries will be slower
+#' but subsequent queries will be at normal speeds again.
+#'
+#' @export
+is_otf_rplexos <- function(){
   getOption("rplexos.process_on_the_fly", F)
+}
+
+#' @rdname is_otf_rplexos
+#' @export
+enable_otf_rplexos <- function(msg = T){
+  options(rplexos.process_on_the_fly = T)
+  if(msg) check_otf_rplexos()
+}
+
+#' @rdname is_otf_rplexos
+#' @export
+disable_otf_rplexos <- function(msg = T){
+  options(rplexos.process_on_the_fly = F)
+  if(msg) check_otf_rplexos()
+}
+
+#' @rdname is_otf_rplexos
+#' @export
+check_otf_rplexos <- function(){
+  out <- is_otf_rplexos()
+  
+  if (out) {
+    cat("rplexos on-the-fly mode is enabled\n")
+  } else {
+    cat("rplexos on-the-fly mode is disabled\n")
+  }
+  
+  invisible(out)
 }
