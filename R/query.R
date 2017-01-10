@@ -435,8 +435,8 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
   thesql <- src_sqlite(db$filename, create = FALSE)
 
   if (!identical(time, "interval")) {
-    # Process the db on the fly if this is an on the fly db
-    process_table(db, thesql, paste0('data_',time))
+    # # Process the db on the fly if this is an on the fly db
+    # process_table(db, thesql, paste0('data_',time))
     
     # Query interval data
     if (identical(prop, "*")) {
@@ -556,7 +556,7 @@ process_table <- function(db, thesql, table_name){
     # if the queried table is not yet processed, process it now
     if(!(table_name %in% otf_tables_done$table_name)){
       file <- db$filename %>% gsub('-rplexos.db','.zip',.)
-      add_data(file, add_tables = table_name)
+      add_data(file, add_tables = table_name, initial = F)
     }
   }
 }
