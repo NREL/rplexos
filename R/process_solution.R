@@ -265,7 +265,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   invisible(db.name)
 }
 
-add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all'){
+add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T){
   if(is.null(dbt) | is.null(dbf)){
     # Database name will match that of the zip file
     db.temp <- get_dbtemp_name(file)
@@ -374,10 +374,12 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all'){
       # Add data to SQLite
       if (period > 0) {
         tdata3 <- tdata2 %>% select(key, time, value)
+        table_otf <- paste0('data_',times[period],gsub('data_interval','',trow$table_name))
         table_otf <- paste0('data_',times[period])
-        tables_otf_done <- collect(tbl(dbf, 'on_the_fly'), n = Inf)
-        
-        if(!(table_otf %in% tables_otf_done$table_name)){
+        # tables_otf_done <- collect(tbl(dbf, 'on_the_fly'), n = Inf)
+        # 
+        # if(!(table_otf %in% tables_otf_done$table_name)){
+        if(initial){
           
           DBI::dbExecute(dbf$con,
                          sprintf("INSERT INTO data_%s VALUES($key, $time, $value)", times[period]),
@@ -387,7 +389,7 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all'){
           table_data$table_name <- table_otf
           DBI::dbExecute(dbf$con,
                          "INSERT INTO on_the_fly (key, table_name)
-                       VALUES($key, $table_name)",
+                          VALUES($key, $table_name)",
                          table_data)
         }
       } else {
