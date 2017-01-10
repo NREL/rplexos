@@ -1,13 +1,28 @@
 library(rplexos)
 context("Query solutions")
 
-options(rplexos.process_on_the_fly = F)
+disable_otf_rplexos(F)
 
 loc <- location_solution_rplexos()
 locERR <- system.file("extdata", package = "rplexos")
 
 process_folder(loc)
 db <- plexos_open(loc)
+
+loc_LT <- location_solution_rplexos('LT')
+
+process_folder(loc_LT)
+db_LT <- plexos_open(loc_LT)
+
+time_range_db <- query_time(db) %>% dplyr::select(start,end)
+time_range_db_LT <- query_time(db_LT) %>% dplyr::select(start,end)
+time_range <- c(format(time_range_db$start[1], '%Y-%m-%d %H:%M:%S'),
+                format(time_range_db$end[1], '%Y-%m-%d %H:%M:%S'))
+time_range_LT <- c(format(time_range_db_LT$start[1], '%Y-%m-%d %H:%M:%S'),
+                   format(time_range_db_LT$end[1], '%Y-%m-%d %H:%M:%S'))
+time_range_UTC <- as.POSIXct(c(format(time_range_db$start[1], '%Y-%m-%d %H:%M:%S'),
+                               format(time_range_db$end[1], '%Y-%m-%d %H:%M:%S')),
+                             tz = 'UTC')
 
 test_that("rplexos attributes", {
   expect_is(db, "rplexos")
@@ -227,14 +242,6 @@ test_that("Auxiliary queries", {
   expect_identical(nrow(qproperty), 43L)
 })
 
-time_range_db <- query_time(db) %>% dplyr::select(start,end)
-time_range <- c(format(time_range_db$start[1], '%Y-%m-%d %H:%M:%S'),
-                format(time_range_db$end[1], '%Y-%m-%d %H:%M:%S'))
-
-time_range_UTC <- as.POSIXct(c(format(time_range_db$start[1], '%Y-%m-%d %H:%M:%S'),
-                               format(time_range_db$end[1], '%Y-%m-%d %H:%M:%S')),
-                             tz = 'UTC')
-
 test_that("Time range", {
   expect_identical(query_interval(db, "Generator", "Generation", time.range = time_range),
                    query_interval(db, "Generator", "Generation")) # test to see if it indeed queries the whole solution
@@ -261,7 +268,17 @@ test_that("All tables exist", {
   expect_true(query_interval(db, "Node", "Price", time.range = time_range) %>% nrow == 72L)
 })
 
-options(rplexos.process_on_the_fly = T)
+test_that("Process LT queries", {
+  expect_true(query_interval(db_LT, "Battery", "Generation", time.range = time_range_LT, phase = 1) %>% nrow == 365L)
+  expect_true(query_interval(db_LT, "Battery", "Load", time.range = time_range_LT, phase = 1) %>% nrow == 365L)
+  expect_true(query_interval(db_LT, "Battery", "Net Generation", time.range = time_range_LT, phase = 1) %>% nrow == 365L)
+  expect_true(query_interval(db_LT, "Battery", "SoC", time.range = time_range_LT, phase = 1) %>% nrow == 365L)
+  expect_true(query_interval(db_LT, "Generator", "Generation", time.range = time_range_LT, phase = 1) %>% nrow == 1095L)
+  expect_equal(query_year(db_LT, "Generator", "Generation", time.range = time_range_LT, phase = 1) %>% .$value %>% as.numeric %>% sum(),
+               query_interval(db_LT, "Generator", "Generation", time.range = time_range_LT, phase = 1) %>% .$value %>% as.numeric %>% sum() * 24 / 1000)
+})
+
+enable_otf_rplexos(F)
 
 loc <- location_solution_rplexos()
 locERR <- system.file("extdata", package = "rplexos")
