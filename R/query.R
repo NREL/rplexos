@@ -435,6 +435,9 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
   thesql <- src_sqlite(db$filename, create = FALSE)
 
   if (!identical(time, "interval")) {
+    # # Process the db on the fly if this is an on the fly db
+    # process_table(db, thesql, paste0('data_',time))
+    
     # Query interval data
     if (identical(prop, "*")) {
       out <- tbl(thesql, time)
@@ -472,6 +475,9 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
       DBI::dbDisconnect(thesql$con)
       return(data.frame())
     }
+    
+    # Process the db on the fly if this is an on the fly db
+    process_table(db, thesql, paste0('data_interval_',t.name$table_name))
 
     # Get max/min time existing in the table to be queried
     #   In case time table has more time stamps than those in the dataset
@@ -537,6 +543,22 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
 
   # Return value
   return(out)
+}
+
+process_table <- function(db, thesql, table_name){
+  is_otf <- collect(tbl(thesql, 'config'), n = Inf) %>% filter(element == 'OTF') %>% .$value %>% as.logical()
+  if(length(is_otf) == 0){
+    is_otf <- F
+  }
+  if(is_otf){
+    otf_tables_done <- collect(tbl(thesql, 'on_the_fly'), n = Inf)
+    
+    # if the queried table is not yet processed, process it now
+    if(!(table_name %in% otf_tables_done$table_name)){
+      file <- db$filename %>% gsub('-rplexos.db','.zip',.)
+      add_data(file, add_tables = table_name, initial = F)
+    }
+  }
 }
 
 

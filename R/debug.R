@@ -49,8 +49,9 @@ is_debug_rplexos <- function() {
 #' are located. They are uses in different examples and the vignettes.
 #'
 #' @export
-location_solution_rplexos <- function() {
-  system.file("extdata", "solution", package = "rplexos")
+location_solution_rplexos <- function(phase = 'ST') {
+  if(phase == 'ST') return(system.file("extdata", "solution", "Model Base_ST Solution", package = "rplexos"))
+  if(phase == 'LT') return(system.file("extdata", "solution", "Model Base_LT Solution", package = "rplexos"))
 }
 
 #' @rdname location_solution_rplexos

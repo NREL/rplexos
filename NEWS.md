@@ -1,3 +1,9 @@
+# rplexos 1.1.11
+
+* Implemented a new experimental function to process a solution on the fly. This means that data is only added
+when the data is queried. Consequent queries should therefore go quicker since the data is already in the sql db.
+This feature is useful when only a handful report items are required in a Plexos file with many more report items.
+
 # rplexos 1.1.10
 
 * Also allow for negative filtering in the queries (e.g. filter = list(Name = c('-Wind')) to select all plants except Wind).

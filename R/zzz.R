@@ -3,7 +3,8 @@
   op <- options()
   op.rplexos <- list(
     rplexos.tiebreak = "last",
-    rplexos.debug = FALSE
+    rplexos.debug = FALSE,
+    rplexos.process_on_the_fly = FALSE
   )
   toset <- !(names(op.rplexos) %in% names(op))
   if(any(toset)) options(op.rplexos[toset])
