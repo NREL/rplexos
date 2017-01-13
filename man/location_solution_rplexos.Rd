@@ -5,9 +5,12 @@
 \alias{location_solution_rplexos}
 \title{Shortcut functions for rplexos sample files}
 \usage{
-location_solution_rplexos()
+location_solution_rplexos(phase = "ST")
 
 location_input_rplexos()
+}
+\arguments{
+\item{phase}{this specifies if it is the ST or the LT solution.}
 }
 \description{
 These functions return the folder where the PLEXOS sample files

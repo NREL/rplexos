@@ -47,11 +47,13 @@ is_debug_rplexos <- function() {
 #'
 #' These functions return the folder where the PLEXOS sample files
 #' are located. They are uses in different examples and the vignettes.
+#' 
+#' @param phase this specifies if it is the ST or the LT solution.
 #'
 #' @export
 location_solution_rplexos <- function(phase = 'ST') {
-  if(phase == 'ST') return(system.file("extdata", "solution", "Model Base_ST Solution", package = "rplexos"))
-  if(phase == 'LT') return(system.file("extdata", "solution", "Model Base_LT Solution", package = "rplexos"))
+  if(phase == 'ST') return(system.file("extdata", "solution", "ST_Solution", package = "rplexos"))
+  if(phase == 'LT') return(system.file("extdata", "solution", "LT_Solution", package = "rplexos"))
 }
 
 #' @rdname location_solution_rplexos

@@ -743,6 +743,8 @@ is_otf_rplexos <- function(){
   getOption("rplexos.process_on_the_fly", F)
 }
 
+#' @param msg When true it prints a message
+#' 
 #' @rdname is_otf_rplexos
 #' @export
 enable_otf_rplexos <- function(msg = T){
@@ -750,6 +752,8 @@ enable_otf_rplexos <- function(msg = T){
   if(msg) check_otf_rplexos()
 }
 
+#' @inheritParams enable_otf_rplexos
+#' 
 #' @rdname is_otf_rplexos
 #' @export
 disable_otf_rplexos <- function(msg = T){

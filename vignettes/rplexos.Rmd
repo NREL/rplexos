@@ -26,8 +26,10 @@ We will use an example database that comes preloaded with the package. This is t
 database in your system.
 
 ```{r}
-location <- location_solution_rplexos()
-location
+location_ST <- location_solution_rplexos('ST')
+location_LT <- location_solution_rplexos('LT')
+location_ST
+location_LT
 ```
 
 
@@ -39,14 +41,14 @@ solution files, copy them together in the same folder.
 For each folder, run the following command to convert the zip file into a SQLite database.
 
 ```{r}
-process_folder(location)
+process_folder(location_ST)
 ```
 
 We can also provide a vector of strings with the names of all the folders that need to be processed.
-For example, let us assume we have two scenarios loaded in two folders: `HiWind` and `HiSolar`. 
+For example, let's load the two scenarios: `ST` and `LT`. 
 
-```
-process_folder(c("HiWind", "HiSolar"))
+```{r}
+process_folder(c(location_ST, location_LT))
 ```
 
 
@@ -56,13 +58,13 @@ Once the databases have been processed, we can access them by first opening a co
 Scenarios names can be defined at this point (if not provided, they default to the folder names).
 
 ```{r}
-db <- plexos_open(location, "Sc1")
+db <- plexos_open(location_ST, "Sc1")
 ```
 
 Again, you can provide a vector of folders to open and a vector of scenario names.
 
-```
-db <- plexos_open(c("HiWind", "HiSolar"), name = c("High Wind", "High Solar"))
+```{r}
+db_multi <- plexos_open(c(location_ST, location_LT), name = c("ST", "LT"))
 ```
 
 
@@ -166,6 +168,16 @@ ggplot(gen.gral.filter2, aes(x = time, y = value, fill = name)) +
 ```
 
 Both filtering mechanisms can be combined or used independently.
+
+The previous filters were all positive filters. This means that if you add one item (e.g. list(name = 'Baseload')), the return query will only show that one item. Sometimes you would like to do the opposite and drop only one item. Instead of adding all the other items, you can also drop just one item with the dash ('-').
+
+```{r}
+gen.gral.filter <- query_interval(db, "Generator", "Generation",
+                                   filter = list(name = "-Baseload"))
+ggplot(gen.gral.filter, aes(x = time, y = value, fill = name)) +
+  geom_area() +
+  labs(x = "Time", y = "Generation (MW)", fill = "Generator")
+```
 
 
 ## Processing inputs

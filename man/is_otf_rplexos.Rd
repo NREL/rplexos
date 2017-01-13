@@ -15,6 +15,9 @@ disable_otf_rplexos(msg = T)
 
 check_otf_rplexos()
 }
+\arguments{
+\item{msg}{When true it prints a message}
+}
 \description{
 The on-the-fly mode will only generate the sql db after a specific query. This mode is very
 useful for a Plexos db with many report items while only a handful are required for the post-
