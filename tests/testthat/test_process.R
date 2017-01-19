@@ -46,7 +46,7 @@ test_that("Expected errors and warnings", {
   expect_warning(process_folder(locWAR))
   expect_error(process_folder(locERR))
   expect_error(process_folder(loc2ZIP))
-  expect_warning(process_folder(c(loc, locERR)))
+  expect_error(process_folder(c(loc, locERR)))
 })
 
 test_that("Process solution LT", {

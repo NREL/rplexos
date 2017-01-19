@@ -33,7 +33,7 @@ process_solution <- function(file, keep.temp = FALSE) {
   zip.content <- unzip(file, list = TRUE)
 
   # Check that zip file has valid XML, Log and BIN files
-  xml.pos <- grep("^Model.*Solution[.]xml$", zip.content$Name)
+  xml.pos <- grep("^Model.*Solution[ _0-9()]*[.]xml$", zip.content$Name)
   bin.pos <- grep("^t_data_[0-4].BIN$", zip.content$Name)
   log.pos <- grep("^Model.*Log.*.txt$", zip.content$Name)
   if ((length(xml.pos) == 0L) | (length(bin.pos) == 0L) | (length(log.pos) == 0L)) {

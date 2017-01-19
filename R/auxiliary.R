@@ -76,11 +76,15 @@ check_is_folder <- function(x) {
   if ((length(x) == 1L) && identical(x, "*")) {
     test <- TRUE
   } else {
-    test <- all(file.exists(x)) & all(file.info(x)$isdir, na.rm = FALSE)
+    x_folder <- file.exists(x) & file.info(x)$isdir
+    test <- all(x_folder, na.rm = FALSE)
   }
 
   if (!test)
-    stop(paste0("'folders' must be a vector of existing folders or the wildcard \"*\""), call. = FALSE)
+    stop(paste0("'folders' must be a vector of existing folders or the wildcard \"*\". ",
+                "The following folders were no folders: '",
+                paste0(x[!x_folder], collapse = "', '"),
+                "'."), call. = FALSE)
 }
 
 get_times <- function(){
