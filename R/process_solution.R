@@ -321,6 +321,8 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T
     num.read <- 0
     
     # Iterate through the query results
+    byte_offset <- 1 # will be used to seek in the results when not all the data is used.
+    bytes_skipped <- F # as long as this is false, readBin will be used. If bytes are skipped, read_zip() will be used
     while (nrow(trow) > 0) {
       # Fix length if necessary
       if (!correct.length)
@@ -337,23 +339,31 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T
                                           # a table can never be skipped if all tables should be added
           if (all(trow$table_name %out% add_tables)){ # only true if all the table names are outside of add_tables
             # if any table should be added, add all of them
-            readBin(bin.con, 
-                    "double", 
-                    n = sum(trow$length), 
-                    size = 8L, 
-                    endian = "little") # trick to move the pointer, but the data will not be used
+            byte_offset <- byte_offset + sum(trow$length) * 8L
+            bytes_skipped <- T
+            # readBin(bin.con, 
+            #         "double", 
+            #         n = sum(trow$length), 
+            #         size = 8L, 
+            #         endian = "little") # trick to move the pointer, but the data will not be used
             trow <- DBI::dbFetch(tki, num.rows)
             next
           }
         }
       }
       
-      # Query data
-      value.data <- readBin(bin.con,
-                            "double",
-                            n = nrow(tdata),
-                            size = 8L,
-                            endian = "little")
+      if(!bytes_skipped){
+        # Query data
+        byte_offset <- byte_offset + sum(trow$length) * 8L
+        value.data <- readBin(bin.con,
+                              "double",
+                              n = nrow(tdata),
+                              size = 8L,
+                              endian = "little")
+      }else{
+        value.data <- read_zip(file, bin.name, what = "double", offset = byte_offset, n = nrow(tdata), size = 8L, endian = "little")
+        byte_offset <- byte_offset + sum(trow$length)
+      }
       num.read <- num.read + length(value.data)
       
       # Check the size of data (they won't match if there is a problem)
