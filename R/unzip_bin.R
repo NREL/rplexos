@@ -1,9 +1,13 @@
-seek_zip <- function(zip, file, offset, n){
-  system(paste0(file.path(unzip_bin_path(),'sh'),
-                ' -c "',
-                file.path(unzip_bin_path(),'unzip'),' -p ',zip,' ',file,' | ',
-                file.path(unzip_bin_path(),'dd'),' of=tempfile.bin bs=1c skip=',offset,'c count=',n,'c"'))
-  readBin("tempfile.bin", raw(1), n = 16)
+read_zip <- function(zip, file, what, offset, n = 1L, size = NA_integer_, signed = TRUE, endian = .Platform$endian){
+  zip <- gsub('\\\\','/',zip)
+  file <- gsub('\\\\','/',file)
+  suppressWarnings(
+    system(paste0(file.path(unzip_bin_path(),'sh'),
+                  ' -c "',
+                  file.path(unzip_bin_path(),'unzip'),' -p ',zip,' ',file,' | ',
+                  file.path(unzip_bin_path(),'dd'),' of=tempfile.bin bs=1c skip=',offset,'c count=',n * size,'c"'),
+           show.output.on.console = F))
+  readBin(con = "tempfile.bin", what = what, n = n, size = size, signed = signed, endian = endian)
 }
 
 unzip_bin_path <- function(){
