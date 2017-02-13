@@ -1,3 +1,7 @@
+# rplexos 1.1.12
+
+* Speed improvements for the otf Plexos functions
+
 # rplexos 1.1.11
 
 * Implemented a new experimental function to process a solution on the fly. This means that data is only added
