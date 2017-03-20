@@ -322,7 +322,7 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T
     
     # Iterate through the query results
     byte_offset <- 1 # will be used to seek in the results when not all the data is used.
-    bytes_skipped <- F # as long as this is false, readBin will be used. If bytes are skipped, read_zip() will be used
+    bytes_skipped <- F # as long as this is false, readBin will be used. If bytes are skipped, read_zip() will be used. Each loop reads a new file.
     while (nrow(trow) > 0) {
       # Fix length if necessary
       if (!correct.length)
@@ -337,8 +337,8 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T
       if(period == 0){ # other periods will be loaded anyway
         if(all(add_tables != 'add_all')){ # only true if all the add_tables entries equal 'add_all'
                                           # a table can never be skipped if all tables should be added
+                                          # add_tables = '' for no tables, add_tables = 'add_all' for all tables
           if (all(trow$table_name %out% add_tables)){ # only true if all the table names are outside of add_tables
-            # if any table should be added, add all of them
             byte_offset <- byte_offset + sum(trow$length) * 8L
             bytes_skipped <- T
             # readBin(bin.con, 
@@ -362,7 +362,7 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T
                               endian = "little")
       }else{
         value.data <- read_zip(file, bin.name, what = "double", offset = byte_offset, n = nrow(tdata), size = 8L, endian = "little")
-        byte_offset <- byte_offset + sum(trow$length)
+        byte_offset <- byte_offset + sum(trow$length) * 8L
       }
       num.read <- num.read + length(value.data)
       
