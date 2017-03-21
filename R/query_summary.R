@@ -47,6 +47,32 @@ query_band <- function(db) {
     arrange(position, phase_id, is_summary)
 }
 
+#' @rdname query_summary
+#' @export
+query_summary <- function(db, time = NULL) {
+  if(is.null(time)){
+    time_summary <- c('year','month','quarter','week','day','hour')
+    df <- data.frame()
+    for(time in time_summary){
+      tmp <- query_summary(db, time)
+      df <- bind_rows(df, tmp)
+    }
+    return(df)
+  }
+  
+  df <- tibble(time = time, summary = F)
+  sql <- paste0("SELECT * FROM ", time, " LIMIT 1")
+  tmp <- tryCatch({
+    query_sql(db, sql)
+  }, error = function (e) {
+    tibble()
+  })
+  if(nrow(tmp)>0){ # table has data
+    df <- tibble(time = time, summary = T)
+  }
+  return(df)
+}
+
 #' @rdname query_class_member
 #' @export
 query_class <- function(db) {
