@@ -47,14 +47,14 @@ query_band <- function(db) {
     arrange(position, phase_id, is_summary)
 }
 
-#' @rdname query_summary
+#' @rdname query_phase
 #' @export
-query_summary <- function(db, time = NULL) {
+query_summary_time <- function(db, time = NULL) {
   if(is.null(time)){
     time_summary <- c('year','month','quarter','week','day','hour')
     df <- data.frame()
     for(time in time_summary){
-      tmp <- query_summary(db, time)
+      tmp <- query_summary_time(db, time)
       df <- bind_rows(df, tmp)
     }
     return(df)
@@ -66,7 +66,7 @@ query_summary <- function(db, time = NULL) {
     query_sql(db, sql)
   }, error = function (e) {
     tibble()
-  })
+  }, silent = TRUE)
   if(nrow(tmp)>0){ # table has data
     df <- tibble(time = time, summary = T)
   }

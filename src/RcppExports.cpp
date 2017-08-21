@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // expand_tkey
 Rcpp::DataFrame expand_tkey(Rcpp::DataFrame tkey);
-RcppExport SEXP rplexos_expand_tkey(SEXP tkeySEXP) {
+RcppExport SEXP _rplexos_expand_tkey(SEXP tkeySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -18,7 +18,7 @@ END_RCPP
 }
 // process_xml
 Rcpp::List process_xml(Rcpp::CharacterVector xml);
-RcppExport SEXP rplexos_process_xml(SEXP xmlSEXP) {
+RcppExport SEXP _rplexos_process_xml(SEXP xmlSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -26,4 +26,15 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(process_xml(xml));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_rplexos_expand_tkey", (DL_FUNC) &_rplexos_expand_tkey, 1},
+    {"_rplexos_process_xml", (DL_FUNC) &_rplexos_process_xml, 1},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_rplexos(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }
