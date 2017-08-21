@@ -22,4 +22,3 @@ The list of available properties can be seen with \code{\link{query_property}}.
 
 An example of this workflow is available in the "Getting started" vignette.
 }
-

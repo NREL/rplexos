@@ -27,9 +27,8 @@ query_config(db)
 \seealso{
 \code{\link{plexos_open}} to create the PLEXOS database object
 
-Other special.queries: \code{\link{query_class}},
+Other special queries: \code{\link{query_class}},
   \code{\link{query_log}}, \code{\link{query_phase}},
   \code{\link{query_property}}, \code{\link{query_sql}},
   \code{\link{query_time}}
 }
-

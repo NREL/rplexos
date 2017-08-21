@@ -35,4 +35,3 @@ use of this function is not recommended
 \code{\link{query_master}} to query PLEXOS solutions
 }
 \keyword{internal}
-

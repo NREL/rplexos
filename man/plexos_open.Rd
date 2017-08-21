@@ -25,4 +25,3 @@ The code expects those filenames to remain unchanged.
 
 \code{\link{query_sql}} to perform custom queries
 }
-

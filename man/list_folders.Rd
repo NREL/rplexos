@@ -13,4 +13,3 @@ is provided to the \code{\link{process_folder}} and \code{\link{plexos_open}} fu
 \seealso{
 \code{\link{setwd}}, \code{\link{process_folder}}, \code{\link{plexos_open}}
 }
-

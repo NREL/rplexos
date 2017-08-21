@@ -30,9 +30,8 @@ query_sql(db, "SELECT * from time")
 
 \code{\link{query_master}} to perform standard queries of data
 
-Other special.queries: \code{\link{query_class}},
+Other special queries: \code{\link{query_class}},
   \code{\link{query_config}}, \code{\link{query_log}},
   \code{\link{query_phase}}, \code{\link{query_property}},
   \code{\link{query_time}}
 }
-

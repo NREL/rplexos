@@ -28,9 +28,8 @@ Get the list of objects and classes in each database. Shortcuts for generators, 
 are provided for convenience.
 }
 \seealso{
-Other special.queries: \code{\link{query_config}},
+Other special queries: \code{\link{query_config}},
   \code{\link{query_log}}, \code{\link{query_phase}},
   \code{\link{query_property}}, \code{\link{query_sql}},
   \code{\link{query_time}}
 }
-

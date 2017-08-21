@@ -12,4 +12,3 @@ List of valid columns accepted in \code{\link{query_master}}, \code{\link{sum_ma
 \seealso{
 \code{\link{query_master}}, \code{\link{sum_master}}
 }
-

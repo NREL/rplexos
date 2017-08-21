@@ -20,4 +20,3 @@ makes it easy to separate them with a filter.
 \dontrun{res \%>\% filter(!sample_stats(sample))   # To obtain sample results}
 
 }
-

@@ -13,9 +13,8 @@ query_time(db)
 Get the time limits and time step lengths for each simulation phase.
 }
 \seealso{
-Other special.queries: \code{\link{query_class}},
+Other special queries: \code{\link{query_class}},
   \code{\link{query_config}}, \code{\link{query_log}},
   \code{\link{query_phase}}, \code{\link{query_property}},
   \code{\link{query_sql}}
 }
-

@@ -19,4 +19,3 @@ use of this function is not recommended
 \code{\link{query_sql}} to perform standard queries of data
 }
 \keyword{internal}
-
