@@ -7,3 +7,4 @@ NEWS\.md
 ^\.Rproj\.user$
 ^packrat/
 ^\.Rprofile$
+^\.travis\.yml$
