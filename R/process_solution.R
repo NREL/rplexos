@@ -38,15 +38,20 @@ process_solution <- function(file, keep.temp = FALSE) {
   log.pos <- grep("^Model.*Log.*.txt$", zip.content$Name)
   if ((length(xml.pos) == 0L) | (length(bin.pos) == 0L) | (length(log.pos) == 0L)) {
     # If in debug mode, give some more explanation
-    if (length(xml.pos) == 0L)
+    if (length(xml.pos) == 0L){
       rplexos_message("No XML file found in file ", file)
-    if (length(bin.pos) == 0L)
+      warning(file, " is not a PLEXOS solution file and was ignored because of the missing XML file in the solution.zip.", call. = FALSE, immediate. = TRUE)
+      return(invisible(""))
+    }
+    if (length(bin.pos) == 0L){
       rplexos_message("No BIN file found in file ", file)
-    if (length(log.pos) == 0L)
+      warning(file, " is not a PLEXOS solution file and was ignored because of the missing BIN file(s) in the solution.zip.", call. = FALSE, immediate. = TRUE)
+      return(invisible(""))
+    }
+    if (length(log.pos) == 0L){
       rplexos_message("No LOG file found in file ", file)
-
-    warning(file, " is not a PLEXOS solution file and was ignored.", call. = FALSE, immediate. = TRUE)
-    return(invisible(""))
+      warning(file, " is potentially not a PLEXOS solution file because of the missing LOG file in the solution.zip. It will be treated anyway.", call. = FALSE, immediate. = TRUE)
+    }
   }
 
   # Check if the interval binary file is not being read correctly within the zip file
