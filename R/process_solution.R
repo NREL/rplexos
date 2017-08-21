@@ -280,8 +280,8 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T
     
     
     # Open connection to SQLite for R
-    thesql <- DBI::dbConnect(RSQLite::SQLite(), dbname = db.temp, create = FALSE)
-    thesql <- DBI::dbConnect(RSQLite::SQLite(), dbname = db.name, create = FALSE)
+    dbt <- DBI::dbConnect(RSQLite::SQLite(), dbname = db.temp, create = FALSE)
+    dbf <- DBI::dbConnect(RSQLite::SQLite(), dbname = db.name, create = FALSE)
     # dbt <- src_sqlite(db.temp, create = F)
     # dbf <- src_sqlite(db.name, create = F)
   }
@@ -440,6 +440,10 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T
     rplexos_message("   ", num.read, " values read")
     DBI::dbClearResult(tki)
     DBI::dbCommit(dbf)
+    
+    # Disconnect db
+    # DBI::dbDisconnect(dbf)
+    # DBI::dbDisconnect(dbt)
     
     # Close binary file connection
     close(bin.con)
