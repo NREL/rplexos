@@ -1,3 +1,4 @@
+library(tidyverse)
 library(rplexos)
 context("Query solutions")
 
