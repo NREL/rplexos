@@ -24,11 +24,11 @@ Depends:
     R (>= 3.1.0)
 Imports:
     Rcpp (>= 0.11.5),
-    dplyr (>= 0.3),
+    dplyr (>= 0.7),
     RSQLite (>= 1.1),
     DBI (>= 0.5),
     data.table,
-    tidyr,
+    tidyr (>= 0.7),
     lubridate,
     stringi,
     parallel,
