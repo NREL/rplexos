@@ -75,7 +75,7 @@ add_extra_tables_input <- function(db) {
           FROM t_class c
           INNER JOIN t_class_group g
             ON c.class_group_id = g.class_group_id"
-  DBI::dbGetQuery(db$con, sql)
+  DBI::dbExecute(db$con, sql)
 
   # View with object, category, class, class_group
   sql <- "CREATE VIEW [object] AS
@@ -91,7 +91,7 @@ add_extra_tables_input <- function(db) {
             ON o.class_id = c.class_id
           JOIN t_category cat
             ON o.category_id = cat.category_id"
-  DBI::dbGetQuery(db$con, sql)
+  DBI::dbExecute(db$con, sql)
 
   # View with property
   sql <- "CREATE VIEW [property] AS
@@ -114,7 +114,7 @@ add_extra_tables_input <- function(db) {
             ON c.collection_id = p.collection_id
          JOIN t_unit u
            ON u.unit_id = p.unit_id"
-  DBI::dbGetQuery(db$con, sql)
+  DBI::dbExecute(db$con, sql)
 
   # View for attribute
   sql <- "CREATE VIEW [attribute] AS
@@ -128,7 +128,7 @@ add_extra_tables_input <- function(db) {
           FROM t_attribute a
           JOIN t_unit u
             ON a.unit_id = u.unit_id"
-  DBI::dbGetQuery(db$con, sql)
+  DBI::dbExecute(db$con, sql)
 
   # View for attribute data
   sql <- "CREATE VIEW [attribute_data] AS
@@ -146,7 +146,7 @@ add_extra_tables_input <- function(db) {
           LEFT JOIN t_attribute_data d
             ON d.object_id = o.object_id
             AND d.attribute_id = a.attribute_id"
-  DBI::dbGetQuery(db$con, sql)
+  DBI::dbExecute(db$con, sql)
 
   # View with memberships, collection, parent and child objects
   col.table <- tbl(db, "t_collection")
@@ -177,7 +177,7 @@ add_extra_tables_input <- function(db) {
             ON p.object_id = m.parent_object_id
           JOIN [object] ch
             ON ch.object_id = m.child_object_id", txt.comp)
-  DBI::dbGetQuery(db$con, sql)
+  DBI::dbExecute(db$con, sql)
 
   # Create table with all the tags
   rplexos_message("Creating tag table")
@@ -188,14 +188,14 @@ add_extra_tables_input <- function(db) {
             FROM t_tag t
             JOIN object o
             ON t.object_id = o.object_id"
-    DBI::dbGetQuery(db$con, sql)
+    DBI::dbExecute(db$con, sql)
 
     tag.table <- tbl(db, "temp_tag") %>%
       collect(n=Inf) %>%
       tidyr::spread(class, name) %>%
       as.data.frame
 
-    DBI::dbGetQuery(db$con, "DROP VIEW [temp_tag]")
+    DBI::dbExecute(db$con, "DROP VIEW [temp_tag]")
 
     # Avoid space in the table name
     names(tag.table) <- gsub("Data File", "DataFile", names(tag.table))
@@ -223,14 +223,14 @@ add_extra_tables_input <- function(db) {
             FROM t_text t
             JOIN t_class c
             ON t.class_id = c.class_id"
-    DBI::dbGetQuery(db$con, sql)
+    DBI::dbExecute(db$con, sql)
 
     text.table <- tbl(db, "temp_text") %>%
       collect(n=Inf) %>%
       tidyr::spread(class, value) %>%
       as.data.frame
 
-    DBI::dbGetQuery(db$con, "DROP VIEW [temp_text]")
+    DBI::dbExecute(db$con, "DROP VIEW [temp_text]")
 
     # Avoid space in the table name
     names(text.table) <- gsub("Data File", "DataFile", names(text.table))
@@ -314,7 +314,7 @@ add_extra_tables_input <- function(db) {
                ON d.data_id = b.data_id
           LEFT JOIN t_memo_data memo
                ON d.data_id = memo.data_id"
-  DBI::dbGetQuery(db$con, sql)
+  DBI::dbExecute(db$con, sql)
 
   0
 }
