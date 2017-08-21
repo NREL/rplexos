@@ -13,3 +13,4 @@ inst/web
 
 .Rapp.history
 packrat/lib*/
+packrat/src/
