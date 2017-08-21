@@ -8,3 +8,4 @@ NEWS\.md
 ^packrat/
 ^\.Rprofile$
 ^\.travis\.yml$
+^codecov\.yml$

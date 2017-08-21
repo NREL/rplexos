@@ -35,10 +35,11 @@ Imports:
     parallel,
     doParallel,
     foreach
-Suggests:
+Suggests: 
     knitr,
     testthat,
-    ggplot2
+    ggplot2,
+    covr
 LinkingTo: Rcpp (>= 0.11.5)
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
