@@ -4,7 +4,7 @@ get_table <- function(filename, table) {
   thesql <- DBI::dbConnect(RSQLite::SQLite(), dbname = filename, create = FALSE)
   # thesql <- src_sqlite(filename, create = FALSE)
 
-  if (table %in% DBI::dbListTables(thesql)) {
+  if (table %in% src_tbls(thesql)) {
     out <- tbl(thesql, table) %>% collect(n=Inf)
   } else {
     out <- data.frame()
