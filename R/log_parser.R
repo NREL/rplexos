@@ -86,6 +86,6 @@ to_seconds <- function(x) {
     unlist() %>%
     matrix(ncol=3, byrow=T) %>%
     data.frame(stringsAsFactors = FALSE) %>%
-    mutate_each(funs = 'as.numeric')
+    mutate_all(funs(as.numeric))
   3600 * x2[, 1] + 60 * x2[, 2] + x2[, 3]
 }
