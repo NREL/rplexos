@@ -42,7 +42,8 @@ process_input <- function(file) {
   rplexos_message("  - Input: '", file, "'", sep = "")
 
   # Open connection to SQLite for R
-  dbf <- src_sqlite(db.name, create = TRUE)
+  dbf <- DBI::dbConnect(RSQLite::SQLite(), dbname = db.name, create = TRUE)
+  # dbf <- src_sqlite(db.name, create = TRUE)
 
   # Add basic XML structure and delete cached XML file
   new_database(dbf, xml.content, is.solution = FALSE)
@@ -52,7 +53,7 @@ process_input <- function(file) {
   add_extra_tables_input(dbf)
 
   # Close database connections
-  DBI::dbDisconnect(dbf$con)
+  DBI::dbDisconnect(dbf)
 
   # Message that file processing is done
   rplexos_message("Finished processing file ", file, "\n")
@@ -75,7 +76,7 @@ add_extra_tables_input <- function(db) {
           FROM t_class c
           INNER JOIN t_class_group g
             ON c.class_group_id = g.class_group_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
 
   # View with object, category, class, class_group
   sql <- "CREATE VIEW [object] AS
@@ -91,7 +92,7 @@ add_extra_tables_input <- function(db) {
             ON o.class_id = c.class_id
           JOIN t_category cat
             ON o.category_id = cat.category_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
 
   # View with property
   sql <- "CREATE VIEW [property] AS
@@ -114,7 +115,7 @@ add_extra_tables_input <- function(db) {
             ON c.collection_id = p.collection_id
          JOIN t_unit u
            ON u.unit_id = p.unit_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
 
   # View for attribute
   sql <- "CREATE VIEW [attribute] AS
@@ -128,7 +129,7 @@ add_extra_tables_input <- function(db) {
           FROM t_attribute a
           JOIN t_unit u
             ON a.unit_id = u.unit_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
 
   # View for attribute data
   sql <- "CREATE VIEW [attribute_data] AS
@@ -146,7 +147,7 @@ add_extra_tables_input <- function(db) {
           LEFT JOIN t_attribute_data d
             ON d.object_id = o.object_id
             AND d.attribute_id = a.attribute_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
 
   # View with memberships, collection, parent and child objects
   col.table <- tbl(db, "t_collection")
@@ -177,25 +178,25 @@ add_extra_tables_input <- function(db) {
             ON p.object_id = m.parent_object_id
           JOIN [object] ch
             ON ch.object_id = m.child_object_id", txt.comp)
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
 
   # Create table with all the tags
   rplexos_message("Creating tag table")
-  if (db_has_table(db$con, "t_tag")) {
+  if (db_has_table(db, "t_tag")) {
     # Query and reformat the data
     sql <- "CREATE VIEW [temp_tag] AS
             SELECT t.data_id, o.category, o.class, o.name
             FROM t_tag t
             JOIN object o
             ON t.object_id = o.object_id"
-    DBI::dbExecute(db$con, sql)
+    DBI::dbExecute(db, sql)
 
     tag.table <- tbl(db, "temp_tag") %>%
       collect(n=Inf) %>%
       tidyr::spread(class, name) %>%
       as.data.frame
 
-    DBI::dbExecute(db$con, "DROP VIEW [temp_tag]")
+    DBI::dbExecute(db, "DROP VIEW [temp_tag]")
 
     # Avoid space in the table name
     names(tag.table) <- gsub("Data File", "DataFile", names(tag.table))
@@ -212,25 +213,25 @@ add_extra_tables_input <- function(db) {
                             Scenario = character(0))
   }
 
-  DBI::dbWriteTable(db$con, "table_tag", tag.table, row.names = FALSE)
+  DBI::dbWriteTable(db, "table_tag", tag.table, row.names = FALSE)
 
   # Create table with data text entries
   rplexos_message("Creating text table")
-  if (db_has_table(db$con, "t_text")) {
+  if (db_has_table(db, "t_text")) {
     # Query and reformat the data
     sql <- "CREATE VIEW [temp_text] AS
             SELECT t.data_id, c.name class, t.value
             FROM t_text t
             JOIN t_class c
             ON t.class_id = c.class_id"
-    DBI::dbExecute(db$con, sql)
+    DBI::dbExecute(db, sql)
 
     text.table <- tbl(db, "temp_text") %>%
       collect(n=Inf) %>%
       tidyr::spread(class, value) %>%
       as.data.frame
 
-    DBI::dbExecute(db$con, "DROP VIEW [temp_text]")
+    DBI::dbExecute(db, "DROP VIEW [temp_text]")
 
     # Avoid space in the table name
     names(text.table) <- gsub("Data File", "DataFile", names(text.table))
@@ -247,38 +248,38 @@ add_extra_tables_input <- function(db) {
                              Timeslice = character(0))
   }
 
-  DBI::dbWriteTable(db$con, "table_text", text.table, row.names = FALSE)
+  DBI::dbWriteTable(db, "table_text", text.table, row.names = FALSE)
 
   # Add t_memo_data if it doesn't exist
-  if (!db_has_table(db$con, "t_memo_data")) {
+  if (!db_has_table(db, "t_memo_data")) {
     rplexos_message("Adding t_memo_data")
     memo.table <- data.frame(data_id = integer(0),
                              value = character(0))
-    DBI::dbWriteTable(db$con, "t_memo_data", memo.table, row.names = FALSE)
+    DBI::dbWriteTable(db, "t_memo_data", memo.table, row.names = FALSE)
   }
 
   # Add t_band if it doesn't exist
-  if (!db_has_table(db$con, "t_band")) {
+  if (!db_has_table(db, "t_band")) {
     rplexos_message("Adding t_band")
     band.table <- data.frame(data_id = integer(0),
                              band_id = integer(0))
-    DBI::dbWriteTable(db$con, "t_band", band.table, row.names = FALSE)
+    DBI::dbWriteTable(db, "t_band", band.table, row.names = FALSE)
   }
 
   # Add t_date_from if it doesn't exist
-  if (!db_has_table(db$con, "t_date_from")) {
+  if (!db_has_table(db, "t_date_from")) {
     rplexos_message("Adding t_date_from")
     datefrom.table <- data.frame(data_id = integer(0),
                                  date = character(0))
-    DBI::dbWriteTable(db$con, "t_date_from", datefrom.table, row.names = FALSE)
+    DBI::dbWriteTable(db, "t_date_from", datefrom.table, row.names = FALSE)
   }
 
   # Add t_date_to if it doesn't exist
-  if (!db_has_table(db$con, "t_date_to")) {
+  if (!db_has_table(db, "t_date_to")) {
     rplexos_message("Adding t_date_to")
     dateto.table <- data.frame(data_id = integer(0),
                                date = character(0))
-    DBI::dbWriteTable(db$con, "t_date_to", dateto.table, row.names = FALSE)
+    DBI::dbWriteTable(db, "t_date_to", dateto.table, row.names = FALSE)
   }
 
   # Add data view
@@ -314,7 +315,7 @@ add_extra_tables_input <- function(db) {
                ON d.data_id = b.data_id
           LEFT JOIN t_memo_data memo
                ON d.data_id = memo.data_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
 
   0
 }

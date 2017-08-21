@@ -88,7 +88,8 @@ process_solution <- function(file, keep.temp = FALSE) {
   rplexos_message("  - Solution: '", file, "'", sep = "")
 
   # Open connection to SQLite for R
-  dbt <- src_sqlite(db.temp, create = TRUE)
+  dbt <- DBI::dbConnect(RSQLite::SQLite(), dbname = db.temp, create = TRUE)
+  # dbt <- src_sqlite(db.temp, create = TRUE)
 
   # Add basic XML structure and delete cached XML file
   new_database(dbt, xml.content)
@@ -99,36 +100,37 @@ process_solution <- function(file, keep.temp = FALSE) {
 
   # Create SQLite database to store final results
   rplexos_message("Creating final database and adding basic data")
-  dbf <- src_sqlite(db.name, create = TRUE)
+  dbf <- DBI::dbConnect(RSQLite::SQLite(), dbname = db.name, create = TRUE)
+  # dbf <- src_sqlite(db.name, create = TRUE)
 
   # Store time stamps
   sql <- "CREATE TABLE data_time (phase_id INT, interval INT, time TEXT)"
-  DBI::dbExecute(dbf$con, sql)
+  DBI::dbExecute(dbf, sql)
   sql <- "CREATE VIEW time AS
           SELECT phase_id, interval, datetime(time) time
           FROM data_time"
-  DBI::dbExecute(dbf$con, sql)
+  DBI::dbExecute(dbf, sql)
 
   # Turn PRAGMA OFF
-  DBI::dbExecute(dbf$con, "PRAGMA synchronous = OFF")
-  DBI::dbExecute(dbf$con, "PRAGMA journal_mode = MEMORY")
-  DBI::dbExecute(dbf$con, "PRAGMA temp_store = MEMORY")
+  DBI::dbExecute(dbf, "PRAGMA synchronous = OFF")
+  DBI::dbExecute(dbf, "PRAGMA journal_mode = MEMORY")
+  DBI::dbExecute(dbf, "PRAGMA temp_store = MEMORY")
 
   # Attach final database to temporary database
-  DBI::dbExecute(dbt$con, sprintf("ATTACH '%s' AS new", db.name))
+  DBI::dbExecute(dbt, sprintf("ATTACH '%s' AS new", db.name))
 
   # Add config table
-  DBI::dbExecute(dbt$con, "CREATE TABLE new.config AS SELECT * FROM t_config")
+  DBI::dbExecute(dbt, "CREATE TABLE new.config AS SELECT * FROM t_config")
   sql <- sprintf("INSERT INTO new.config VALUES ('rplexos', '%s')", packageVersion("rplexos"))
-  DBI::dbExecute(dbt$con, sql)
+  DBI::dbExecute(dbt, sql)
   sql <- sprintf("INSERT INTO new.config VALUES ('OTF', '%s')", is_otf_rplexos())
-  DBI::dbExecute(dbt$con, sql)
+  DBI::dbExecute(dbt, sql)
 
   # Add time data
   sql <- "INSERT INTO new.data_time
           SELECT phase_id, interval_id, time
           FROM temp_period_0"
-  DBI::dbExecute(dbt$con, sql)
+  DBI::dbExecute(dbt, sql)
 
   # Collate information to key (first period data, then summary data)
   sql <- "CREATE TABLE new.key (key INT PRIMARY KEY,
@@ -148,15 +150,15 @@ process_solution <- function(file, keep.temp = FALSE) {
                                 timeslice TEXT,
                                 band INT,
                                 sample TEXT)"
-  DBI::dbExecute(dbt$con, sql)
+  DBI::dbExecute(dbt, sql)
 
   sql <- "INSERT INTO new.key
           SELECT *
           FROM temp_key"
-  DBI::dbExecute(dbt$con, sql)
+  DBI::dbExecute(dbt, sql)
 
   # Detach database
-  DBI::dbExecute(dbt$con, "DETACH new");
+  DBI::dbExecute(dbt, "DETACH new");
 
   # Define columns from the key table that go into the views
   view.k <- paste0("k.", c("key", "collection", "property", "unit", "name", "parent", "category",
@@ -169,23 +171,23 @@ process_solution <- function(file, keep.temp = FALSE) {
   times <- get_times()
   for (i in times) {
     sql <- sprintf("CREATE TABLE data_%s (key integer, time real, value double)", i);
-    DBI::dbExecute(dbf$con, sql)
+    DBI::dbExecute(dbf, sql)
 
     sql <- sprintf("CREATE VIEW %s AS
                     SELECT %s, datetime(d.time) AS time, d.value
                     FROM data_%s d NATURAL LEFT JOIN key k ", i, view.k2, i);
-    DBI::dbExecute(dbf$con, sql)
+    DBI::dbExecute(dbf, sql)
   }
 
   # Create interval data tables and views
   sql <- "SELECT DISTINCT table_name
           FROM key
           WHERE period_type_id = 0"
-  props <- DBI::dbGetQuery(dbf$con, sql)
+  props <- DBI::dbGetQuery(dbf, sql)
 
   for (p in props$table_name) {
     sql <- sprintf("CREATE TABLE '%s' (key INT, time_from INT, time_to INT, value DOUBLE)", p)
-    DBI::dbExecute(dbf$con, sql)
+    DBI::dbExecute(dbf, sql)
 
     view.name <- gsub("data_interval_", "", p)
     sql <- sprintf("CREATE VIEW %s AS
@@ -199,7 +201,7 @@ process_solution <- function(file, keep.temp = FALSE) {
                       ON t2.interval = d.time_to
                      AND t2.phase_id = k.phase_id
                     WHERE k.table_name = '%s'", view.name, view.k2, p, p);
-    DBI::dbExecute(dbf$con, sql)
+    DBI::dbExecute(dbf, sql)
   }
 
   # Create table for list of properties
@@ -218,10 +220,10 @@ process_solution <- function(file, keep.temp = FALSE) {
           FROM key
           GROUP BY class_group, class, collection, property, unit, phase_id, period_type_id, table_name
           ORDER BY phase_id, period_type_id, class_group, class, collection, property"
-  DBI::dbExecute(dbf$con, sql)
+  DBI::dbExecute(dbf, sql)
   
   # Add on the fly table
-  DBI::dbExecute(dbf$con,
+  DBI::dbExecute(dbf,
                  "CREATE TABLE 'on_the_fly' (key INT, table_name TEXT)")
 
   # Add the data into the db
@@ -250,13 +252,13 @@ process_solution <- function(file, keep.temp = FALSE) {
     }
 
     for (i in names(log.result)) {
-      DBI::dbWriteTable(dbf$con, i, log.result[[i]] %>% as.data.frame, row.names = FALSE)
+      DBI::dbWriteTable(dbf, i, log.result[[i]] %>% as.data.frame, row.names = FALSE)
     }
   }
 
   # Close database connections
-  DBI::dbDisconnect(dbt$con)
-  DBI::dbDisconnect(dbf$con)
+  DBI::dbDisconnect(dbt)
+  DBI::dbDisconnect(dbf)
 
   # Message that file processing is done
   rplexos_message("Finished processing file ", file, "\n")
@@ -278,8 +280,10 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T
     
     
     # Open connection to SQLite for R
-    dbt <- src_sqlite(db.temp, create = F)
-    dbf <- src_sqlite(db.name, create = F)
+    thesql <- DBI::dbConnect(RSQLite::SQLite(), dbname = db.temp, create = FALSE)
+    thesql <- DBI::dbConnect(RSQLite::SQLite(), dbname = db.name, create = FALSE)
+    # dbt <- src_sqlite(db.temp, create = F)
+    # dbf <- src_sqlite(db.name, create = F)
   }
   
   # Read list of files in the zip file
@@ -315,10 +319,10 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T
                    ON tki.key_id = nk.[key]
                    WHERE tki.period_type_id = %s
                    ORDER BY tki.position", period)
-    tki <- DBI::dbSendQuery(dbt$con, sql)
+    tki <- DBI::dbSendQuery(dbt, sql)
     
     # All the data is inserted in one transaction
-    DBI::dbBegin(dbf$con)
+    DBI::dbBegin(dbf)
     
     # Read one row from the query
     num.rows <- ifelse(period == 0, 1, 1000)
@@ -397,13 +401,13 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T
         # if(!(table_otf %in% tables_otf_done$table_name)){
         if(initial){
           
-          DBI::dbExecute(dbf$con,
+          DBI::dbExecute(dbf,
                          sprintf("INSERT INTO data_%s VALUES($key, $time, $value)", times[period]),
                          tdata3 %>% as.data.frame)
           
           table_data <- trow %>% select(key, table_name) %>% as.data.frame
           table_data$table_name <- table_otf
-          DBI::dbExecute(dbf$con,
+          DBI::dbExecute(dbf,
                          "INSERT INTO on_the_fly (key, table_name)
                           VALUES($key, $table_name)",
                          table_data)
@@ -417,12 +421,12 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T
           mutate(interval_to_id = lead(interval_id - 1, default = default.interval.to.id)) %>%
           select(key, time_from = interval_id, time_to = interval_to_id, value)
         
-        DBI::dbExecute(dbf$con,
+        DBI::dbExecute(dbf,
                        sprintf("INSERT INTO %s (key, time_from, time_to, value)
                              VALUES($key, $time_from, $time_to, $value)", trow$table_name),
                        tdata3 %>% as.data.frame)
         
-        DBI::dbExecute(dbf$con,
+        DBI::dbExecute(dbf,
                        "INSERT INTO on_the_fly (key, table_name)
                         VALUES($key, $table_name)",
                        trow %>% select(key, table_name) %>% as.data.frame)
@@ -435,7 +439,7 @@ add_data <- function(file, dbt=NULL, dbf=NULL, add_tables='add_all', initial = T
     # Finish transaction
     rplexos_message("   ", num.read, " values read")
     DBI::dbClearResult(tki)
-    DBI::dbCommit(dbf$con)
+    DBI::dbCommit(dbf)
     
     # Close binary file connection
     close(bin.con)
@@ -485,31 +489,31 @@ new_database <- function(db, xml, is.solution = TRUE) {
   }
 
   # Turn PRAGMA OFF
-  DBI::dbExecute(db$con, "PRAGMA synchronous = OFF");
-  DBI::dbExecute(db$con, "PRAGMA journal_mode = MEMORY");
-  DBI::dbExecute(db$con, "PRAGMA temp_store = MEMORY");
+  DBI::dbExecute(db, "PRAGMA synchronous = OFF");
+  DBI::dbExecute(db, "PRAGMA journal_mode = MEMORY");
+  DBI::dbExecute(db, "PRAGMA temp_store = MEMORY");
 
   # Do the following for solution files
   if (is.solution) {
     # Create data tables
     for (i in 0:4) {
       sql <- sprintf("CREATE TABLE t_data_%s (key_id integer, period_id integer, value double)", i)
-      DBI::dbExecute(db$con, sql)
+      DBI::dbExecute(db, sql)
     }
 
     # Create phase tables
     for (i in 0:4) {
       sql <- sprintf("CREATE TABLE t_phase_%s (interval_id integer, period_id integer)", i)
-      DBI::dbExecute(db$con, sql)
+      DBI::dbExecute(db, sql)
     }
 
     # Create t_key_index table
-    DBI::dbExecute(db$con, "CREATE TABLE t_key_index (key_id integer, period_type_id integer, position long, length integer, period_offset integer)");
+    DBI::dbExecute(db, "CREATE TABLE t_key_index (key_id integer, period_type_id integer, position long, length integer, period_offset integer)");
   }
 
   # Write tables from XML file
   for (t in names(xml.list))
-    DBI::dbWriteTable(db$con, t, xml.list[[t]], append = TRUE, row.names = FALSE)
+    DBI::dbWriteTable(db, t, xml.list[[t]], append = TRUE, row.names = FALSE)
 
   0
 }
@@ -526,7 +530,7 @@ add_extra_tables <- function(db) {
           FROM t_class tc
           LEFT JOIN t_class_group tcg
             ON tc.class_group_id = tcg.class_group_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
 
   # View with object, category, class, class_group
   sql <- "CREATE VIEW temp_object AS
@@ -540,7 +544,7 @@ add_extra_tables <- function(db) {
             ON o.class_id = c.class_id
           JOIN t_category cat
             ON o.category_id = cat.category_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
 
   # Create a new table making long version of property
   sql <- "CREATE TABLE temp_property AS
@@ -554,7 +558,7 @@ add_extra_tables <- function(db) {
             ON c.collection_id = p.collection_id
          JOIN t_unit u
            ON u.unit_id = p.unit_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
   sql <- "INSERT INTO temp_property
           SELECT p.property_id property_id,
                  '1' period_type_id,
@@ -566,7 +570,7 @@ add_extra_tables <- function(db) {
             ON c.collection_id = p.collection_id
          JOIN t_unit u
            ON u.unit_id = p.summary_unit_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
 
   # View with memberships, collection, parent and child objects
   sql <- "CREATE VIEW temp_membership AS
@@ -589,7 +593,7 @@ add_extra_tables <- function(db) {
             ON p.object_id = m.parent_object_id
           JOIN temp_object ch
             ON ch.object_id = m.child_object_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
 
   # Views to list zones
   sql <- "CREATE VIEW temp_zones_id AS
@@ -599,7 +603,7 @@ add_extra_tables <- function(db) {
           WHERE collection IN ('Generators','Batteries')
                 AND parent_class = 'Region'
           GROUP BY child_object_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
   sql <- "CREATE VIEW temp_zones AS
           SELECT a.child_object_id,
                  b.name region,
@@ -607,7 +611,7 @@ add_extra_tables <- function(db) {
           FROM temp_zones_id a
           JOIN temp_object b
           WHERE a.parent_object_id = b.object_id"
-  DBI::dbExecute(db$con, sql)
+  DBI::dbExecute(db, sql)
 
   # Read key data and transform it
   sql <- "SELECT k.key_id key,
@@ -640,7 +644,7 @@ add_extra_tables <- function(db) {
                p.period_type_id = k.period_type_id
           LEFT OUTER JOIN temp_zones z
                on z.child_object_id = m.child_object_id"
-  key <- DBI::dbGetQuery(db$con, sql) %>%
+  key <- DBI::dbGetQuery(db, sql) %>%
     mutate(zone = ifelse(is.na(zone), "", zone),
            region = ifelse(is.na(region), "", region))
 
@@ -664,7 +668,7 @@ add_extra_tables <- function(db) {
            parent = parent_name, category = child_category, region, zone,
            class = child_class, class_group = child_group, phase_id, period_type_id,
            timeslice, band, sample) %>%
-    DBI::dbWriteTable(db$con, "temp_key", ., row.names = FALSE)
+    DBI::dbWriteTable(db, "temp_key", ., row.names = FALSE)
 
   # Check that t_key and temp_key have the same number of rows
   t.key.length <- tbl(db, "t_key") %>% summarize(n = n()) %>% collect(n=Inf)
@@ -675,7 +679,7 @@ add_extra_tables <- function(db) {
   # Create tables to hold interval, day, week, month, and yearly timestamps
   for (i in 0:4) {
     sql <- sprintf("CREATE TABLE temp_period_%s (phase_id INT, period_id INT, interval_id INT, time real)", i)
-    DBI::dbExecute(db$con, sql)
+    DBI::dbExecute(db, sql)
   }
 
   # For each phase add corresponding values to the time tables
@@ -688,13 +692,13 @@ add_extra_tables <- function(db) {
                     FROM t_period_0 p
                     INNER JOIN t_phase_%s ph
                     ON p.interval_id = ph.interval_id", phase, phase)
-    DBI::dbExecute(db$con, sql)
+    DBI::dbExecute(db, sql)
 
     # Fix time stamps in t_period_0 (interval)
     sql <- sprintf("INSERT INTO temp_period_0
                     SELECT %s, period_id, interval_id, correct_time time
                     FROM temp_phase_%s", phase, phase)
-    DBI::dbExecute(db$con, sql)
+    DBI::dbExecute(db, sql)
 
     # Fix time stamps in t_period_X (summary data)
     for (i in seq_along(column.times)) {
@@ -702,7 +706,7 @@ add_extra_tables <- function(db) {
                       SELECT %s, %s, min(interval_id), min(correct_time) time
                       FROM temp_phase_%s
                       GROUP BY %s", i, phase, column.times[i], phase, column.times[i])
-      DBI::dbExecute(db$con, sql)
+      DBI::dbExecute(db, sql)
     }
   }
 

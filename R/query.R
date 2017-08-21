@@ -1,16 +1,17 @@
 # Get one table from a SQLite database
 get_table <- function(filename, table) {
   # Open connection
-  thesql <- src_sqlite(filename, create = FALSE)
+  thesql <- DBI::dbConnect(RSQLite::SQLite(), dbname = filename, create = FALSE)
+  # thesql <- src_sqlite(filename, create = FALSE)
 
-  if (table %in% src_tbls(thesql)) {
+  if (table %in% DBI::dbListTables(thesql)) {
     out <- tbl(thesql, table) %>% collect(n=Inf)
   } else {
     out <- data.frame()
   }
 
   # Close connection
-  DBI::dbDisconnect(thesql$con)
+  DBI::dbDisconnect(thesql)
 
   # Return result
   out
@@ -19,13 +20,14 @@ get_table <- function(filename, table) {
 # Get one table from a SQLite database
 get_list_tables <- function(filename) {
   # Open connection
-  thesql <- src_sqlite(filename, create = FALSE)
+  thesql <- DBI::dbConnect(RSQLite::SQLite(), dbname = filename, create = FALSE)
+  # thesql <- src_sqlite(filename, create = FALSE)
 
   # Read names
-  out <- data.frame(tables = src_tbls(thesql))
+  out <- data.frame(tables = DBI::dbListTables(thesql))
 
   # Close connection
-  DBI::dbDisconnect(thesql$con)
+  DBI::dbDisconnect(thesql)
 
   # Return result
   out
@@ -45,9 +47,10 @@ get_list_tables <- function(filename) {
 #' @export
 get_query <- function(filename, sql) {
   out <- data.frame()
-  thesql <- src_sqlite(filename, create = FALSE)
-  try(out <- RSQLite::dbGetQuery(thesql$con, sql))
-  DBI::dbDisconnect(thesql$con)
+  thesql <- DBI::dbConnect(RSQLite::SQLite(), dbname = filename, create = FALSE)
+  # thesql <- src_sqlite(filename, create = FALSE)
+  try(out <- RSQLite::dbGetQuery(thesql, sql))
+  DBI::dbDisconnect(thesql)
   out
 }
 
@@ -432,7 +435,8 @@ query_master <- function(db, time, col, prop, columns = "name", time.range = NUL
 #' @export
 query_master_each <- function(db, time, col, prop, columns = "name", time.range = NULL, filter = NULL, phase = 4) {
   # Open connection
-  thesql <- src_sqlite(db$filename, create = FALSE)
+  thesql <- DBI::dbConnect(RSQLite::SQLite(), dbname = db$filename, create = FALSE)
+  # thesql <- src_sqlite(db$filename, create = FALSE)
 
   if (!identical(time, "interval")) {
     # # Process the db on the fly if this is an on the fly db
@@ -472,7 +476,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
 
     # If t.name is empty (data is not available), return an empty data frame
     if (nrow(t.name) == 0L) {
-      DBI::dbDisconnect(thesql$con)
+      DBI::dbDisconnect(thesql)
       return(data.frame())
     }
     
@@ -502,7 +506,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
 
     # If time data is empty, return an empty data frame
     if (nrow(time.data) == 0L) {
-      DBI::dbDisconnect(thesql$con)
+      DBI::dbDisconnect(thesql)
       return(data.frame())
     }
 
@@ -539,7 +543,7 @@ query_master_each <- function(db, time, col, prop, columns = "name", time.range 
   }
 
   # Disconnect database
-  DBI::dbDisconnect(thesql$con)
+  DBI::dbDisconnect(thesql)
 
   # Return value
   return(out)
