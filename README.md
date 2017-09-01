@@ -1,6 +1,6 @@
 # rplexos
 
-[![Build status](https://ci.appveyor.com/api/projects/status/gg78nxem0d1vy606/branch/master?svg=true)](https://ci.appveyor.com/project/eibanez/rplexos/branch/master)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/NREL/rplexos?branch=master&svg=true)](https://ci.appveyor.com/project/NREL/rplexos)
 [![Coverage status](https://codecov.io/gh/NREL/rplexos/branch/master/graph/badge.svg)](https://codecov.io/github/NREL/rplexos?branch=master)
 
 `rplexos` is an R package developed to read and analyze PLEXOS solutions. It currently supports the
