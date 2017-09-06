@@ -52,8 +52,8 @@ is_debug_rplexos <- function() {
 #'
 #' @export
 location_solution_rplexos <- function(phase = 'ST') {
-  if(phase == 'ST') return(system.file("extdata", "solution", "ST_Solution", package = "rplexos"))
-  if(phase == 'LT') return(system.file("extdata", "solution", "LT_Solution", package = "rplexos"))
+  if(phase == 'ST') return(system.file("extdata", "solution", "ST_solution",package = "rplexos"))
+  if(phase == 'LT') return(system.file("extdata", "solution","LT_solution",package = "rplexos"))
 }
 
 #' @rdname location_solution_rplexos
