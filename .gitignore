@@ -10,7 +10,7 @@ inst/web
 .Rproj.user
 *.Rproj
 .Rhistory
-
+.Rprofile
 .Rapp.history
 packrat/lib*/
-packrat/src/
+packrat/src*/
