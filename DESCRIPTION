@@ -23,18 +23,19 @@ BugReports: https://github.com/NREL/rplexos/issues
 Depends:
     R (>= 3.1.0)
 Imports:
-    Rcpp (>= 0.11.5),
-    dbplyr,
-    dplyr (>= 0.7),
-    RSQLite (>= 1.1),
-    DBI (>= 0.5),
     data.table,
-    tidyr (>= 0.7),
-    lubridate,
-    stringi,
-    parallel,
+    DBI (>= 0.5),
+    dbplyr,
     doParallel,
-    foreach
+    dplyr (>= 0.7),
+    foreach,
+    lubridate,
+    magrittr,
+    parallel,
+    Rcpp (>= 0.11.5),
+    RSQLite (>= 1.1),
+    stringi,
+    tidyr (>= 0.7)
 Suggests: 
     knitr,
     testthat,
