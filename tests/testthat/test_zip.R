@@ -1,4 +1,3 @@
-library(rplexos)
 context("Seek zipped files")
 
 file_zip <- tempfile(fileext = '.zip')

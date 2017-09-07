@@ -1,5 +1,3 @@
-library(tidyverse)
-library(rplexos)
 context("Query solutions")
 
 disable_otf_rplexos(F)
