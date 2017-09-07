@@ -39,7 +39,8 @@ Suggests:
     knitr,
     testthat,
     ggplot2,
-    covr
+    covr,
+    tidyverse
 LinkingTo: Rcpp (>= 0.11.5)
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
