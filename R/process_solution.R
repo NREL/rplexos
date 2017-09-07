@@ -772,8 +772,12 @@ is_otf_rplexos <- function(){
 #' @rdname is_otf_rplexos
 #' @export
 enable_otf_rplexos <- function(msg = T){
-  options(rplexos.process_on_the_fly = T)
-  if(msg) check_otf_rplexos()
+  if(.Platform$OS.type == 'windows'){
+    options(rplexos.process_on_the_fly = T)
+    if(msg) check_otf_rplexos()
+  }else{
+    warning('The on-the-fly mode currently only works for Windows.')
+  }
 }
 
 #' @inheritParams enable_otf_rplexos

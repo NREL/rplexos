@@ -5,6 +5,9 @@ read_zip <- function(zip, file, what, offset = 0L, n = 1L, size = NA_integer_, s
   if(!is.na(size) & is.integer(size)){
     size_n <- size
   }
+  if(.Platform$OS.type != 'windows'){
+    stop('The on-the-fly mode currently only works for Windows.')
+  }
   suppressWarnings(
     system(paste0(file.path(unzip_bin_path(),'sh'),
                   ' -c "',
@@ -17,7 +20,7 @@ read_zip <- function(zip, file, what, offset = 0L, n = 1L, size = NA_integer_, s
 }
 
 unzip_bin_path <- function(){
-  system.file("extdata", "zip_bin", package = "rplexos")
+  system.file("executables", "win32", "zip_bin", package = "rplexos")
 }
 
 # file_zip <- "file.zip"
