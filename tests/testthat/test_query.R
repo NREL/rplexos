@@ -1,5 +1,3 @@
-library(tidyverse)
-library(rplexos)
 context("Query solutions")
 
 disable_otf_rplexos(F)
@@ -279,15 +277,19 @@ test_that("Process LT queries", {
                query_interval(db_LT, "Generator", "Generation", time.range = time_range_LT, phase = 1) %>% .$value %>% as.numeric %>% sum() * 24 / 1000)
 })
 
-enable_otf_rplexos(F)
-
-loc <- location_solution_rplexos()
-locERR <- system.file("extdata", package = "rplexos")
-
-process_folder(loc)
-db <- plexos_open(loc)
-
 test_that("Process queries on the fly", {
+  skip_on_os('linux')
+  skip_on_os('solaris')
+  skip_on_os('mac')
+  
+  enable_otf_rplexos(F)
+  
+  loc <- location_solution_rplexos()
+  locERR <- system.file("extdata", package = "rplexos")
+  
+  process_folder(loc)
+  db <- plexos_open(loc)
+  
   expect_true(query_interval(db, "Battery", "Generation", time.range = time_range) %>% nrow == 24L)
   expect_true(query_interval(db, "Battery", "Generation", time.range = time_range) %>% nrow == 24L) # no double processing
   expect_true(query_interval(db, "Battery", "Load", time.range = time_range) %>% nrow == 24L)

@@ -1,10 +1,13 @@
-library(rplexos)
 context("Seek zipped files")
 
 file_zip <- tempfile(fileext = '.zip')
 file_bin <- tempfile(fileext = '.bin')
 file_bin_rel <- basename(file_bin)
-writeBin(rep(as.raw(1:255),1e6*4*2), file_bin) # write big binary file
+if(Sys.getenv("R_ARCH") == '/i386'){ # 32 bit cannot write larger than 2GB
+  writeBin(rep(as.raw(1:255),1e6), file_bin) # write big binary file
+}else{
+  writeBin(rep(as.raw(1:255),1e6*4*2), file_bin) # write big binary file
+}
 x <- zip(file_zip, file_bin, flags = '-j') # zip file
 
 test_that("Binary file not corrupt", {
