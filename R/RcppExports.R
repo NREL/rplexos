@@ -2,10 +2,10 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 expand_tkey <- function(tkey) {
-    .Call('_rplexos_expand_tkey', PACKAGE = 'rplexos', tkey)
+    .Call('rplexos_expand_tkey', PACKAGE = 'rplexos', tkey)
 }
 
 process_xml <- function(xml) {
-    .Call('_rplexos_process_xml', PACKAGE = 'rplexos', xml)
+    .Call('rplexos_process_xml', PACKAGE = 'rplexos', xml)
 }
 
