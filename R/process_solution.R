@@ -689,10 +689,17 @@ add_extra_tables <- function(db) {
   # For each phase add corresponding values to the time tables
   column.times <- c("day_id", "week_id", "month_id", "fiscal_year_id")
   for (phase in 1:4) {
+    # browser()
     # Join t_period_0 and t_phase
+    # sql <- sprintf("CREATE VIEW temp_phase_%s AS
+    #                 SELECT p.*, ph.period_id, julianday(p.year || '-' || substr(0 || p.month_of_year, -2)
+    #                 || '-' || substr(0 || p.day_of_month, -2) || 'T' || substr(p.datetime, -8)) AS correct_time
+    #                 FROM t_period_0 p
+    #                 INNER JOIN t_phase_%s ph
+    #                 ON p.interval_id = ph.interval_id", phase, phase)
     sql <- sprintf("CREATE VIEW temp_phase_%s AS
-                    SELECT p.*, ph.period_id, julianday(p.year || '-' || substr(0 || p.month_of_year, -2)
-                    || '-' || substr(0 || p.day_of_month, -2) || 'T' || substr(p.datetime, -8)) AS correct_time
+                    SELECT p.*, ph.period_id, julianday(substr(p.datetime, 7, 4) || '-' || substr(p.datetime, 4, 2)
+                    || '-' || substr(p.datetime, 1, 2) || 'T' || substr(p.datetime, -8)) AS correct_time
                     FROM t_period_0 p
                     INNER JOIN t_phase_%s ph
                     ON p.interval_id = ph.interval_id", phase, phase)
