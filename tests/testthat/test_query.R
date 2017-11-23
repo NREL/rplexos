@@ -169,10 +169,10 @@ test_that("Sum queries", {
   expect_equal(sum_interval(db, "Generator", "Generation", filter = lstWin)$value,
                query_day(db, "Generator", "Generation", filter = lstWin)$value * 1000)
   expect_equal(sum_day(db, "Generator", "Generation", NULL)$value +
-                 sum_day(db, "Battery", "Generation", NULL)$value * 1.05, # battery and efficiency
+                 sum_day(db, "Battery", "Generation", NULL)$value, # battery and efficiency
                sum_day(db, "Region", "Load")$value)
   expect_equal(sum_interval(db, "Generator", "Generation", "time")$value +
-                 sum_interval(db, "Battery", "Generation", "time")$value * 1.05, # battery and efficiency
+                 sum_interval(db, "Battery", "Generation", "time")$value, # battery and efficiency
                sum_interval(db, "Region", "Load", "time")$value)
   expect_equal(sum_interval(db, "Generator", "Generation")$value,
                sum_interval(db, "Generator", "Generation", multiply.time = TRUE)$value)
@@ -220,7 +220,7 @@ test_that("Auxiliary queries", {
 
   expect_is(query_class(db), "tbl_df")
   expect_named(query_class(db), c("scenario", "position", "class_group", "class"))
-  expect_identical(query_class(db) %>% nrow, 5L)
+  expect_identical(query_class(db) %>% nrow, 6L)
 
   expect_is(query_class_member(db, "Generator"), "tbl_df")
   expect_named(query_class_member(db, "Generator"), c("scenario", "position", "name", "parent", "region", "zone"))
