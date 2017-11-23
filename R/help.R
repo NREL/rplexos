@@ -18,5 +18,7 @@
 #' @docType package
 #' @name rplexos
 #' @import dplyr
+#' @import dbplyr
+#' @import DBI
 #' @importFrom Rcpp evalCpp
 NULL
