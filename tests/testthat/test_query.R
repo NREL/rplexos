@@ -238,7 +238,7 @@ test_that("Auxiliary queries", {
   expect_named(qproperty,
                c("phase_id", "phase", "is_summary", "class_group", "class", "collection", "property",
                  "unit", db$scenario[1] %>% as.character))
-  expect_identical(nrow(qproperty), 43L)
+  expect_identical(nrow(qproperty), 55L)
 })
 
 test_that("Time range", {
