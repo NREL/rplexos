@@ -295,6 +295,7 @@ test_that("Process queries on the fly", {
   expect_true(query_interval(db, "Battery", "Load", time.range = time_range) %>% nrow == 24L)
   expect_true(query_interval(db, "Battery", "Net Generation", time.range = time_range) %>% nrow == 24L)
   expect_true(query_interval(db, "Battery", "SoC", time.range = time_range) %>% nrow == 24L)
+  expect_true(query_interval(db, "Generator.Fuels", "Generation", time.range = time_range) %>% nrow == 72L)
   expect_true(query_interval(db, "Generator", "Capacity Curtailed", time.range = time_range) %>% nrow == 72L)
   expect_true(query_interval(db, "Generator", "Generation", time.range = time_range) %>% nrow == 72L)
   expect_true(query_interval(db, "Generator", "Generation Cost", time.range = time_range) %>% nrow == 72L)

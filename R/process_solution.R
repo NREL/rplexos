@@ -184,7 +184,7 @@ process_solution <- function(file, keep.temp = FALSE) {
           FROM key
           WHERE period_type_id = 0"
   props <- DBI::dbGetQuery(dbf, sql)
-
+  
   for (p in props$table_name) {
     sql <- sprintf("CREATE TABLE '%s' (key INT, time_from INT, time_to INT, value DOUBLE)", p)
     DBI::dbExecute(dbf, sql)
@@ -604,7 +604,7 @@ add_extra_tables <- function(db) {
           SELECT child_object_id,
                  min(parent_object_id) parent_object_id
           FROM temp_membership
-          WHERE collection IN ('Generators','Generators.Fuels','Batteries')
+          WHERE collection IN ('Generators','Generator.Fuels','Batteries')
                 AND parent_class = 'Region'
           GROUP BY child_object_id"
   DBI::dbExecute(db, sql)
@@ -635,7 +635,9 @@ add_extra_tables <- function(db) {
                  k.sample_id sample,
                  k.period_type_id period_type_id,
                  k.phase_id phase_id,
+                 y.region region_par,
                  z.region region,
+                 y.zone zone_par,
                  z.zone zone
           FROM t_key k
           JOIN temp_membership m
@@ -646,11 +648,18 @@ add_extra_tables <- function(db) {
             ON p.property_id = k.property_id
                AND
                p.period_type_id = k.period_type_id
+          LEFT OUTER JOIN temp_zones y
+               on y.child_object_id = m.parent_object_id
           LEFT OUTER JOIN temp_zones z
                on z.child_object_id = m.child_object_id"
   key <- DBI::dbGetQuery(db, sql) %>%
     mutate(zone = ifelse(is.na(zone), "", zone),
-           region = ifelse(is.na(region), "", region))
+           zone_par = ifelse(is.na(zone_par), "", zone_par),
+           zone = ifelse(zone != "" & zone_par != "", stop(), paste0(zone, zone_par)),
+           region = ifelse(is.na(region), "", region),
+           region_par = ifelse(is.na(region_par), "", region_par),
+           region = ifelse(region != "" & region_par != "", stop(), paste0(region, region_par))) %>%
+    select(-region_par, -zone_par)
 
   # Add collection (to match PLEXOS GUI) and table name
   key2 <- key %>%
