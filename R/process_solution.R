@@ -604,7 +604,7 @@ add_extra_tables <- function(db) {
           SELECT child_object_id,
                  min(parent_object_id) parent_object_id
           FROM temp_membership
-          WHERE collection IN ('Generators','Batteries')
+          WHERE collection IN ('Generators','Generators.Fuels','Batteries')
                 AND parent_class = 'Region'
           GROUP BY child_object_id"
   DBI::dbExecute(db, sql)
